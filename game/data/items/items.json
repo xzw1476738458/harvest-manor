@@ -1,0 +1,8 @@
+[
+  { "id": "parsnip_seed", "displayName": "Parsnip Seeds", "category": "Seed", "maxStack": 99 },
+  { "id": "parsnip_crop", "displayName": "Parsnip", "category": "Crop", "maxStack": 99 },
+  { "id": "potato_seed", "displayName": "Potato Seeds", "category": "Seed", "maxStack": 99 },
+  { "id": "potato_crop", "displayName": "Potato", "category": "Crop", "maxStack": 99 },
+  { "id": "wood", "displayName": "Wood", "category": "Material", "maxStack": 99 },
+  { "id": "stone", "displayName": "Stone", "category": "Material", "maxStack": 99 }
+]

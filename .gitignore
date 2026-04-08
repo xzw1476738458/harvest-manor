@@ -1,1 +1,9 @@
 .worktrees/
+game/.godot/
+game/.mono/
+game/bin/
+game/obj/
+tests/**/bin/
+tests/**/obj/
+.vs/
+.vscode/

@@ -1,0 +1,24 @@
+[
+  {
+    "id": "parsnip",
+    "displayName": "Parsnip",
+    "season": "Spring",
+    "seedItemId": "parsnip_seed",
+    "harvestItemId": "parsnip_crop",
+    "purchasePrice": 20,
+    "sellPrice": 35,
+    "totalGrowthDays": 4,
+    "growthStageDays": [1, 1, 2]
+  },
+  {
+    "id": "potato",
+    "displayName": "Potato",
+    "season": "Spring",
+    "seedItemId": "potato_seed",
+    "harvestItemId": "potato_crop",
+    "purchasePrice": 45,
+    "sellPrice": 80,
+    "totalGrowthDays": 6,
+    "growthStageDays": [2, 2, 2]
+  }
+]
