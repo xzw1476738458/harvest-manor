@@ -24,10 +24,7 @@ public sealed class ContentCatalogLoaderTests
     public void LoadCropCatalog_ThrowsWhenGrowthStagesDoNotMatchTotalDays()
     {
         var loader = new ContentCatalogLoader();
-        var invalidPath = Path.GetTempFileName();
-
-        File.WriteAllText(
-            invalidPath,
+        var invalidPath = WriteTempJson(
             """
             [
               {
@@ -47,5 +44,84 @@ public sealed class ContentCatalogLoaderTests
 
         var exception = Assert.Throws<InvalidDataException>(() => loader.LoadCropCatalog(invalidPath));
         Assert.Contains("bad_turnip", exception.Message);
+    }
+
+    [Fact]
+    public void LoadCropCatalog_ThrowsWhenGrowthStagesAreMissing()
+    {
+        var loader = new ContentCatalogLoader();
+        var invalidPath = WriteTempJson(
+            """
+            [
+              {
+                "id": "missing_stages",
+                "displayName": "Missing Stages",
+                "season": "Spring",
+                "seedItemId": "missing_stages_seed",
+                "harvestItemId": "missing_stages_crop",
+                "purchasePrice": 10,
+                "sellPrice": 18,
+                "totalGrowthDays": 5
+              }
+            ]
+            """
+        );
+
+        var exception = Assert.Throws<InvalidDataException>(() => loader.LoadCropCatalog(invalidPath));
+        Assert.Contains("missing_stages", exception.Message);
+    }
+
+    [Fact]
+    public void LoadCropCatalog_ThrowsWhenGrowthStagesAreNull()
+    {
+        var loader = new ContentCatalogLoader();
+        var invalidPath = WriteTempJson(
+            """
+            [
+              {
+                "id": "null_stages",
+                "displayName": "Null Stages",
+                "season": "Spring",
+                "seedItemId": "null_stages_seed",
+                "harvestItemId": "null_stages_crop",
+                "purchasePrice": 10,
+                "sellPrice": 18,
+                "totalGrowthDays": 5,
+                "growthStageDays": null
+              }
+            ]
+            """
+        );
+
+        var exception = Assert.Throws<InvalidDataException>(() => loader.LoadCropCatalog(invalidPath));
+        Assert.Contains("null_stages", exception.Message);
+    }
+
+    [Fact]
+    public void LoadItemCatalog_ThrowsWhenItemDefinitionIsInvalid()
+    {
+        var loader = new ContentCatalogLoader();
+        var invalidPath = WriteTempJson(
+            """
+            [
+              {
+                "id": "broken_item",
+                "displayName": "Broken Item",
+                "category": "Seed",
+                "maxStack": 0
+              }
+            ]
+            """
+        );
+
+        var exception = Assert.Throws<InvalidDataException>(() => loader.LoadItemCatalog(invalidPath));
+        Assert.Contains("broken_item", exception.Message);
+    }
+
+    private static string WriteTempJson(string json)
+    {
+        var path = Path.GetTempFileName();
+        File.WriteAllText(path, json);
+        return path;
     }
 }

@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <GodotProjectDir>$(MSBuildThisFileDirectory)..\..\game</GodotProjectDir>
+    <GodotProjectDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\game\'))</GodotProjectDir>
   </PropertyGroup>
 
   <ItemGroup>

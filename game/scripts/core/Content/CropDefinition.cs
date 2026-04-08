@@ -20,7 +20,7 @@ public sealed record CropDefinition(
             throw new InvalidDataException("Crop id cannot be empty.");
         }
 
-        if (GrowthStageDays.Count == 0 || GrowthStageDays.Any(days => days <= 0) || GrowthStageDays.Sum() != TotalGrowthDays)
+        if (GrowthStageDays is null || GrowthStageDays.Count == 0 || GrowthStageDays.Any(days => days <= 0) || GrowthStageDays.Sum() != TotalGrowthDays)
         {
             throw new InvalidDataException($"Crop '{Id}' has invalid growth stage totals.");
         }

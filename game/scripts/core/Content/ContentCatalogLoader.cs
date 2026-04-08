@@ -11,9 +11,19 @@ public sealed class ContentCatalogLoader
 
     public IReadOnlyList<CropDefinition> LoadCropCatalog(string path)
     {
-        using var stream = File.OpenRead(path);
-        var crops = JsonSerializer.Deserialize<List<CropDefinition>>(stream, JsonOptions)
-            ?? throw new InvalidDataException($"Crop catalog '{path}' was empty.");
+        var json = File.ReadAllText(path);
+        return ParseCropCatalogJson(json, path);
+    }
+
+    public IReadOnlyList<CropDefinition> ParseCropCatalogJson(string json, string sourceName = "inline")
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new InvalidDataException($"Crop catalog '{sourceName}' was empty.");
+        }
+
+        var crops = JsonSerializer.Deserialize<List<CropDefinition>>(json, JsonOptions)
+            ?? throw new InvalidDataException($"Crop catalog '{sourceName}' was empty.");
 
         foreach (var crop in crops)
         {
@@ -25,8 +35,25 @@ public sealed class ContentCatalogLoader
 
     public IReadOnlyList<ItemDefinition> LoadItemCatalog(string path)
     {
-        using var stream = File.OpenRead(path);
-        return JsonSerializer.Deserialize<List<ItemDefinition>>(stream, JsonOptions)
-            ?? throw new InvalidDataException($"Item catalog '{path}' was empty.");
+        var json = File.ReadAllText(path);
+        return ParseItemCatalogJson(json, path);
+    }
+
+    public IReadOnlyList<ItemDefinition> ParseItemCatalogJson(string json, string sourceName = "inline")
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new InvalidDataException($"Item catalog '{sourceName}' was empty.");
+        }
+
+        var items = JsonSerializer.Deserialize<List<ItemDefinition>>(json, JsonOptions)
+            ?? throw new InvalidDataException($"Item catalog '{sourceName}' was empty.");
+
+        foreach (var item in items)
+        {
+            item.Validate();
+        }
+
+        return items;
     }
 }

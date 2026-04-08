@@ -8,17 +8,17 @@ public partial class GameBootstrap : Node2D
     public override void _Ready()
     {
         var (cropCount, itemCount) = LoadCatalogCounts(
-            ProjectSettings.GlobalizePath("res://data/crops/spring.json"),
-            ProjectSettings.GlobalizePath("res://data/items/items.json"));
+            Godot.FileAccess.GetFileAsString("res://data/crops/spring.json"),
+            Godot.FileAccess.GetFileAsString("res://data/items/items.json"));
 
         GD.Print($"Loaded {cropCount} crops and {itemCount} items.");
     }
 
-    internal static (int CropCount, int ItemCount) LoadCatalogCounts(string cropCatalogPath, string itemCatalogPath)
+    internal static (int CropCount, int ItemCount) LoadCatalogCounts(string cropCatalogJson, string itemCatalogJson)
     {
         var loader = new ContentCatalogLoader();
-        var crops = loader.LoadCropCatalog(cropCatalogPath);
-        var items = loader.LoadItemCatalog(itemCatalogPath);
+        var crops = loader.ParseCropCatalogJson(cropCatalogJson, "res://data/crops/spring.json");
+        var items = loader.ParseItemCatalogJson(itemCatalogJson, "res://data/items/items.json");
         return (crops.Count, items.Count);
     }
 }
