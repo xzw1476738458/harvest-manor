@@ -6,6 +6,38 @@ namespace HarvestManor.Game.Tests.Economy;
 public sealed class InventoryStateTests
 {
     [Fact]
+    public void Slots_ExposesReadOnlyView()
+    {
+        var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 99);
+        Assert.True(inventory.TryAdd("parsnip_seed", 1));
+
+        Assert.IsNotType<List<ItemStack>>(inventory.Slots);
+
+        var collection = Assert.IsAssignableFrom<ICollection<ItemStack>>(inventory.Slots);
+        Assert.True(collection.IsReadOnly);
+        Assert.Throws<NotSupportedException>(() => collection.Add(new ItemStack("cheat_seed", 1)));
+
+        Assert.Equal(1, inventory.GetQuantity("parsnip_seed"));
+        Assert.Equal(0, inventory.GetQuantity("cheat_seed"));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void ItemStack_ThrowsWhenItemIdIsBlank(string itemId)
+    {
+        Assert.Throws<ArgumentException>(() => new ItemStack(itemId, 1));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void ItemStack_ThrowsWhenQuantityIsNotPositive(int quantity)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ItemStack("wood", quantity));
+    }
+
+    [Fact]
     public void TryAdd_StacksIntoExistingSlotBeforeUsingNewSlot()
     {
         var inventory = new InventoryState(slotCapacity: 4, maxStackSize: 99);

@@ -65,6 +65,28 @@ public sealed class ShopServiceTests
     }
 
     [Fact]
+    public void TryPurchase_FailedPurchaseRestoresExactStackLayout()
+    {
+        var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 10);
+        Assert.True(inventory.TryAdd("parsnip_seed", 15));
+        var before = inventory.Slots.ToArray();
+
+        var wallet = new Wallet(500);
+        var shop = new ShopService();
+
+        var success = shop.TryPurchase(
+            inventory,
+            wallet,
+            new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10),
+            10
+        );
+
+        Assert.False(success);
+        Assert.Equal(500, wallet.Gold);
+        Assert.Equal(before, inventory.Slots.ToArray());
+    }
+
+    [Fact]
     public void TrySell_RemovesItemsAndAddsGold()
     {
         var inventory = new InventoryState(slotCapacity: 10, maxStackSize: 99);

@@ -11,24 +11,19 @@ public sealed class ShopService
             return false;
         }
 
+        var snapshot = inventory.CreateSnapshot();
         var totalCost = offer.BuyPrice * quantity;
         if (!wallet.TrySpend(totalCost))
         {
             return false;
         }
 
-        var beforeQuantity = inventory.GetQuantity(offer.ItemId);
         if (inventory.TryAdd(offer.ItemId, quantity))
         {
             return true;
         }
 
-        var addedQuantity = inventory.GetQuantity(offer.ItemId) - beforeQuantity;
-        if (addedQuantity > 0)
-        {
-            _ = inventory.TryRemove(offer.ItemId, addedQuantity);
-        }
-
+        inventory.RestoreSnapshot(snapshot);
         wallet.Earn(totalCost);
         return false;
     }

@@ -5,6 +5,7 @@ public sealed class InventoryState
     private readonly int _slotCapacity;
     private readonly int _maxStackSize;
     private readonly List<ItemStack> _slots = new();
+    private readonly IReadOnlyList<ItemStack> _slotsView;
 
     public InventoryState(int slotCapacity, int maxStackSize)
     {
@@ -20,9 +21,10 @@ public sealed class InventoryState
 
         _slotCapacity = slotCapacity;
         _maxStackSize = maxStackSize;
+        _slotsView = _slots.AsReadOnly();
     }
 
-    public IReadOnlyList<ItemStack> Slots => _slots;
+    public IReadOnlyList<ItemStack> Slots => _slotsView;
 
     public bool TryAdd(string itemId, int quantity)
     {
@@ -95,5 +97,30 @@ public sealed class InventoryState
         }
 
         return _slots.Where(slot => slot.ItemId == itemId).Sum(slot => slot.Quantity);
+    }
+
+    internal List<ItemStack> CreateSnapshot()
+    {
+        return CloneStacks(_slots);
+    }
+
+    internal void RestoreSnapshot(IReadOnlyList<ItemStack> snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        _slots.Clear();
+        _slots.AddRange(CloneStacks(snapshot));
+    }
+
+    private static List<ItemStack> CloneStacks(IEnumerable<ItemStack> source)
+    {
+        var clone = new List<ItemStack>();
+        foreach (var stack in source)
+        {
+            ArgumentNullException.ThrowIfNull(stack);
+            clone.Add(stack with { });
+        }
+
+        return clone;
     }
 }
