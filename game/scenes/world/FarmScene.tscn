@@ -47,7 +47,7 @@ position = Vector2(-64, -44)
 text = "Bed (click to end day)"
 
 [node name="Plot00" type="Area2D" parent="."]
-position = Vector2(320, 260)
+position = Vector2(220, 230)
 script = ExtResource("3")
 GridX = 0
 GridY = 0
@@ -58,3 +58,55 @@ shape = SubResource("2")
 [node name="PlotLabel" type="Label" parent="Plot00"]
 position = Vector2(-52, -54)
 text = "Plot (0,0)"
+
+[node name="Plot10" type="Area2D" parent="."]
+position = Vector2(320, 230)
+script = ExtResource("3")
+GridX = 1
+GridY = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Plot10"]
+shape = SubResource("2")
+
+[node name="PlotLabel" type="Label" parent="Plot10"]
+position = Vector2(-52, -54)
+text = "Plot (1,0)"
+
+[node name="Plot20" type="Area2D" parent="."]
+position = Vector2(420, 230)
+script = ExtResource("3")
+GridX = 2
+GridY = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Plot20"]
+shape = SubResource("2")
+
+[node name="PlotLabel" type="Label" parent="Plot20"]
+position = Vector2(-52, -54)
+text = "Plot (2,0)"
+
+[node name="Plot01" type="Area2D" parent="."]
+position = Vector2(220, 310)
+script = ExtResource("3")
+GridX = 0
+GridY = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Plot01"]
+shape = SubResource("2")
+
+[node name="PlotLabel" type="Label" parent="Plot01"]
+position = Vector2(-52, -54)
+text = "Plot (0,1)"
+
+[node name="Plot11" type="Area2D" parent="."]
+position = Vector2(320, 310)
+script = ExtResource("3")
+GridX = 1
+GridY = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Plot11"]
+shape = SubResource("2")
+
+[node name="PlotLabel" type="Label" parent="Plot11"]
+position = Vector2(-52, -54)
+text = "Plot (1,1)"
