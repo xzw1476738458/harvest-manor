@@ -21,7 +21,6 @@ public partial class GameBootstrap : Node2D
     };
 
     private readonly ContentCatalogLoader _loader = new();
-    private readonly ShopService _shopService = new();
     private readonly RequestBoardService _requestBoardService = new();
     private readonly HashSet<string> _completedRequestIds = new();
 
@@ -92,7 +91,10 @@ public partial class GameBootstrap : Node2D
         GD.Print($"Day {_clock.Date.Day} of {_clock.Date.Season}, stamina {_stamina.Current}/{_stamina.Maximum}");
 
         RefreshHud();
-        Autosave();
+        if (ShouldAutosaveAfterBootstrap(loadedExistingSave: false, hasMeaningfulStateChanges: false))
+        {
+            Autosave();
+        }
     }
 
     internal static (int CropCount, int ItemCount) LoadCatalogCounts(string cropCatalogJson, string itemCatalogJson)
@@ -128,6 +130,22 @@ public partial class GameBootstrap : Node2D
 
         stamina.RestoreFull();
         return rolled;
+    }
+
+    public static bool ShouldAutosaveAfterBootstrap(bool loadedExistingSave, bool hasMeaningfulStateChanges)
+    {
+        return loadedExistingSave && hasMeaningfulStateChanges;
+    }
+
+    public static bool TryApplyShopOpenSideEffects(
+        InventoryState inventory,
+        Wallet wallet,
+        IReadOnlyList<ShopOffer> offers)
+    {
+        ArgumentNullException.ThrowIfNull(inventory);
+        ArgumentNullException.ThrowIfNull(wallet);
+        ArgumentNullException.ThrowIfNull(offers);
+        return false;
     }
 
     private static IReadOnlyList<T> DeserializeList<T>(string json, string sourceName)
@@ -204,16 +222,9 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
-        var defaultOffer = _shopOffers.FirstOrDefault(offer => offer.BuyPrice > 0);
-        if (defaultOffer is not null)
-        {
-            _shopService.TryPurchase(_inventory, _wallet, defaultOffer, 1);
-        }
-
+        _ = TryApplyShopOpenSideEffects(_inventory, _wallet, _shopOffers);
         RenderPanels();
         TogglePanel(_shopPanel);
-        RefreshHud();
-        Autosave();
     }
 
     private void OnStorageRequested()
