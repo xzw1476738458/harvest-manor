@@ -20,6 +20,8 @@ public partial class GameBootstrap : Node2D
     private const int DefaultMaxStackSize = 99;
     private const int DefaultFarmWidth = 6;
     private const int DefaultFarmHeight = 6;
+    private const string DemoExpansionPlotKey = "2,0";
+    private const int DemoExpansionCost = 120;
 
     private static readonly string[] DefaultUnlockedPlotKeys = { "0,0", "1,0", "0,1", "1,1" };
 
@@ -188,6 +190,45 @@ public partial class GameBootstrap : Node2D
         ArgumentNullException.ThrowIfNull(inventory);
         ArgumentNullException.ThrowIfNull(wallet);
         ArgumentNullException.ThrowIfNull(offers);
+        return false;
+    }
+
+    public static string GetLockedPlotHint(int x, int y)
+    {
+        return BuildPlotKey(x, y) == DemoExpansionPlotKey
+            ? $"Click: unlock ({DemoExpansionCost}g)"
+            : "Locked";
+    }
+
+    public static bool TryHandleLockedPlotInteraction(
+        FarmExpansionService expansionService,
+        UnlockState unlockState,
+        int currentGold,
+        int x,
+        int y,
+        out int updatedGold,
+        out string message)
+    {
+        ArgumentNullException.ThrowIfNull(expansionService);
+        ArgumentNullException.ThrowIfNull(unlockState);
+
+        var plotKey = BuildPlotKey(x, y);
+        if (plotKey != DemoExpansionPlotKey)
+        {
+            updatedGold = currentGold;
+            message = "Plot is locked.";
+            return false;
+        }
+
+        if (expansionService.TryUnlockPlot(unlockState, plotKey, DemoExpansionCost, currentGold, out updatedGold))
+        {
+            message = $"Unlocked plot ({x},{y}) for {DemoExpansionCost}g.";
+            return true;
+        }
+
+        message = currentGold < DemoExpansionCost
+            ? $"Need {DemoExpansionCost}g to unlock plot ({x},{y})."
+            : "Plot is locked.";
         return false;
     }
 
@@ -607,18 +648,38 @@ public partial class GameBootstrap : Node2D
     {
         if (@event is InputEventKey { Pressed: true, Echo: false, Keycode: Key.F7 })
         {
-            _ = TryPurchaseExpansion("2,0", requiredGold: 120);
+            _ = TryPurchaseExpansion(DemoExpansionPlotKey, requiredGold: DemoExpansionCost);
         }
     }
 
     private void OnFarmPlotInteracted(int gridX, int gridY)
     {
-        if (_farmGrid is null || _inventory is null || _cropCatalog.Count == 0)
+        if (_farmGrid is null || _inventory is null || _wallet is null || _cropCatalog.Count == 0)
         {
             return;
         }
 
-        var changed = TryHandleFarmPlotInteraction(_farmGrid, _inventory, _cropCatalog, gridX, gridY, out var message);
+        var plot = _farmGrid.GetPlot(gridX, gridY);
+        var updatedGold = _wallet.Gold;
+        string message;
+        bool changed;
+
+        if (plot.IsLocked)
+        {
+            changed = TryHandleLockedPlotInteraction(_expansionService, _unlockState, _wallet.Gold, gridX, gridY, out updatedGold, out message);
+        }
+        else
+        {
+            changed = TryHandleFarmPlotInteraction(_farmGrid, _inventory, _cropCatalog, gridX, gridY, out message);
+        }
+
+        if (plot.IsLocked && changed)
+        {
+            _wallet = new Wallet(updatedGold);
+            SyncFarmGridLocksFromUnlockState(_farmGrid, _unlockState);
+            RefreshHud();
+        }
+
         SetFarmStatus(message);
         RenderFarmPlots();
         RenderPanels();
@@ -858,7 +919,7 @@ public partial class GameBootstrap : Node2D
         foreach (var plotNode in _farmPlotNodes)
         {
             var plot = _farmGrid.GetPlot(plotNode.GridX, plotNode.GridY);
-            plotNode.Render(plot, ResolveCropDisplayName(plot));
+            plotNode.Render(plot, ResolveCropDisplayName(plot), GetLockedPlotHint(plot.X, plot.Y));
         }
     }
 

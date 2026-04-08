@@ -29,7 +29,7 @@ public partial class FarmPlotNode : Area2D
         }
     }
 
-    public void Render(HarvestManor.Core.Farming.PlotState plot, string? cropDisplayName)
+    public void Render(HarvestManor.Core.Farming.PlotState plot, string? cropDisplayName, string? lockedHint = null)
     {
         ArgumentNullException.ThrowIfNull(plot);
 
@@ -39,7 +39,7 @@ public partial class FarmPlotNode : Area2D
         }
 
         var text = plot.IsLocked
-            ? $"Plot ({GridX},{GridY})\nLocked"
+            ? $"Plot ({GridX},{GridY})\n{lockedHint ?? "Locked"}"
             : !plot.IsTilled
                 ? $"Plot ({GridX},{GridY})\nClick: till"
                 : plot.Crop is null

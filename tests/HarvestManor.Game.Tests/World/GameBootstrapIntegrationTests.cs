@@ -187,6 +187,55 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Equal(storageVisible, visibility.StorageVisible);
     }
 
+    [Fact]
+    public void GetLockedPlotHint_ReturnsUnlockPromptForDemoExpansionPlot()
+    {
+        Assert.Equal("Click: unlock (120g)", GameBootstrap.GetLockedPlotHint(2, 0));
+        Assert.Equal("Locked", GameBootstrap.GetLockedPlotHint(4, 4));
+    }
+
+    [Fact]
+    public void TryHandleLockedPlotInteraction_UnlocksDemoPlotAndSpendsGold()
+    {
+        var expansion = new FarmExpansionService();
+        var unlockState = new UnlockState(new HashSet<string> { "0,0", "1,0", "0,1", "1,1" });
+
+        var changed = GameBootstrap.TryHandleLockedPlotInteraction(
+            expansion,
+            unlockState,
+            currentGold: 200,
+            x: 2,
+            y: 0,
+            out var updatedGold,
+            out var message);
+
+        Assert.True(changed);
+        Assert.Equal(80, updatedGold);
+        Assert.Equal("Unlocked plot (2,0) for 120g.", message);
+        Assert.Contains("2,0", unlockState.UnlockedPlotKeys);
+    }
+
+    [Fact]
+    public void TryHandleLockedPlotInteraction_ReturnsCostMessageWhenGoldIsInsufficient()
+    {
+        var expansion = new FarmExpansionService();
+        var unlockState = new UnlockState(new HashSet<string> { "0,0", "1,0", "0,1", "1,1" });
+
+        var changed = GameBootstrap.TryHandleLockedPlotInteraction(
+            expansion,
+            unlockState,
+            currentGold: 100,
+            x: 2,
+            y: 0,
+            out var updatedGold,
+            out var message);
+
+        Assert.False(changed);
+        Assert.Equal(100, updatedGold);
+        Assert.Equal("Need 120g to unlock plot (2,0).", message);
+        Assert.DoesNotContain("2,0", unlockState.UnlockedPlotKeys);
+    }
+
     private static IReadOnlyDictionary<string, CropDefinition> CreateCropCatalog()
     {
         return new Dictionary<string, CropDefinition>
