@@ -19,6 +19,11 @@ size = Vector2(20, 28)
 position = Vector2(16, 12)
 text = "Farm Vertical Slice"
 
+[node name="FarmStatusLabel" type="Label" parent="."]
+position = Vector2(16, 40)
+size = Vector2(420, 48)
+text = "Click a plot to till, plant, water, or harvest."
+
 [node name="Player" type="CharacterBody2D" parent="."]
 position = Vector2(220, 180)
 script = ExtResource("1")
@@ -51,5 +56,5 @@ GridY = 0
 shape = SubResource("2")
 
 [node name="PlotLabel" type="Label" parent="Plot00"]
-position = Vector2(-40, -52)
+position = Vector2(-52, -54)
 text = "Plot (0,0)"
