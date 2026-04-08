@@ -1,6 +1,4 @@
 using HarvestManor.Core.Content;
-
-#if GODOT
 using Godot;
 
 namespace HarvestManor.World;
@@ -24,17 +22,3 @@ public partial class GameBootstrap : Node2D
         return (crops.Count, items.Count);
     }
 }
-#else
-namespace HarvestManor.World;
-
-public partial class GameBootstrap
-{
-    internal static (int CropCount, int ItemCount) LoadCatalogCounts(string cropCatalogPath, string itemCatalogPath)
-    {
-        var loader = new ContentCatalogLoader();
-        var crops = loader.LoadCropCatalog(cropCatalogPath);
-        var items = loader.LoadItemCatalog(itemCatalogPath);
-        return (crops.Count, items.Count);
-    }
-}
-#endif
