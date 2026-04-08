@@ -9,7 +9,7 @@ script = ExtResource("1")
 offset_left = 12.0
 offset_top = 12.0
 offset_right = 260.0
-offset_bottom = 104.0
+offset_bottom = 128.0
 
 [node name="Rows" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
@@ -22,3 +22,6 @@ text = "Gold: 0"
 
 [node name="StaminaLabel" type="Label" parent="Panel/Rows"]
 text = "Stamina: 100/100"
+
+[node name="GrowthLabel" type="Label" parent="Panel/Rows"]
+text = "Unlocked plots: 0"

@@ -13,11 +13,15 @@ public partial class HudController : CanvasLayer
     [Export]
     public Label? StaminaLabel { get; set; }
 
+    [Export]
+    public Label? GrowthLabel { get; set; }
+
     public override void _Ready()
     {
         DayLabel ??= GetNodeOrNull<Label>("Panel/Rows/DayLabel");
         GoldLabel ??= GetNodeOrNull<Label>("Panel/Rows/GoldLabel");
         StaminaLabel ??= GetNodeOrNull<Label>("Panel/Rows/StaminaLabel");
+        GrowthLabel ??= GetNodeOrNull<Label>("Panel/Rows/GrowthLabel");
     }
 
     public void SetDay(string text)
@@ -41,6 +45,14 @@ public partial class HudController : CanvasLayer
         if (StaminaLabel is not null)
         {
             StaminaLabel.Text = $"Stamina: {current}/{maximum}";
+        }
+    }
+
+    public void SetGrowth(string text)
+    {
+        if (GrowthLabel is not null)
+        {
+            GrowthLabel.Text = text;
         }
     }
 }

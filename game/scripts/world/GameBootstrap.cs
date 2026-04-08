@@ -22,7 +22,9 @@ public partial class GameBootstrap : Node2D
 
     private readonly ContentCatalogLoader _loader = new();
     private readonly RequestBoardService _requestBoardService = new();
+    private readonly FarmExpansionService _expansionService = new();
     private readonly HashSet<string> _completedRequestIds = new();
+    private readonly UnlockState _unlockState = new(new HashSet<string> { "0,0", "1,0", "0,1", "1,1" });
 
     private CropGrowthService? _growth;
     private DayClock? _clock;
@@ -257,6 +259,24 @@ public partial class GameBootstrap : Node2D
         RenderPanels();
     }
 
+    private bool TryPurchaseExpansion(string plotKey, int requiredGold)
+    {
+        if (_wallet is null)
+        {
+            return false;
+        }
+
+        if (!_expansionService.TryUnlockPlot(_unlockState, plotKey, requiredGold, _wallet.Gold, out var updatedGold))
+        {
+            return false;
+        }
+
+        _wallet = new Wallet(updatedGold);
+        RefreshHud();
+        Autosave();
+        return true;
+    }
+
     private void EndDay()
     {
         if (_clock is null || _stamina is null || _growth is null || _farmGrid is null)
@@ -320,7 +340,7 @@ public partial class GameBootstrap : Node2D
                 plot.IsHarvestReady,
                 plot.Crop?.CropId,
                 plot.Crop?.DaysGrown ?? 0)).ToList(),
-            new List<string>(),
+            _unlockState.UnlockedPlotKeys.OrderBy(static key => key).ToList(),
             _completedRequestIds.ToList());
 
         var saveDir = ProjectSettings.GlobalizePath("user://saves");
@@ -338,5 +358,6 @@ public partial class GameBootstrap : Node2D
         _hud.SetDay($"Day {_clock.Date.Day} ({_clock.Date.Season})");
         _hud.SetGold(_wallet.Gold);
         _hud.SetStamina(_stamina.Current, _stamina.Maximum);
+        _hud.SetGrowth($"Unlocked plots: {_unlockState.UnlockedPlotKeys.Count}");
     }
 }
