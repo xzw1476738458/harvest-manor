@@ -11,14 +11,33 @@ public sealed class RequestBoardServiceTests
     {
         var inventory = new InventoryState(slotCapacity: 10, maxStackSize: 99);
         inventory.TryAdd("parsnip_crop", 5);
+        var completedRequestIds = new HashSet<string>();
 
         var service = new RequestBoardService();
         var request = new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120);
 
-        var completed = service.TryComplete(request, inventory, out var reward);
+        var completed = service.TryComplete(request, inventory, completedRequestIds, out var reward);
 
         Assert.True(completed);
         Assert.Equal(120, reward);
         Assert.Equal(0, inventory.GetQuantity("parsnip_crop"));
+        Assert.Contains("ship_5_parsnips", completedRequestIds);
+    }
+
+    [Fact]
+    public void CompleteRequest_ReturnsFalseWhenRequestAlreadyCompleted()
+    {
+        var inventory = new InventoryState(slotCapacity: 10, maxStackSize: 99);
+        inventory.TryAdd("parsnip_crop", 5);
+        var completedRequestIds = new HashSet<string> { "ship_5_parsnips" };
+
+        var service = new RequestBoardService();
+        var request = new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120);
+
+        var completed = service.TryComplete(request, inventory, completedRequestIds, out var reward);
+
+        Assert.False(completed);
+        Assert.Equal(0, reward);
+        Assert.Equal(5, inventory.GetQuantity("parsnip_crop"));
     }
 }
