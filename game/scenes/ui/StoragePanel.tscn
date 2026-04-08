@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/StoragePanelController.cs" id="1"]
+
+[node name="StoragePanel" type="Control"]
+visible = false
+script = ExtResource("1")
+
+[node name="Panel" type="PanelContainer" parent="."]
+offset_left = 684.0
+offset_top = 116.0
+offset_right = 1004.0
+offset_bottom = 356.0
+
+[node name="BodyLabel" type="RichTextLabel" parent="Panel"]
+layout_mode = 2
+bbcode_enabled = false
+text = "Storage"
+
