@@ -69,6 +69,8 @@ public partial class GameBootstrap : Node2D
             _farmGrid.SetPlot(PlotState.Tilled(0, 0).Plant(starterCrop.Id).Water());
         }
 
+        SyncFarmGridLocksFromUnlockState(_farmGrid, _unlockState);
+
         var farmScene = GD.Load<PackedScene>("res://scenes/world/FarmScene.tscn").Instantiate<Node2D>();
         AddChild(farmScene);
         WireFarmScene(farmScene);
@@ -150,6 +152,45 @@ public partial class GameBootstrap : Node2D
         return false;
     }
 
+    public static string BuildPlotKey(int x, int y)
+    {
+        return $"{x},{y}";
+    }
+
+    public static bool IsPlotUnlocked(UnlockState unlockState, int x, int y)
+    {
+        ArgumentNullException.ThrowIfNull(unlockState);
+        return unlockState.UnlockedPlotKeys.Contains(BuildPlotKey(x, y));
+    }
+
+    public static void SyncFarmGridLocksFromUnlockState(FarmGrid farmGrid, UnlockState unlockState)
+    {
+        ArgumentNullException.ThrowIfNull(farmGrid);
+        ArgumentNullException.ThrowIfNull(unlockState);
+
+        foreach (var plot in farmGrid.AllPlots.ToList())
+        {
+            var isUnlocked = IsPlotUnlocked(unlockState, plot.X, plot.Y);
+            farmGrid.SetPlot(plot with { IsLocked = !isUnlocked });
+        }
+    }
+
+    public static List<PlotSnapshot> CreatePlotSnapshots(FarmGrid farmGrid, UnlockState unlockState)
+    {
+        ArgumentNullException.ThrowIfNull(farmGrid);
+        ArgumentNullException.ThrowIfNull(unlockState);
+
+        return farmGrid.AllPlots.Select(plot => new PlotSnapshot(
+            plot.X,
+            plot.Y,
+            plot.IsTilled,
+            !IsPlotUnlocked(unlockState, plot.X, plot.Y),
+            plot.IsWateredToday,
+            plot.IsHarvestReady,
+            plot.Crop?.CropId,
+            plot.Crop?.DaysGrown ?? 0)).ToList();
+    }
+
     private static IReadOnlyList<T> DeserializeList<T>(string json, string sourceName)
     {
         if (string.IsNullOrWhiteSpace(json))
@@ -217,6 +258,14 @@ public partial class GameBootstrap : Node2D
         EndDay();
     }
 
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        if (@event is InputEventKey { Pressed: true, Echo: false, Keycode: Key.F7 })
+        {
+            _ = TryPurchaseExpansion("2,0", requiredGold: 120);
+        }
+    }
+
     private void OnShopRequested()
     {
         if (_inventory is null || _wallet is null)
@@ -272,6 +321,11 @@ public partial class GameBootstrap : Node2D
         }
 
         _wallet = new Wallet(updatedGold);
+        if (_farmGrid is not null)
+        {
+            SyncFarmGridLocksFromUnlockState(_farmGrid, _unlockState);
+        }
+
         RefreshHud();
         Autosave();
         return true;
@@ -331,15 +385,7 @@ public partial class GameBootstrap : Node2D
             _stamina.Current,
             _inventory.Slots.ToList(),
             _storage.Slots.ToList(),
-            _farmGrid.AllPlots.Select(plot => new PlotSnapshot(
-                plot.X,
-                plot.Y,
-                plot.IsTilled,
-                plot.IsLocked,
-                plot.IsWateredToday,
-                plot.IsHarvestReady,
-                plot.Crop?.CropId,
-                plot.Crop?.DaysGrown ?? 0)).ToList(),
+            CreatePlotSnapshots(_farmGrid, _unlockState),
             _unlockState.UnlockedPlotKeys.OrderBy(static key => key).ToList(),
             _completedRequestIds.ToList());
 
