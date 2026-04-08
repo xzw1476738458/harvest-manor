@@ -6,6 +6,7 @@ using HarvestManor.Core.Progression;
 using HarvestManor.Core.Saves;
 using HarvestManor.Core.Time;
 using HarvestManor.World;
+using Godot;
 using Xunit;
 
 namespace HarvestManor.Game.Tests.World;
@@ -187,6 +188,30 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Equal(storageVisible, visibility.StorageVisible);
     }
 
+    [Theory]
+    [InlineData(GameBootstrap.PanelMode.None, false)]
+    [InlineData(GameBootstrap.PanelMode.Shop, true)]
+    [InlineData(GameBootstrap.PanelMode.Storage, true)]
+    public void BlocksWorldInteractions_ReturnsTrueOnlyWhenAPanelIsOpen(
+        GameBootstrap.PanelMode mode,
+        bool blocksWorldInteraction)
+    {
+        Assert.Equal(blocksWorldInteraction, GameBootstrap.BlocksWorldInteractions(mode));
+    }
+
+    [Theory]
+    [InlineData(GameBootstrap.PanelMode.None, Key.Escape, GameBootstrap.PanelMode.None)]
+    [InlineData(GameBootstrap.PanelMode.Shop, Key.Escape, GameBootstrap.PanelMode.None)]
+    [InlineData(GameBootstrap.PanelMode.Storage, Key.Escape, GameBootstrap.PanelMode.None)]
+    [InlineData(GameBootstrap.PanelMode.Shop, Key.F7, GameBootstrap.PanelMode.Shop)]
+    public void ResolvePanelModeAfterUnhandledKey_ClosesPanelsOnlyOnEscape(
+        GameBootstrap.PanelMode currentMode,
+        Key keycode,
+        GameBootstrap.PanelMode expectedMode)
+    {
+        Assert.Equal(expectedMode, GameBootstrap.ResolvePanelModeAfterUnhandledKey(currentMode, keycode));
+    }
+
     [Fact]
     public void GetLockedPlotHint_ReturnsUnlockPromptForDemoExpansionPlot()
     {
@@ -246,6 +271,22 @@ public sealed class GameBootstrapIntegrationTests
         string expectedMessage)
     {
         Assert.Equal(expectedMessage, GameBootstrap.BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave));
+    }
+
+    [Theory]
+    [InlineData(false, false, false, false)]
+    [InlineData(true, true, false, false)]
+    [InlineData(true, true, true, true)]
+    [InlineData(true, false, false, true)]
+    public void ShouldAutosaveAfterBootstrap_RepairsUnreadableSaveSlotsAndPersistsMeaningfulChanges(
+        bool saveFileExists,
+        bool loadedExistingSave,
+        bool hasMeaningfulStateChanges,
+        bool shouldAutosave)
+    {
+        Assert.Equal(
+            shouldAutosave,
+            GameBootstrap.ShouldAutosaveAfterBootstrap(saveFileExists, loadedExistingSave, hasMeaningfulStateChanges));
     }
 
     private static IReadOnlyDictionary<string, CropDefinition> CreateCropCatalog()

@@ -138,7 +138,7 @@ public partial class GameBootstrap : Node2D
         RefreshRequestBoardStatus();
         SetFarmStatus(BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave));
 
-        if (ShouldAutosaveAfterBootstrap(loadedExistingSave, hasMeaningfulStateChanges: false))
+        if (ShouldAutosaveAfterBootstrap(saveFileExists, loadedExistingSave, hasMeaningfulStateChanges: false))
         {
             Autosave();
         }
@@ -179,9 +179,10 @@ public partial class GameBootstrap : Node2D
         return rolled;
     }
 
-    public static bool ShouldAutosaveAfterBootstrap(bool loadedExistingSave, bool hasMeaningfulStateChanges)
+    public static bool ShouldAutosaveAfterBootstrap(bool saveFileExists, bool loadedExistingSave, bool hasMeaningfulStateChanges)
     {
-        return loadedExistingSave && hasMeaningfulStateChanges;
+        return saveFileExists && !loadedExistingSave
+            || loadedExistingSave && hasMeaningfulStateChanges;
     }
 
     public static string BuildStartupFarmStatusMessage(bool saveFileExists, bool loadedExistingSave)
@@ -254,6 +255,18 @@ public partial class GameBootstrap : Node2D
             PanelMode.Storage => new PanelVisibility(true, false, true),
             _ => new PanelVisibility(false, false, false)
         };
+    }
+
+    public static bool BlocksWorldInteractions(PanelMode mode)
+    {
+        return mode != PanelMode.None;
+    }
+
+    public static PanelMode ResolvePanelModeAfterUnhandledKey(PanelMode currentMode, Key keycode)
+    {
+        return keycode == Key.Escape && currentMode != PanelMode.None
+            ? PanelMode.None
+            : currentMode;
     }
 
     public static string BuildRequestBoardStatusText(
@@ -660,7 +673,20 @@ public partial class GameBootstrap : Node2D
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (@event is InputEventKey { Pressed: true, Echo: false, Keycode: Key.F7 })
+        if (@event is not InputEventKey { Pressed: true, Echo: false } keyEvent)
+        {
+            return;
+        }
+
+        var nextPanelMode = ResolvePanelModeAfterUnhandledKey(_activePanelMode, keyEvent.Keycode);
+        if (nextPanelMode != _activePanelMode)
+        {
+            SetActivePanelMode(nextPanelMode);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (keyEvent.Keycode == Key.F7)
         {
             _ = TryPurchaseExpansion(DemoExpansionPlotKey, requiredGold: DemoExpansionCost);
         }
@@ -668,6 +694,11 @@ public partial class GameBootstrap : Node2D
 
     private void OnFarmPlotInteracted(int gridX, int gridY)
     {
+        if (BlocksWorldInteractions(_activePanelMode))
+        {
+            return;
+        }
+
         if (_farmGrid is null || _inventory is null || _wallet is null || _cropCatalog.Count == 0)
         {
             return;
@@ -707,6 +738,11 @@ public partial class GameBootstrap : Node2D
 
     private void OnShopRequested()
     {
+        if (BlocksWorldInteractions(_activePanelMode))
+        {
+            return;
+        }
+
         if (_inventory is null || _wallet is null)
         {
             return;
@@ -719,12 +755,22 @@ public partial class GameBootstrap : Node2D
 
     private void OnStorageRequested()
     {
+        if (BlocksWorldInteractions(_activePanelMode))
+        {
+            return;
+        }
+
         RenderPanels();
         SetActivePanelMode(_activePanelMode == PanelMode.Storage ? PanelMode.None : PanelMode.Storage);
     }
 
     private void OnRequestBoardRequested()
     {
+        if (BlocksWorldInteractions(_activePanelMode))
+        {
+            return;
+        }
+
         if (_inventory is null || _wallet is null)
         {
             return;
@@ -882,6 +928,11 @@ public partial class GameBootstrap : Node2D
 
     private void EndDay()
     {
+        if (BlocksWorldInteractions(_activePanelMode))
+        {
+            return;
+        }
+
         if (_clock is null || _stamina is null || _growth is null || _farmGrid is null)
         {
             return;

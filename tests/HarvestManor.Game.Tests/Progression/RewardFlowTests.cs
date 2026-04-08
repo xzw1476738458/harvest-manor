@@ -35,6 +35,7 @@ public sealed class RewardFlowTests
     public void ShouldAutosaveAfterBootstrap_IsFalseForFreshSeededState()
     {
         var shouldAutosave = GameBootstrap.ShouldAutosaveAfterBootstrap(
+            saveFileExists: false,
             loadedExistingSave: false,
             hasMeaningfulStateChanges: false);
 
