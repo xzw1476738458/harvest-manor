@@ -143,6 +143,50 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Contains("ship_5_parsnips", completedRequests);
     }
 
+    [Fact]
+    public void BuildRequestBoardStatusText_ReflectsCurrentInventoryAfterTransfers()
+    {
+        var inventory = new InventoryState(12, 99);
+        var storage = new InventoryState(24, 99);
+        var completedRequests = new HashSet<string>();
+        var requests = new[]
+        {
+            new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120)
+        };
+
+        Assert.True(inventory.TryAdd("parsnip_crop", 5));
+        Assert.Equal(
+            "Active request: parsnip_crop 5/5. Click board to turn in.",
+            GameBootstrap.BuildRequestBoardStatusText(requests, completedRequests, inventory));
+
+        Assert.True(GameBootstrap.TryTransferItem(inventory, storage, "parsnip_crop", 2));
+        Assert.Equal(
+            "Active request: parsnip_crop 3/5. Click board to turn in.",
+            GameBootstrap.BuildRequestBoardStatusText(requests, completedRequests, inventory));
+
+        completedRequests.Add("ship_5_parsnips");
+        Assert.Equal(
+            "All requests completed.",
+            GameBootstrap.BuildRequestBoardStatusText(requests, completedRequests, inventory));
+    }
+
+    [Theory]
+    [InlineData(GameBootstrap.PanelMode.None, false, false, false)]
+    [InlineData(GameBootstrap.PanelMode.Shop, false, true, false)]
+    [InlineData(GameBootstrap.PanelMode.Storage, true, false, true)]
+    public void ResolvePanelVisibility_ReturnsExclusivePanelModes(
+        GameBootstrap.PanelMode mode,
+        bool inventoryVisible,
+        bool shopVisible,
+        bool storageVisible)
+    {
+        var visibility = GameBootstrap.ResolvePanelVisibility(mode);
+
+        Assert.Equal(inventoryVisible, visibility.InventoryVisible);
+        Assert.Equal(shopVisible, visibility.ShopVisible);
+        Assert.Equal(storageVisible, visibility.StorageVisible);
+    }
+
     private static IReadOnlyDictionary<string, CropDefinition> CreateCropCatalog()
     {
         return new Dictionary<string, CropDefinition>

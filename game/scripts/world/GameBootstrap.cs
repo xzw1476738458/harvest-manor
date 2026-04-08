@@ -53,6 +53,7 @@ public partial class GameBootstrap : Node2D
     private IReadOnlyList<ShopOffer> _shopOffers = Array.Empty<ShopOffer>();
     private IReadOnlyList<RequestDefinition> _requests = Array.Empty<RequestDefinition>();
     private int _selectedShopOfferIndex;
+    private PanelMode _activePanelMode = PanelMode.None;
 
     public sealed record RuntimeState(
         DayClock Clock,
@@ -61,6 +62,15 @@ public partial class GameBootstrap : Node2D
         InventoryState Inventory,
         InventoryState Storage,
         FarmGrid FarmGrid);
+
+    public enum PanelMode
+    {
+        None,
+        Shop,
+        Storage
+    }
+
+    public readonly record struct PanelVisibility(bool InventoryVisible, bool ShopVisible, bool StorageVisible);
 
     public override void _Ready()
     {
@@ -112,6 +122,7 @@ public partial class GameBootstrap : Node2D
         AddChild(_shopPanel);
         AddChild(_storagePanel);
         WireUiPanels();
+        ApplyPanelVisibility();
 
         RenderFarmPlots();
         RenderPanels();
@@ -178,6 +189,35 @@ public partial class GameBootstrap : Node2D
         ArgumentNullException.ThrowIfNull(wallet);
         ArgumentNullException.ThrowIfNull(offers);
         return false;
+    }
+
+    public static PanelVisibility ResolvePanelVisibility(PanelMode mode)
+    {
+        return mode switch
+        {
+            PanelMode.Shop => new PanelVisibility(false, true, false),
+            PanelMode.Storage => new PanelVisibility(true, false, true),
+            _ => new PanelVisibility(false, false, false)
+        };
+    }
+
+    public static string BuildRequestBoardStatusText(
+        IReadOnlyList<RequestDefinition> requests,
+        ISet<string> completedRequestIds,
+        InventoryState inventory)
+    {
+        ArgumentNullException.ThrowIfNull(requests);
+        ArgumentNullException.ThrowIfNull(completedRequestIds);
+        ArgumentNullException.ThrowIfNull(inventory);
+
+        var nextRequest = requests.FirstOrDefault(request => !completedRequestIds.Contains(request.Id));
+        if (nextRequest is null)
+        {
+            return "All requests completed.";
+        }
+
+        var currentQuantity = inventory.GetQuantity(nextRequest.RequiredItemId);
+        return $"Active request: {nextRequest.RequiredItemId} {currentQuantity}/{nextRequest.RequiredQuantity}. Click board to turn in.";
     }
 
     public static string BuildPlotKey(int x, int y)
@@ -582,6 +622,7 @@ public partial class GameBootstrap : Node2D
         SetFarmStatus(message);
         RenderFarmPlots();
         RenderPanels();
+        RefreshRequestBoardStatus();
 
         if (changed)
         {
@@ -598,14 +639,13 @@ public partial class GameBootstrap : Node2D
 
         _ = TryApplyShopOpenSideEffects(_inventory, _wallet, _shopOffers);
         RenderPanels();
-        TogglePanel(_shopPanel);
+        SetActivePanelMode(_activePanelMode == PanelMode.Shop ? PanelMode.None : PanelMode.Shop);
     }
 
     private void OnStorageRequested()
     {
         RenderPanels();
-        TogglePanel(_inventoryPanel);
-        TogglePanel(_storagePanel);
+        SetActivePanelMode(_activePanelMode == PanelMode.Storage ? PanelMode.None : PanelMode.Storage);
     }
 
     private void OnRequestBoardRequested()
@@ -640,6 +680,7 @@ public partial class GameBootstrap : Node2D
         }
 
         RenderPanels();
+        RefreshRequestBoardStatus();
     }
 
     private void OnShopSellRequested()
@@ -652,11 +693,11 @@ public partial class GameBootstrap : Node2D
         if (_shopService.TrySell(_inventory, _wallet, offer, 1))
         {
             RefreshHud();
-            RefreshRequestBoardStatus();
             Autosave();
         }
 
         RenderPanels();
+        RefreshRequestBoardStatus();
     }
 
     private void OnShopPreviousOfferRequested()
@@ -683,10 +724,7 @@ public partial class GameBootstrap : Node2D
 
     private void OnShopCloseRequested()
     {
-        if (_shopPanel is not null)
-        {
-            _shopPanel.Visible = false;
-        }
+        SetActivePanelMode(PanelMode.None);
     }
 
     private void OnStorageStoreRequested(string itemId)
@@ -702,6 +740,7 @@ public partial class GameBootstrap : Node2D
         }
 
         RenderPanels();
+        RefreshRequestBoardStatus();
     }
 
     private void OnStorageWithdrawRequested(string itemId)
@@ -717,19 +756,12 @@ public partial class GameBootstrap : Node2D
         }
 
         RenderPanels();
+        RefreshRequestBoardStatus();
     }
 
     private void OnStorageCloseRequested()
     {
-        if (_inventoryPanel is not null)
-        {
-            _inventoryPanel.Visible = false;
-        }
-
-        if (_storagePanel is not null)
-        {
-            _storagePanel.Visible = false;
-        }
+        SetActivePanelMode(PanelMode.None);
     }
 
     private bool TryPurchaseExpansion(string plotKey, int requiredGold)
@@ -790,14 +822,30 @@ public partial class GameBootstrap : Node2D
         }
     }
 
-    private void TogglePanel(Control? panel)
+    private void SetActivePanelMode(PanelMode mode)
     {
-        if (panel is null)
+        _activePanelMode = mode;
+        ApplyPanelVisibility();
+    }
+
+    private void ApplyPanelVisibility()
+    {
+        var visibility = ResolvePanelVisibility(_activePanelMode);
+
+        if (_inventoryPanel is not null)
         {
-            return;
+            _inventoryPanel.Visible = visibility.InventoryVisible;
         }
 
-        panel.Visible = !panel.Visible;
+        if (_shopPanel is not null)
+        {
+            _shopPanel.Visible = visibility.ShopVisible;
+        }
+
+        if (_storagePanel is not null)
+        {
+            _storagePanel.Visible = visibility.StorageVisible;
+        }
     }
 
     private void RenderFarmPlots()
@@ -883,15 +931,7 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
-        var nextRequest = _requests.FirstOrDefault(request => !_completedRequestIds.Contains(request.Id));
-        if (nextRequest is null)
-        {
-            _requestStatusLabel.Text = "All requests completed.";
-            return;
-        }
-
-        var currentQuantity = _inventory.GetQuantity(nextRequest.RequiredItemId);
-        _requestStatusLabel.Text = $"Active request: {nextRequest.RequiredItemId} {currentQuantity}/{nextRequest.RequiredQuantity}. Click board to turn in.";
+        _requestStatusLabel.Text = BuildRequestBoardStatusText(_requests, _completedRequestIds, _inventory);
     }
 
     private void SetFarmStatus(string message)
