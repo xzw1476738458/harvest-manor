@@ -269,6 +269,21 @@ public partial class GameBootstrap : Node2D
             : currentMode;
     }
 
+    public static bool CanTriggerDemoExpansionShortcut(PanelMode currentMode, Key keycode)
+    {
+        return keycode == Key.F7 && !BlocksWorldInteractions(currentMode);
+    }
+
+    public static string? BuildBlockedWorldInteractionMessage(PanelMode mode)
+    {
+        return mode switch
+        {
+            PanelMode.Shop => "Close the shop panel before interacting with the world.",
+            PanelMode.Storage => "Close the storage panel before interacting with the world.",
+            _ => null
+        };
+    }
+
     public static string BuildRequestBoardStatusText(
         IReadOnlyList<RequestDefinition> requests,
         ISet<string> completedRequestIds,
@@ -686,9 +701,16 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
-        if (keyEvent.Keycode == Key.F7)
+        if (CanTriggerDemoExpansionShortcut(_activePanelMode, keyEvent.Keycode))
         {
             _ = TryPurchaseExpansion(DemoExpansionPlotKey, requiredGold: DemoExpansionCost);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (keyEvent.Keycode == Key.F7 && TryNotifyBlockedWorldInteraction())
+        {
+            GetViewport().SetInputAsHandled();
         }
     }
 
@@ -696,6 +718,7 @@ public partial class GameBootstrap : Node2D
     {
         if (BlocksWorldInteractions(_activePanelMode))
         {
+            TryNotifyBlockedWorldInteraction();
             return;
         }
 
@@ -740,6 +763,7 @@ public partial class GameBootstrap : Node2D
     {
         if (BlocksWorldInteractions(_activePanelMode))
         {
+            TryNotifyBlockedWorldInteraction();
             return;
         }
 
@@ -757,6 +781,7 @@ public partial class GameBootstrap : Node2D
     {
         if (BlocksWorldInteractions(_activePanelMode))
         {
+            TryNotifyBlockedWorldInteraction();
             return;
         }
 
@@ -768,6 +793,7 @@ public partial class GameBootstrap : Node2D
     {
         if (BlocksWorldInteractions(_activePanelMode))
         {
+            TryNotifyBlockedWorldInteraction();
             return;
         }
 
@@ -930,6 +956,7 @@ public partial class GameBootstrap : Node2D
     {
         if (BlocksWorldInteractions(_activePanelMode))
         {
+            TryNotifyBlockedWorldInteraction();
             return;
         }
 
@@ -1066,6 +1093,18 @@ public partial class GameBootstrap : Node2D
         {
             _farmStatusLabel.Text = message;
         }
+    }
+
+    private bool TryNotifyBlockedWorldInteraction()
+    {
+        var message = BuildBlockedWorldInteractionMessage(_activePanelMode);
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return false;
+        }
+
+        SetFarmStatus(message);
+        return true;
     }
 
     private string? ResolveCropDisplayName(PlotState plot)

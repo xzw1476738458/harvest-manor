@@ -212,6 +212,30 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Equal(expectedMode, GameBootstrap.ResolvePanelModeAfterUnhandledKey(currentMode, keycode));
     }
 
+    [Theory]
+    [InlineData(GameBootstrap.PanelMode.None, Key.F7, true)]
+    [InlineData(GameBootstrap.PanelMode.Shop, Key.F7, false)]
+    [InlineData(GameBootstrap.PanelMode.Storage, Key.F7, false)]
+    [InlineData(GameBootstrap.PanelMode.Shop, Key.Escape, false)]
+    public void CanTriggerDemoExpansionShortcut_OnlyWorksWithoutAnOpenPanel(
+        GameBootstrap.PanelMode currentMode,
+        Key keycode,
+        bool canTriggerShortcut)
+    {
+        Assert.Equal(canTriggerShortcut, GameBootstrap.CanTriggerDemoExpansionShortcut(currentMode, keycode));
+    }
+
+    [Theory]
+    [InlineData(GameBootstrap.PanelMode.None, null)]
+    [InlineData(GameBootstrap.PanelMode.Shop, "Close the shop panel before interacting with the world.")]
+    [InlineData(GameBootstrap.PanelMode.Storage, "Close the storage panel before interacting with the world.")]
+    public void BuildBlockedWorldInteractionMessage_ProvidesActionablePanelFeedback(
+        GameBootstrap.PanelMode mode,
+        string? expectedMessage)
+    {
+        Assert.Equal(expectedMessage, GameBootstrap.BuildBlockedWorldInteractionMessage(mode));
+    }
+
     [Fact]
     public void GetLockedPlotHint_ReturnsUnlockPromptForDemoExpansionPlot()
     {
