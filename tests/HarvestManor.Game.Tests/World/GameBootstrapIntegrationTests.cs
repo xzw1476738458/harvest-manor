@@ -236,6 +236,18 @@ public sealed class GameBootstrapIntegrationTests
         Assert.DoesNotContain("2,0", unlockState.UnlockedPlotKeys);
     }
 
+    [Theory]
+    [InlineData(false, false, "Fresh start. Click a plot to till, plant, water, or harvest.")]
+    [InlineData(true, true, "Loaded slot-1.json. Click a plot to till, plant, water, or harvest.")]
+    [InlineData(true, false, "Save file was unreadable. Started a fresh day instead.")]
+    public void BuildStartupFarmStatusMessage_ExplainsHowBootstrapHandledTheSave(
+        bool saveFileExists,
+        bool loadedExistingSave,
+        string expectedMessage)
+    {
+        Assert.Equal(expectedMessage, GameBootstrap.BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave));
+    }
+
     private static IReadOnlyDictionary<string, CropDefinition> CreateCropCatalog()
     {
         return new Dictionary<string, CropDefinition>

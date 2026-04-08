@@ -76,6 +76,8 @@ public partial class GameBootstrap : Node2D
 
     public override void _Ready()
     {
+        var savePath = GetSaveSlotPath();
+        var saveFileExists = File.Exists(savePath);
         var cropCatalogJson = Godot.FileAccess.GetFileAsString("res://data/crops/spring.json");
         var itemCatalogJson = Godot.FileAccess.GetFileAsString("res://data/items/items.json");
         var shopCatalogJson = Godot.FileAccess.GetFileAsString("res://data/shops/general-store.json");
@@ -94,7 +96,7 @@ public partial class GameBootstrap : Node2D
 
         _growth = new CropGrowthService(_cropCatalog);
 
-        var loadedExistingSave = TryLoadSnapshotFromPath(GetSaveSlotPath(), out var snapshot);
+        var loadedExistingSave = TryLoadSnapshotFromPath(savePath, out var snapshot);
         var state = loadedExistingSave && snapshot is not null
             ? CreateRuntimeStateFromSnapshot(snapshot, _unlockState, _completedRequestIds)
             : CreateDefaultRuntimeState();
@@ -134,7 +136,7 @@ public partial class GameBootstrap : Node2D
 
         RefreshHud();
         RefreshRequestBoardStatus();
-        SetFarmStatus(loadedExistingSave ? "Loaded slot-1.json. Click a plot to till, plant, water, or harvest." : "Fresh start. Click a plot to till, plant, water, or harvest.");
+        SetFarmStatus(BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave));
 
         if (ShouldAutosaveAfterBootstrap(loadedExistingSave, hasMeaningfulStateChanges: false))
         {
@@ -180,6 +182,18 @@ public partial class GameBootstrap : Node2D
     public static bool ShouldAutosaveAfterBootstrap(bool loadedExistingSave, bool hasMeaningfulStateChanges)
     {
         return loadedExistingSave && hasMeaningfulStateChanges;
+    }
+
+    public static string BuildStartupFarmStatusMessage(bool saveFileExists, bool loadedExistingSave)
+    {
+        if (loadedExistingSave)
+        {
+            return "Loaded slot-1.json. Click a plot to till, plant, water, or harvest.";
+        }
+
+        return saveFileExists
+            ? "Save file was unreadable. Started a fresh day instead."
+            : "Fresh start. Click a plot to till, plant, water, or harvest.";
     }
 
     public static bool TryApplyShopOpenSideEffects(
