@@ -98,6 +98,31 @@ public sealed class ContentCatalogLoaderTests
     }
 
     [Fact]
+    public void LoadCropCatalog_ThrowsWhenDisplayNameIsMissing()
+    {
+        var loader = new ContentCatalogLoader();
+        var invalidPath = WriteTempJson(
+            """
+            [
+              {
+                "id": "missing_name",
+                "season": "Spring",
+                "seedItemId": "missing_name_seed",
+                "harvestItemId": "missing_name_crop",
+                "purchasePrice": 10,
+                "sellPrice": 18,
+                "totalGrowthDays": 3,
+                "growthStageDays": [1, 1, 1]
+              }
+            ]
+            """
+        );
+
+        var exception = Assert.Throws<InvalidDataException>(() => loader.LoadCropCatalog(invalidPath));
+        Assert.Contains("missing_name", exception.Message);
+    }
+
+    [Fact]
     public void LoadItemCatalog_ThrowsWhenItemDefinitionIsInvalid()
     {
         var loader = new ContentCatalogLoader();
