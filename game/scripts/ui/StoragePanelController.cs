@@ -118,13 +118,37 @@ public partial class StoragePanelController : Control
         ArgumentNullException.ThrowIfNull(inventory);
         ArgumentNullException.ThrowIfNull(storage);
 
-        var storeCandidateItemId = inventory.Slots.FirstOrDefault()?.ItemId;
-        var withdrawCandidateItemId = storage.Slots.FirstOrDefault()?.ItemId;
+        var storeCandidateItemId = inventory.Slots
+            .Select(static slot => slot.ItemId)
+            .FirstOrDefault(itemId => storage.CanAdd(itemId, 1))
+            ?? inventory.Slots.FirstOrDefault()?.ItemId;
+
+        var withdrawCandidateItemId = storage.Slots
+            .Select(static slot => slot.ItemId)
+            .FirstOrDefault(itemId => inventory.CanAdd(itemId, 1))
+            ?? storage.Slots.FirstOrDefault()?.ItemId;
+
         var canStore = storeCandidateItemId is not null && storage.CanAdd(storeCandidateItemId, 1);
         var canWithdraw = withdrawCandidateItemId is not null && inventory.CanAdd(withdrawCandidateItemId, 1);
 
         string statusText;
-        if (storeCandidateItemId is not null && !canStore)
+        if (canStore && canWithdraw)
+        {
+            statusText = "Use Store or Take to move 1 item.";
+        }
+        else if (canStore)
+        {
+            statusText = withdrawCandidateItemId is not null
+                ? "Can store 1. Inventory is full for the selected item."
+                : "Ready to store 1.";
+        }
+        else if (canWithdraw)
+        {
+            statusText = storeCandidateItemId is not null
+                ? "Can take 1. Storage is full for the selected item."
+                : "Ready to take 1.";
+        }
+        else if (storeCandidateItemId is not null && !canStore)
         {
             statusText = "Storage is full for the selected item.";
         }
@@ -132,13 +156,9 @@ public partial class StoragePanelController : Control
         {
             statusText = "Inventory is full for the selected item.";
         }
-        else if (storeCandidateItemId is null && withdrawCandidateItemId is null)
-        {
-            statusText = "Nothing to move.";
-        }
         else
         {
-            statusText = "Use Store or Take to move 1 item.";
+            statusText = "Nothing to move.";
         }
 
         return new TransferUiState(storeCandidateItemId, withdrawCandidateItemId, canStore, canWithdraw, statusText);

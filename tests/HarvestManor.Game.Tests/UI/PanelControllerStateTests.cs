@@ -50,6 +50,42 @@ public sealed class PanelControllerStateTests
         var state = StoragePanelController.EvaluateTransferState(inventory, storage);
 
         Assert.False(state.CanWithdraw);
-        Assert.Equal("Inventory is full for the selected item.", state.StatusText);
+        Assert.Equal("Can store 1. Inventory is full for the selected item.", state.StatusText);
+    }
+
+    [Fact]
+    public void EvaluateTransferState_PicksFirstStoreCandidateThatActuallyFits()
+    {
+        var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 2);
+        Assert.True(inventory.TryAdd("wood", 1));
+        Assert.True(inventory.TryAdd("parsnip_seed", 1));
+
+        var storage = new InventoryState(slotCapacity: 2, maxStackSize: 2);
+        Assert.True(storage.TryAdd("wood", 2));
+        Assert.True(storage.TryAdd("parsnip_seed", 1));
+
+        var state = StoragePanelController.EvaluateTransferState(inventory, storage);
+
+        Assert.True(state.CanStore);
+        Assert.Equal("parsnip_seed", state.StoreCandidateItemId);
+        Assert.Equal("Use Store or Take to move 1 item.", state.StatusText);
+    }
+
+    [Fact]
+    public void EvaluateTransferState_PicksFirstWithdrawCandidateThatActuallyFits()
+    {
+        var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 2);
+        Assert.True(inventory.TryAdd("wood", 2));
+        Assert.True(inventory.TryAdd("parsnip_seed", 1));
+
+        var storage = new InventoryState(slotCapacity: 2, maxStackSize: 2);
+        Assert.True(storage.TryAdd("wood", 1));
+        Assert.True(storage.TryAdd("parsnip_seed", 1));
+
+        var state = StoragePanelController.EvaluateTransferState(inventory, storage);
+
+        Assert.True(state.CanWithdraw);
+        Assert.Equal("parsnip_seed", state.WithdrawCandidateItemId);
+        Assert.Equal("Use Store or Take to move 1 item.", state.StatusText);
     }
 }
