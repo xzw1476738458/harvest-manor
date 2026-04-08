@@ -23,11 +23,11 @@ public partial class GameBootstrap : Node2D
 
     public override void _Ready()
     {
-        var cropPath = ProjectSettings.GlobalizePath("res://data/crops/spring.json");
-        var itemPath = ProjectSettings.GlobalizePath("res://data/items/items.json");
+        var cropCatalogJson = Godot.FileAccess.GetFileAsString("res://data/crops/spring.json");
+        var itemCatalogJson = Godot.FileAccess.GetFileAsString("res://data/items/items.json");
 
-        var crops = _loader.LoadCropCatalog(cropPath);
-        var items = _loader.LoadItemCatalog(itemPath);
+        var crops = _loader.ParseCropCatalogJson(cropCatalogJson, "res://data/crops/spring.json");
+        var items = _loader.ParseItemCatalogJson(itemCatalogJson, "res://data/items/items.json");
         var cropCatalog = crops.ToDictionary(crop => crop.Id);
 
         _growth = new CropGrowthService(cropCatalog);
@@ -77,6 +77,10 @@ public partial class GameBootstrap : Node2D
         ArgumentNullException.ThrowIfNull(farmGrid);
 
         var rolled = clock.AdvanceMinutes(minutesToAdvance);
+        if (!rolled)
+        {
+            return false;
+        }
 
         foreach (var plot in farmGrid.AllPlots.ToList())
         {
@@ -111,8 +115,11 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
-        _ = ProcessDayEnd(_clock, _stamina, _growth, _farmGrid);
-        RefreshHud();
+        var rolled = ProcessDayEnd(_clock, _stamina, _growth, _farmGrid);
+        if (rolled)
+        {
+            RefreshHud();
+        }
     }
 
     private void RefreshHud()

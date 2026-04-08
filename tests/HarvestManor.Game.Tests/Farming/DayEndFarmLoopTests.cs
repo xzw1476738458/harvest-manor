@@ -40,4 +40,37 @@ public sealed class DayEndFarmLoopTests
         Assert.False(nextPlot.IsWateredToday);
         Assert.Equal(stamina.Maximum, stamina.Current);
     }
+
+    [Fact]
+    public void ProcessDayEnd_DoesNotAdvanceFarmStateWhenDayDoesNotRoll()
+    {
+        var crop = new CropDefinition(
+            "parsnip",
+            "Parsnip",
+            "Spring",
+            "parsnip_seed",
+            "parsnip_crop",
+            20,
+            35,
+            4,
+            new[] { 1, 1, 2 });
+
+        var growth = new CropGrowthService(new Dictionary<string, CropDefinition> { [crop.Id] = crop });
+        var clock = new DayClock(new GameDate(Season.Spring, 1), 6 * 60, 26 * 60);
+        var stamina = new StaminaState(maximum: 100, current: 100);
+        var farmGrid = new FarmGrid(2, 2);
+
+        Assert.True(stamina.TrySpend(40));
+        farmGrid.SetPlot(PlotState.Tilled(0, 0).Plant(crop.Id).Water());
+
+        var rolled = GameBootstrap.ProcessDayEnd(clock, stamina, growth, farmGrid, minutesToAdvance: 10);
+        var sameDayPlot = farmGrid.GetPlot(0, 0);
+
+        Assert.False(rolled);
+        Assert.Equal(new GameDate(Season.Spring, 1), clock.Date);
+        Assert.Equal((6 * 60) + 10, clock.CurrentMinuteOfDay);
+        Assert.Equal(0, sameDayPlot.Crop!.DaysGrown);
+        Assert.True(sameDayPlot.IsWateredToday);
+        Assert.Equal(60, stamina.Current);
+    }
 }
