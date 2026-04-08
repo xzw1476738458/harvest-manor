@@ -8,7 +8,7 @@ public sealed class CropGrowthService
 
     public CropGrowthService(IReadOnlyDictionary<string, CropDefinition> crops)
     {
-        _crops = crops;
+        _crops = crops ?? throw new ArgumentNullException(nameof(crops));
     }
 
     public PlotState AdvanceDay(PlotState plot)
@@ -18,7 +18,11 @@ public sealed class CropGrowthService
             return plot with { IsWateredToday = false };
         }
 
-        var crop = _crops[plot.Crop.CropId];
+        if (!_crops.TryGetValue(plot.Crop.CropId, out var crop))
+        {
+            throw new InvalidOperationException($"Unknown crop id '{plot.Crop.CropId}' in plot state.");
+        }
+
         var nextDays = plot.Crop.DaysGrown + 1;
 
         return plot with
