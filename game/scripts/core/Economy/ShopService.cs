@@ -11,6 +11,11 @@ public sealed class ShopService
             return false;
         }
 
+        if (!inventory.CanAdd(offer.ItemId, quantity))
+        {
+            return false;
+        }
+
         var snapshot = inventory.CreateSnapshot();
         var totalCost = offer.BuyPrice * quantity;
         if (!wallet.TrySpend(totalCost))

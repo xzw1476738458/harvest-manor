@@ -64,6 +64,32 @@ public sealed class InventoryStateTests
     }
 
     [Fact]
+    public void CanAdd_ReturnsFalseWhenNotAllItemsWouldFitWithoutMutatingInventory()
+    {
+        var inventory = new InventoryState(slotCapacity: 1, maxStackSize: 2);
+        Assert.True(inventory.TryAdd("wood", 2));
+        var before = inventory.Slots.ToArray();
+
+        var canAdd = inventory.CanAdd("parsnip_seed", 1);
+
+        Assert.False(canAdd);
+        Assert.Equal(before, inventory.Slots.ToArray());
+        Assert.Equal(0, inventory.GetQuantity("parsnip_seed"));
+    }
+
+    [Fact]
+    public void CanAdd_ReturnsTrueWhenItemsFitAcrossExistingStacks()
+    {
+        var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 10);
+        Assert.True(inventory.TryAdd("parsnip_seed", 9));
+
+        var canAdd = inventory.CanAdd("parsnip_seed", 2);
+
+        Assert.True(canAdd);
+        Assert.Equal(9, inventory.GetQuantity("parsnip_seed"));
+    }
+
+    [Fact]
     public void TryRemove_ReturnsFalseWhenInventoryHasTooFewItems()
     {
         var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 99);

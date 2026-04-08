@@ -6,6 +6,8 @@ namespace HarvestManor.UI;
 
 public partial class ShopPanelController : Control
 {
+    public readonly record struct OfferUiState(int InventoryCount, int Gold, bool CanBuy, bool CanSell, string StatusText);
+
     [Export]
     public RichTextLabel? BodyLabel { get; set; }
 
@@ -92,17 +94,15 @@ public partial class ShopPanelController : Control
 
         var clampedIndex = Math.Clamp(selectedOfferIndex, 0, offers.Count - 1);
         var offer = offers[clampedIndex];
-        var inventoryCount = inventory?.GetQuantity(offer.ItemId) ?? 0;
-        var gold = wallet?.Gold ?? 0;
-        var canBuy = offer.BuyPrice > 0 && wallet is not null && gold >= offer.BuyPrice;
-        var canSell = offer.SellPrice > 0 && inventoryCount > 0;
+        var state = EvaluateOfferState(offer, inventory, wallet);
 
         BodyLabel.Text = $"Offer {clampedIndex + 1}/{offers.Count}\n" +
                          $"Item: {offer.ItemId}\n" +
-                         $"Gold: {gold}\n" +
-                         $"Owned: {inventoryCount}\n" +
+                         $"Gold: {state.Gold}\n" +
+                         $"Owned: {state.InventoryCount}\n" +
                          $"Buy: {offer.BuyPrice}g\n" +
-                         $"Sell: {offer.SellPrice}g";
+                         $"Sell: {offer.SellPrice}g\n" +
+                         $"Status: {state.StatusText}";
 
         if (BuyButton is not null)
         {
@@ -114,7 +114,45 @@ public partial class ShopPanelController : Control
             SellButton.Text = offer.SellPrice > 0 ? $"Sell 1 ({offer.SellPrice}g)" : "Sell unavailable";
         }
 
-        SetButtonState(hasOffer: true, canBuy, canSell);
+        SetButtonState(hasOffer: true, state.CanBuy, state.CanSell);
+    }
+
+    public static OfferUiState EvaluateOfferState(ShopOffer offer, InventoryState? inventory, Wallet? wallet)
+    {
+        var inventoryCount = inventory?.GetQuantity(offer.ItemId) ?? 0;
+        var gold = wallet?.Gold ?? 0;
+        var hasInventorySpace = inventory?.CanAdd(offer.ItemId, 1) ?? false;
+        var canAfford = offer.BuyPrice > 0 && wallet is not null && gold >= offer.BuyPrice;
+        var canBuy = canAfford && hasInventorySpace;
+        var canSell = offer.SellPrice > 0 && inventoryCount > 0;
+
+        string statusText;
+        if (offer.BuyPrice > 0 && inventory is not null && !hasInventorySpace)
+        {
+            statusText = "Inventory full for selected offer.";
+        }
+        else if (offer.BuyPrice > 0 && wallet is not null && !canAfford)
+        {
+            statusText = $"Need {offer.BuyPrice - gold}g more to buy 1.";
+        }
+        else if (canBuy && canSell)
+        {
+            statusText = "Ready to buy or sell 1.";
+        }
+        else if (canBuy)
+        {
+            statusText = "Ready to buy 1.";
+        }
+        else if (canSell)
+        {
+            statusText = "Ready to sell 1.";
+        }
+        else
+        {
+            statusText = "Browse offers with < and >.";
+        }
+
+        return new OfferUiState(inventoryCount, gold, canBuy, canSell, statusText);
     }
 
     private void SetButtonState(bool hasOffer, bool canBuy, bool canSell)

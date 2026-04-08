@@ -26,6 +26,33 @@ public sealed class InventoryState
 
     public IReadOnlyList<ItemStack> Slots => _slotsView;
 
+    public bool CanAdd(string itemId, int quantity)
+    {
+        if (string.IsNullOrWhiteSpace(itemId) || quantity <= 0)
+        {
+            return false;
+        }
+
+        var remaining = quantity;
+
+        foreach (var stack in _slots)
+        {
+            if (stack.ItemId != itemId || stack.Quantity >= _maxStackSize)
+            {
+                continue;
+            }
+
+            remaining -= _maxStackSize - stack.Quantity;
+            if (remaining <= 0)
+            {
+                return true;
+            }
+        }
+
+        var freeSlots = _slotCapacity - _slots.Count;
+        return freeSlots > 0 && remaining <= freeSlots * _maxStackSize;
+    }
+
     public bool TryAdd(string itemId, int quantity)
     {
         if (string.IsNullOrWhiteSpace(itemId) || quantity <= 0)

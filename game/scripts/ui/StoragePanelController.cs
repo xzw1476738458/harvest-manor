@@ -6,6 +6,13 @@ namespace HarvestManor.UI;
 
 public partial class StoragePanelController : Control
 {
+    public readonly record struct TransferUiState(
+        string? StoreCandidateItemId,
+        string? WithdrawCandidateItemId,
+        bool CanStore,
+        bool CanWithdraw,
+        string StatusText);
+
     private string? _storeCandidateItemId;
     private string? _withdrawCandidateItemId;
 
@@ -75,8 +82,9 @@ public partial class StoragePanelController : Control
             return;
         }
 
-        _storeCandidateItemId = inventory.Slots.FirstOrDefault()?.ItemId;
-        _withdrawCandidateItemId = storage.Slots.FirstOrDefault()?.ItemId;
+        var state = EvaluateTransferState(inventory, storage);
+        _storeCandidateItemId = state.StoreCandidateItemId;
+        _withdrawCandidateItemId = state.WithdrawCandidateItemId;
 
         var inventoryLines = inventory.Slots
             .Select(slot => $"{slot.ItemId} x{slot.Quantity}")
@@ -89,18 +97,50 @@ public partial class StoragePanelController : Control
         BodyLabel.Text = "Inventory\n" +
                          string.Join("\n", inventoryLines) +
                          "\n\nStorage\n" +
-                         string.Join("\n", storageLines);
+                         string.Join("\n", storageLines) +
+                         $"\n\nStatus\n{state.StatusText}";
 
         if (StoreButton is not null)
         {
             StoreButton.Text = _storeCandidateItemId is null ? "Nothing to store" : $"Store 1 {_storeCandidateItemId}";
-            StoreButton.Disabled = _storeCandidateItemId is null;
+            StoreButton.Disabled = !state.CanStore;
         }
 
         if (WithdrawButton is not null)
         {
             WithdrawButton.Text = _withdrawCandidateItemId is null ? "Nothing to take" : $"Take 1 {_withdrawCandidateItemId}";
-            WithdrawButton.Disabled = _withdrawCandidateItemId is null;
+            WithdrawButton.Disabled = !state.CanWithdraw;
         }
+    }
+
+    public static TransferUiState EvaluateTransferState(InventoryState inventory, InventoryState storage)
+    {
+        ArgumentNullException.ThrowIfNull(inventory);
+        ArgumentNullException.ThrowIfNull(storage);
+
+        var storeCandidateItemId = inventory.Slots.FirstOrDefault()?.ItemId;
+        var withdrawCandidateItemId = storage.Slots.FirstOrDefault()?.ItemId;
+        var canStore = storeCandidateItemId is not null && storage.CanAdd(storeCandidateItemId, 1);
+        var canWithdraw = withdrawCandidateItemId is not null && inventory.CanAdd(withdrawCandidateItemId, 1);
+
+        string statusText;
+        if (storeCandidateItemId is not null && !canStore)
+        {
+            statusText = "Storage is full for the selected item.";
+        }
+        else if (withdrawCandidateItemId is not null && !canWithdraw)
+        {
+            statusText = "Inventory is full for the selected item.";
+        }
+        else if (storeCandidateItemId is null && withdrawCandidateItemId is null)
+        {
+            statusText = "Nothing to move.";
+        }
+        else
+        {
+            statusText = "Use Store or Take to move 1 item.";
+        }
+
+        return new TransferUiState(storeCandidateItemId, withdrawCandidateItemId, canStore, canWithdraw, statusText);
     }
 }
