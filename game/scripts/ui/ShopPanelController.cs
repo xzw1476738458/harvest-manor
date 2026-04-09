@@ -106,12 +106,12 @@ public partial class ShopPanelController : Control
 
         if (BuyButton is not null)
         {
-            BuyButton.Text = offer.BuyPrice > 0 ? $"Buy 1 ({offer.BuyPrice}g)" : "Buy unavailable";
+            BuyButton.Text = BuildBuyButtonText(offer, inventory, wallet);
         }
 
         if (SellButton is not null)
         {
-            SellButton.Text = offer.SellPrice > 0 ? $"Sell 1 ({offer.SellPrice}g)" : "Sell unavailable";
+            SellButton.Text = BuildSellButtonText(offer, inventory, wallet);
         }
 
         SetButtonState(hasOffer: true, state.CanBuy, state.CanSell);
@@ -161,6 +161,52 @@ public partial class ShopPanelController : Control
         }
 
         return new OfferUiState(inventoryCount, gold, canBuy, canSell, statusText);
+    }
+
+    public static string BuildBuyButtonText(ShopOffer offer, InventoryState? inventory, Wallet? wallet)
+    {
+        ArgumentNullException.ThrowIfNull(offer);
+
+        if (offer.BuyPrice <= 0)
+        {
+            return "Not sold here";
+        }
+
+        var state = EvaluateOfferState(offer, inventory, wallet);
+        if (state.CanBuy)
+        {
+            return $"Buy 1 ({offer.BuyPrice}g)";
+        }
+
+        if (inventory is not null && !inventory.CanAdd(offer.ItemId, 1))
+        {
+            return "Inventory full";
+        }
+
+        if (wallet is not null && wallet.Gold < offer.BuyPrice)
+        {
+            return $"Need {offer.BuyPrice - wallet.Gold}g more";
+        }
+
+        return "Buy unavailable";
+    }
+
+    public static string BuildSellButtonText(ShopOffer offer, InventoryState? inventory, Wallet? wallet)
+    {
+        ArgumentNullException.ThrowIfNull(offer);
+
+        if (offer.SellPrice <= 0)
+        {
+            return "Cannot sell here";
+        }
+
+        var state = EvaluateOfferState(offer, inventory, wallet);
+        if (state.CanSell)
+        {
+            return $"Sell 1 ({offer.SellPrice}g)";
+        }
+
+        return "Nothing to sell";
     }
 
     private void SetButtonState(bool hasOffer, bool canBuy, bool canSell)

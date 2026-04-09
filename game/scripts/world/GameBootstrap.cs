@@ -57,6 +57,7 @@ public partial class GameBootstrap : Node2D
     private int _selectedShopOfferIndex;
     private PanelMode _activePanelMode = PanelMode.None;
     private string _persistedFarmStatusMessage = string.Empty;
+    private string _latestPanelContextFarmStatusMessage = string.Empty;
 
     public sealed record RuntimeState(
         DayClock Clock,
@@ -296,9 +297,18 @@ public partial class GameBootstrap : Node2D
         {
             PanelMode.Shop => "Shop open. Use Buy/Sell or press Esc to close.",
             PanelMode.Storage => "Storage open. Move items or press Esc to close.",
-            PanelMode.None when previousMode != PanelMode.None => "Panels closed. Interact with the world again.",
             _ => null
         };
+    }
+
+    public static string BuildPanelCloseStatusMessage(PanelMode previousMode, string? latestPanelContextMessage)
+    {
+        if (previousMode != PanelMode.None && !string.IsNullOrWhiteSpace(latestPanelContextMessage))
+        {
+            return latestPanelContextMessage;
+        }
+
+        return "Panels closed. Interact with the world again.";
     }
 
     public static string BuildFarmPlotHoverStatusMessage(
@@ -1117,7 +1127,7 @@ public partial class GameBootstrap : Node2D
         SetActivePanelMode(nextMode);
         if (nextMode == PanelMode.Shop)
         {
-            SetFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
         }
     }
 
@@ -1134,7 +1144,7 @@ public partial class GameBootstrap : Node2D
         SetActivePanelMode(nextMode);
         if (nextMode == PanelMode.Storage && _inventory is not null && _storage is not null)
         {
-            SetFarmStatus(BuildStorageBrowseStatusMessage(_inventory, _storage));
+            SetPanelContextFarmStatus(BuildStorageBrowseStatusMessage(_inventory, _storage));
         }
     }
 
@@ -1178,7 +1188,7 @@ public partial class GameBootstrap : Node2D
         }
 
         var actionMessage = BuildShopPurchaseStatusMessage(offer, _inventory, _wallet, changed);
-        SetFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+        SetPanelContextFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1198,7 +1208,7 @@ public partial class GameBootstrap : Node2D
         }
 
         var actionMessage = BuildShopSellStatusMessage(offer, _inventory, changed);
-        SetFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+        SetPanelContextFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1214,7 +1224,7 @@ public partial class GameBootstrap : Node2D
         RenderPanels();
         if (_inventory is not null && _wallet is not null)
         {
-            SetFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
         }
     }
 
@@ -1229,7 +1239,7 @@ public partial class GameBootstrap : Node2D
         RenderPanels();
         if (_inventory is not null && _wallet is not null)
         {
-            SetFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
         }
     }
 
@@ -1252,7 +1262,7 @@ public partial class GameBootstrap : Node2D
         }
 
         var actionMessage = BuildStorageTransferStatusMessage(itemId, changed, intoStorage: true, _inventory, _storage);
-        SetFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage));
+        SetPanelContextFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1271,7 +1281,7 @@ public partial class GameBootstrap : Node2D
         }
 
         var actionMessage = BuildStorageTransferStatusMessage(itemId, changed, intoStorage: false, _storage, _inventory);
-        SetFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage));
+        SetPanelContextFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1350,6 +1360,18 @@ public partial class GameBootstrap : Node2D
         var previousMode = _activePanelMode;
         _activePanelMode = mode;
         ApplyPanelVisibility();
+
+        if (mode == PanelMode.None && previousMode != PanelMode.None)
+        {
+            SetFarmStatus(BuildPanelCloseStatusMessage(previousMode, _latestPanelContextFarmStatusMessage));
+            _latestPanelContextFarmStatusMessage = string.Empty;
+            return;
+        }
+
+        if (previousMode == PanelMode.None && mode != PanelMode.None)
+        {
+            _latestPanelContextFarmStatusMessage = string.Empty;
+        }
 
         var statusMessage = BuildPanelModeStatusMessage(previousMode, mode);
         if (!string.IsNullOrWhiteSpace(statusMessage))
@@ -1471,6 +1493,12 @@ public partial class GameBootstrap : Node2D
         {
             _farmStatusLabel.Text = message;
         }
+    }
+
+    private void SetPanelContextFarmStatus(string message)
+    {
+        _latestPanelContextFarmStatusMessage = message;
+        SetFarmStatus(message);
     }
 
     private void PreviewFarmStatus(string? message)

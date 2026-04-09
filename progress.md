@@ -118,6 +118,10 @@
   - Added failing tests for shop states where selling is still possible but buying is blocked by inventory space or missing gold
   - Reordered shop offer state messaging so sell-ready states stay visible before the buy-side blocker explanation
   - Re-ran focused shop tests, the full suite, the game build, and the Godot smoke command after the shop single-direction polish batch
+  - Added failing tests for self-explanatory disabled shop button copy and for panel-close status restoring the latest panel context when available
+  - Added shop button-text helpers so disabled Buy/Sell buttons surface their blocker directly while enabled buttons keep price copy
+  - Tracked the latest panel-context farm status separately so closing shop/storage restores the recent browse/action context instead of a generic close line
+  - Re-ran focused panel/button tests, the full suite, the game build, and the Godot smoke command after the button/close-context polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -183,6 +187,10 @@
 | Full tests after shop single-direction batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `130/130` passed | PASS |
 | Full build after shop single-direction batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after shop single-direction batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused panel/button polish tests | `dotnet test ... --filter "FullyQualifiedName~PanelControllerStateTests|FullyQualifiedName~BuildPanelModeStatusMessage|FullyQualifiedName~BuildPanelCloseStatusMessage"` | New tests fail first, then pass after implementation | Passed after adding shop button-text helpers and panel-close context restoration | PASS |
+| Full tests after button/context batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `135/135` passed | PASS |
+| Full build after button/context batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after button/context batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -196,10 +204,10 @@
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next runtime polish candidate after the storage and shop edge-state clarity batches, or close out this slice with a clean summary |
+| Where am I going? | Decide the next runtime polish candidate after the shop button-copy and panel-close context batches, or close out this slice with a clean summary |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
 | What have I learned? | Interaction discoverability needed visible and hover-reactive hotspots, not just valid click wiring; see `findings.md` |
-| What have I done? | Verified and committed runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, and clearer storage/shop edge-state messaging across the current vertical slice |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, and the latest shop-button/context-restoration batch across the current vertical slice |
 
 ---
 Update this log after each additional polish batch or verification pass.

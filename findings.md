@@ -31,6 +31,8 @@
 - Even after adding browse-state panel messages, shop/storage actions could still leave the main status label stuck on a one-off result string with no follow-up context about what the player could do next inside the still-open panel
 - Storage panel still had one last clarity gap in edge cases: when only one transfer direction worked or both directions were blocked, the body/main-status copy fell back to a vague "selected item" phrasing and the disabled buttons still looked like live actions
 - Shop panel had a parallel clarity gap: if the selected offer could still be sold but buying was blocked by money or inventory space, the status copy focused only on the buy-side blocker and hid the still-available sell action
+- Shop panel still had a final button-level clarity gap after the wording passes: the body text explained why Buy or Sell was blocked, but the disabled buttons themselves still only showed generic price labels
+- Panel close flow still had a context gap after the browse-feedback passes: closing shop or storage overwrote the richer recent panel context with a generic "Panels closed" message
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -53,6 +55,8 @@
 | Combine action results with the current panel browse context when the panel stays open | This preserves immediate confirmation while keeping the next likely action visible |
 | Keep storage transfer copy item-specific in blocked states for both the panel body and the main farm status | Players should be able to tell at a glance which concrete item can move and which direction is blocked without mentally decoding generic UI text |
 | Let shop status messaging prioritize a still-available sell action when buy is blocked | The player-facing next step should stay obvious even when the selected offer cannot currently be purchased |
+| Put concise blocker reasons on disabled shop buttons while preserving price copy when the action is available | The button surface itself should explain the immediate blocker without forcing the player to cross-reference the body text |
+| Track the latest panel-context farm status separately from transient blocked/open-close copy | Closing a panel should restore the most relevant recent shop/storage context instead of flattening it into a generic close message |
 
 ## Issues Encountered
 | Issue | Resolution |

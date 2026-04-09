@@ -276,14 +276,26 @@ public sealed class GameBootstrapIntegrationTests
     [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.None, null)]
     [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Shop, "Shop open. Use Buy/Sell or press Esc to close.")]
     [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Storage, "Storage open. Move items or press Esc to close.")]
-    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.None, "Panels closed. Interact with the world again.")]
-    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.None, "Panels closed. Interact with the world again.")]
+    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.None, null)]
+    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.None, null)]
     public void BuildPanelModeStatusMessage_ExplainsPanelOpenAndCloseFlow(
         GameBootstrap.PanelMode previousMode,
         GameBootstrap.PanelMode nextMode,
         string? expectedMessage)
     {
         Assert.Equal(expectedMessage, GameBootstrap.BuildPanelModeStatusMessage(previousMode, nextMode));
+    }
+
+    [Theory]
+    [InlineData(GameBootstrap.PanelMode.Shop, "Shop selection: parsnip_seed. Ready to buy 1.", "Shop selection: parsnip_seed. Ready to buy 1.")]
+    [InlineData(GameBootstrap.PanelMode.Storage, "Stored 1 parsnip_seed. Storage selection: store parsnip_seed or take wood.", "Stored 1 parsnip_seed. Storage selection: store parsnip_seed or take wood.")]
+    [InlineData(GameBootstrap.PanelMode.Shop, null, "Panels closed. Interact with the world again.")]
+    public void BuildPanelCloseStatusMessage_RestoresTheLatestPanelContextWhenAvailable(
+        GameBootstrap.PanelMode previousMode,
+        string? latestPanelContextMessage,
+        string expectedMessage)
+    {
+        Assert.Equal(expectedMessage, GameBootstrap.BuildPanelCloseStatusMessage(previousMode, latestPanelContextMessage));
     }
 
     [Fact]

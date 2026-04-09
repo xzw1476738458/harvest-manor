@@ -73,6 +73,52 @@ public sealed class PanelControllerStateTests
     }
 
     [Fact]
+    public void BuildBuyButtonText_ExplainsWhyBuyingIsDisabled()
+    {
+        var fullInventory = new InventoryState(slotCapacity: 1, maxStackSize: 1);
+        Assert.True(fullInventory.TryAdd("wood", 1));
+        var richWallet = new Wallet(200);
+
+        Assert.Equal(
+            "Inventory full",
+            ShopPanelController.BuildBuyButtonText(
+                new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10),
+                fullInventory,
+                richWallet));
+
+        var roomyInventory = new InventoryState(slotCapacity: 2, maxStackSize: 99);
+        var poorWallet = new Wallet(5);
+
+        Assert.Equal(
+            "Need 15g more",
+            ShopPanelController.BuildBuyButtonText(
+                new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10),
+                roomyInventory,
+                poorWallet));
+    }
+
+    [Fact]
+    public void BuildSellButtonText_ExplainsWhySellingIsDisabled()
+    {
+        var emptyInventory = new InventoryState(slotCapacity: 2, maxStackSize: 99);
+        var wallet = new Wallet(200);
+
+        Assert.Equal(
+            "Nothing to sell",
+            ShopPanelController.BuildSellButtonText(
+                new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10),
+                emptyInventory,
+                wallet));
+
+        Assert.Equal(
+            "Cannot sell here",
+            ShopPanelController.BuildSellButtonText(
+                new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 0),
+                emptyInventory,
+                wallet));
+    }
+
+    [Fact]
     public void EvaluateTransferState_DisablesWithdrawWhenInventoryCannotFitSelectedItem()
     {
         var inventory = new InventoryState(slotCapacity: 1, maxStackSize: 1);
