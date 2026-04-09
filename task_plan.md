@@ -69,6 +69,7 @@ Phase 6
 | Restore the latest shop/storage context after closing a panel instead of overwriting it with a generic close message | The main status label should stay close to the player's immediate intent and recent action flow |
 | Prefer player-facing display names over internal item ids on panel surfaces | Inventory, storage, and shop panels are read-heavy UI, so raw ids break the game's intended readability more than they help development |
 | Thread item catalog display names through the remaining global request/shop/storage status builders with optional catalog inputs | This finishes the player-facing readability pass without forcing every pure helper call site or regression test to load content catalogs |
+| When request completion succeeds and an item catalog is available, report the delivered quantity and item display name instead of the internal request id | The final request-board confirmation should read like player-facing game feedback rather than a debug-facing identifier |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -85,4 +86,5 @@ Phase 6
 - Latest verified batch after that made disabled shop buttons explain blocked buy/sell reasons directly and restored the latest panel-context status when shop or storage closes
 - Latest verified batch after that threaded item display names into inventory, storage, and shop panel rendering so panel surfaces no longer expose internal ids
 - Latest verified batch after that threaded player-facing item display names through request-board, shop, and storage world-status helpers so farm/town feedback no longer leaks internal ids outside the panels
+- Latest verified batch after that also replaced the request-completion success copy so final turn-in feedback names the delivered crop instead of the internal request id
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`

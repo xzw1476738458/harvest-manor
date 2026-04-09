@@ -35,6 +35,7 @@
 - Panel close flow still had a context gap after the browse-feedback passes: closing shop or storage overwrote the richer recent panel context with a generic "Panels closed" message
 - Panel surfaces still leaked internal item ids (`parsnip_seed`, `potato_crop`) even though the item catalog already contained player-facing display names
 - Even after panel surfaces switched to display names, the main farm/request status text still leaked internal item ids during request-board, shop, and storage interactions
+- After the broader status-text pass, request completion success copy still exposed the internal request id even though the rest of the request-board flow had already switched to player-facing item names
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -61,6 +62,7 @@
 | Track the latest panel-context farm status separately from transient blocked/open-close copy | Closing a panel should restore the most relevant recent shop/storage context instead of flattening it into a generic close message |
 | Thread item catalog display names into panel rendering without rewriting all global status builders in the same batch | This fixes the most visible player-facing readability issue first while keeping the current polish batch small and low-risk |
 | Add optional `itemCatalog` inputs to the remaining pure global status builders instead of replacing their existing signatures outright | This preserves old raw-id behavior for baseline tests while letting runtime call sites opt into player-facing names |
+| Keep the legacy request-completion success text only for helper calls with no catalog, but switch runtime/catalog-backed paths to a delivered-quantity display-name message | This preserves older baseline behavior while making actual turn-in confirmation read consistently with the rest of the polished town feedback |
 
 ## Issues Encountered
 | Issue | Resolution |

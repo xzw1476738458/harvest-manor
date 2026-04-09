@@ -683,6 +683,31 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void TryCompleteNextRequest_SuccessMessage_UsesDisplayNamesWhenCatalogIsAvailable()
+    {
+        var requests = new[]
+        {
+            new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120)
+        };
+        var inventory = new InventoryState(12, 99);
+        Assert.True(inventory.TryAdd("parsnip_crop", 5));
+        var completedRequests = new HashSet<string>();
+        var wallet = new Wallet(0);
+
+        var changed = GameBootstrap.TryCompleteNextRequest(
+            requests,
+            new RequestBoardService(),
+            inventory,
+            completedRequests,
+            wallet,
+            CreateItemCatalog(),
+            out var message);
+
+        Assert.True(changed);
+        Assert.Equal("Completed request: delivered 5 Parsnip for 120g.", message);
+    }
+
+    [Fact]
     public void GetLockedPlotHint_ReturnsUnlockPromptForDemoExpansionPlot()
     {
         Assert.Equal("Click: unlock (120g)", GameBootstrap.GetLockedPlotHint(2, 0));

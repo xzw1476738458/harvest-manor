@@ -927,7 +927,9 @@ public partial class GameBootstrap : Node2D
         }
 
         wallet.Earn(rewardGold);
-        message = $"Completed request {nextRequest.Id} for {rewardGold}g.";
+        message = itemCatalog is null
+            ? $"Completed request {nextRequest.Id} for {rewardGold}g."
+            : $"Completed request: delivered {nextRequest.RequiredQuantity} {ItemDisplayNameFormatter.Resolve(nextRequest.RequiredItemId, itemCatalog)} for {rewardGold}g.";
         return true;
     }
 

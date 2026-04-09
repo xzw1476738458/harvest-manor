@@ -130,6 +130,9 @@
   - Added an `itemCatalog`-aware `TryCompleteNextRequest` overload and threaded optional item catalog inputs through the remaining request-board, shop, and storage status builders plus their runtime call sites
   - Corrected one new storage display-name test fixture so it exercised the intended inventory-full withdraw branch instead of an empty-source branch
   - Re-ran focused display-name status tests, the full suite, the game build, and the Godot smoke command after the global status display-name polish batch
+  - Added a failing regression test for request completion success copy when an item catalog is available
+  - Updated `TryCompleteNextRequest` so catalog-backed success messages report the delivered quantity and display name instead of the internal request id
+  - Re-ran the focused request-success regression, the full suite, the game build, and the Godot smoke command after the request completion copy polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -210,6 +213,10 @@
 | Full tests after global status display-name batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `144/144` passed | PASS |
 | Full build after global status display-name batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after global status display-name batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused request completion success-copy test | `dotnet test ... --filter "FullyQualifiedName~TryCompleteNextRequest_SuccessMessage_UsesDisplayNamesWhenCatalogIsAvailable"` | New test fails first, then passes after implementation | Failed first on raw `ship_5_parsnips` output, then passed `1/1` after switching catalog-backed success copy to delivered quantity plus display name | PASS |
+| Full tests after request completion copy batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `145/145` passed | PASS |
+| Full build after request completion copy batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after request completion copy batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -225,10 +232,10 @@
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next small runtime polish candidate now that both panel surfaces and global farm/request status text use player-facing item names consistently |
+| Where am I going? | Decide the next small runtime polish candidate now that panel surfaces, global farm/request status text, and request turn-in confirmation all use player-facing wording consistently |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
 | What have I learned? | Interaction discoverability needed visible and hover-reactive hotspots, not just valid click wiring; see `findings.md` |
-| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, and player-facing item display names across both panel surfaces and global farm/request status text in the current vertical slice |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, and player-facing item display names across panel surfaces, global farm/request status text, and request turn-in confirmation in the current vertical slice |
 
 ---
 Update this log after each additional polish batch or verification pass.
