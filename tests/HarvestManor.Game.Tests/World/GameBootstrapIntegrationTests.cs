@@ -368,13 +368,13 @@ public sealed class GameBootstrapIntegrationTests
         var crops = CreateCropCatalog();
 
         Assert.Equal(
-            "Hover plot (2,0): unlock for 120g.",
+            "Hover plot: unlock for 120g.",
             GameBootstrap.BuildFarmPlotHoverStatusMessage(new PlotState(2, 0, false, true, false, false, null), crops));
         Assert.Equal(
-            "Hover plot (0,0): click to till.",
+            "Hover plot: click to till.",
             GameBootstrap.BuildFarmPlotHoverStatusMessage(PlotState.Wild(0, 0), crops));
         Assert.Equal(
-            "Hover plot (0,0): click to plant.",
+            "Hover plot: click to plant.",
             GameBootstrap.BuildFarmPlotHoverStatusMessage(PlotState.Tilled(0, 0), crops));
         Assert.Equal(
             "Hover Parsnip: click to water.",
@@ -400,7 +400,7 @@ public sealed class GameBootstrapIntegrationTests
 
         var emptyInventory = new InventoryState(12, 99);
         Assert.Equal(
-            "Hover plot (0,0): no seeds available.",
+            "Hover plot: no seeds available.",
             GameBootstrap.BuildFarmPlotHoverStatusMessage(
                 PlotState.Tilled(0, 0),
                 crops,
@@ -418,7 +418,7 @@ public sealed class GameBootstrapIntegrationTests
                 currentGold: 200));
 
         Assert.Equal(
-            "Hover plot (2,0): need 120g to unlock.",
+            "Hover plot: need 120g to unlock.",
             GameBootstrap.BuildFarmPlotHoverStatusMessage(
                 new PlotState(2, 0, false, true, false, false, null),
                 crops,
@@ -774,7 +774,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.True(changed);
         Assert.Equal(80, updatedGold);
-        Assert.Equal("Unlocked plot (2,0) for 120g.", message);
+        Assert.Equal("Unlocked a new plot for 120g.", message);
         Assert.Contains("2,0", unlockState.UnlockedPlotKeys);
     }
 
@@ -795,7 +795,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.False(changed);
         Assert.Equal(100, updatedGold);
-        Assert.Equal("Need 120g to unlock plot (2,0).", message);
+        Assert.Equal("Need 120g to unlock this plot.", message);
         Assert.DoesNotContain("2,0", unlockState.UnlockedPlotKeys);
     }
 

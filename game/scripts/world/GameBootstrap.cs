@@ -294,12 +294,12 @@ public partial class GameBootstrap : Node2D
 
         if (expansionService.TryUnlockPlot(unlockState, plotKey, DemoExpansionCost, currentGold, out updatedGold))
         {
-            message = $"Unlocked plot ({x},{y}) for {DemoExpansionCost}g.";
+            message = $"Unlocked a new plot for {DemoExpansionCost}g.";
             return true;
         }
 
         message = currentGold < DemoExpansionCost
-            ? $"Need {DemoExpansionCost}g to unlock plot ({x},{y})."
+            ? $"Need {DemoExpansionCost}g to unlock this plot."
             : "Plot is locked.";
         return false;
     }
@@ -412,17 +412,17 @@ public partial class GameBootstrap : Node2D
         {
             if (BuildPlotKey(plot.X, plot.Y) == DemoExpansionPlotKey && currentGold is not null && currentGold < DemoExpansionCost)
             {
-                return $"Hover plot ({plot.X},{plot.Y}): need {DemoExpansionCost}g to unlock.";
+                return $"Hover plot: need {DemoExpansionCost}g to unlock.";
             }
 
             return BuildPlotKey(plot.X, plot.Y) == DemoExpansionPlotKey
-                ? $"Hover plot ({plot.X},{plot.Y}): unlock for {DemoExpansionCost}g."
-                : $"Hover plot ({plot.X},{plot.Y}): locked.";
+                ? $"Hover plot: unlock for {DemoExpansionCost}g."
+                : "Hover plot: locked.";
         }
 
         if (!plot.IsTilled)
         {
-            return $"Hover plot ({plot.X},{plot.Y}): click to till.";
+            return "Hover plot: click to till.";
         }
 
         if (plot.Crop is null)
@@ -430,10 +430,10 @@ public partial class GameBootstrap : Node2D
             var hasAnySeed = inventory is null || crops.Values.Any(crop => inventory.GetQuantity(crop.SeedItemId) > 0);
             if (!hasAnySeed)
             {
-                return $"Hover plot ({plot.X},{plot.Y}): no seeds available.";
+                return "Hover plot: no seeds available.";
             }
 
-            return $"Hover plot ({plot.X},{plot.Y}): click to plant.";
+            return "Hover plot: click to plant.";
         }
 
         var cropName = crops.TryGetValue(plot.Crop.CropId, out var crop)

@@ -41,6 +41,7 @@
 - Startup/readable-save feedback still ignored restored farm state because `BuildStartupFarmStatusMessage` only knew whether bootstrap loaded a save, not whether the loaded farm already had harvest-ready or still-unwatered crops
 - Even after startup copy became farm-state-aware, a loaded save with no immediate farm work still dropped back to a generic banner even when the request label already knew a turn-in was ready
 - Even after startup copy reflected farm urgency and request progress, it still leaked the literal filename `slot-1.json`, and fully completed request boards still fell back to the generic load banner
+- Farm plot hover and demo unlock feedback still exposed raw grid coordinates like `(2,0)` in the main status label, which read more like internal state/debug notation than player-facing guidance
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -73,6 +74,7 @@
 | Let startup save-load messaging inspect the restored `FarmGrid` and prioritize immediate farm work | On load, the main status label should feel continuous with the restored world state instead of reading like a generic bootstrap banner |
 | When a loaded save has no urgent farm task, let startup main-status copy reuse request-board progress before falling back to generic guidance | This keeps the first-screen main label aligned with the already-restored request label and gives the player a concrete next step instead of a bland load confirmation |
 | Keep startup save-load copy player-facing by removing literal save-slot filenames and by surfacing completed request-board state too | The main status label should read like game guidance, not a file-system/debug status line, even when the request loop is already fully cleared |
+| Remove grid coordinates from plot hover and demo unlock feedback | These coordinates help debugging, but on the live farm-status label they weaken the intended player-facing tone more than they help orientation |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -99,6 +101,7 @@
 | New startup-status tests initially failed at compile time because `BuildStartupFarmStatusMessage` only exposed the bool-only overload | Added a `FarmGrid`-aware overload, then used it during bootstrap so loaded saves can surface harvest/water priorities immediately |
 | New request-ready startup-status tests initially failed at compile time because the startup helper still had no request/inventory-aware overload | Added a request-aware startup-status overload and routed bootstrap through it so readably restored request progress can surface when farm work is idle |
 | New player-facing startup-copy tests initially failed because startup messaging still hard-coded `slot-1.json`, and a completed request board still got filtered back to the generic load banner | Swapped the startup prefix to player-facing copy and stopped suppressing the `All requests completed.` request-board branch during load-time status selection |
+| New plot-copy tests initially failed because farm hover and unlock messages still embedded raw grid coordinates in the main status label | Removed coordinates from the player-facing hover/unlock strings while keeping the underlying plot-key logic unchanged |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`
