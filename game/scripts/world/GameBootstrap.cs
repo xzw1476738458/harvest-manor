@@ -145,7 +145,7 @@ public partial class GameBootstrap : Node2D
 
         RefreshHud();
         RefreshRequestBoardStatus();
-        SetFarmStatus(BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave));
+        SetFarmStatus(BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave, _farmGrid));
 
         if (ShouldAutosaveAfterBootstrap(saveFileExists, loadedExistingSave, hasMeaningfulStateChanges: false))
         {
@@ -196,8 +196,28 @@ public partial class GameBootstrap : Node2D
 
     public static string BuildStartupFarmStatusMessage(bool saveFileExists, bool loadedExistingSave)
     {
+        return BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave, farmGrid: null);
+    }
+
+    public static string BuildStartupFarmStatusMessage(bool saveFileExists, bool loadedExistingSave, FarmGrid? farmGrid)
+    {
         if (loadedExistingSave)
         {
+            if (farmGrid is not null)
+            {
+                var harvestReadyCount = farmGrid.AllPlots.Count(static plot => plot.IsHarvestReady);
+                if (harvestReadyCount > 0)
+                {
+                    return $"Loaded slot-1.json. {harvestReadyCount} {(harvestReadyCount == 1 ? "crop is" : "crops are")} ready to harvest.";
+                }
+
+                var waterNeededCount = farmGrid.AllPlots.Count(static plot => plot.Crop is not null && !plot.IsHarvestReady && !plot.IsWateredToday);
+                if (waterNeededCount > 0)
+                {
+                    return $"Loaded slot-1.json. {waterNeededCount} planted {(waterNeededCount == 1 ? "crop still needs" : "crops still need")} water.";
+                }
+            }
+
             return "Loaded slot-1.json. Click a plot to till, plant, water, or harvest.";
         }
 

@@ -38,6 +38,7 @@
 - After the broader status-text pass, request completion success copy still exposed the internal request id even though the rest of the request-board flow had already switched to player-facing item names
 - Shop and storage hotspot handlers already contained toggle-style `nextMode` logic, but the shared modal blocker returned before that branch could run, so clicking the same hotspot could never actually close its own panel at runtime
 - After the same-hotspot toggle fix, blocked hover/click feedback still lacked request context, so a shop or storage hotspot could be closable in code while its hover text still claimed the player had to close the panel first
+- Startup/readable-save feedback still ignored restored farm state because `BuildStartupFarmStatusMessage` only knew whether bootstrap loaded a save, not whether the loaded farm already had harvest-ready or still-unwatered crops
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -67,6 +68,7 @@
 | Keep the legacy request-completion success text only for helper calls with no catalog, but switch runtime/catalog-backed paths to a delivered-quantity display-name message | This preserves older baseline behavior while making actual turn-in confirmation read consistently with the rest of the polished town feedback |
 | Allow same-service hotspot clicks to toggle their own panel closed, but keep different service hotspots blocked while a modal panel is open | This matches the existing handler intent, improves panel-open/close flow, and avoids weakening the current modal-interaction guardrails |
 | Thread the requested panel mode into blocked shop/storage hover and click messaging | This keeps modal feedback honest after the toggle fix: the same hotspot can explain how to close itself, while a different hotspot can explain which open panel is currently in the way |
+| Let startup save-load messaging inspect the restored `FarmGrid` and prioritize immediate farm work | On load, the main status label should feel continuous with the restored world state instead of reading like a generic bootstrap banner |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -90,6 +92,7 @@
 | One new storage display-name regression test initially failed for the wrong reason because the source inventory was empty, so the helper correctly returned `none available` before it could hit the intended inventory-full branch | Restocked the test fixture with `stone` so the regression now exercises the intended blocked-withdraw path and still verifies display-name output |
 | New panel-toggle regression tests initially failed at compile time because the panel-interaction helpers did not exist yet | Added focused `GameBootstrap` helpers, then routed the shop/storage hotspot handlers through them so the tests could drive the intended modal toggle behavior |
 | New contextual blocked-message tests initially failed at compile time because `BuildBlockedWorldInteractionMessage` had no requested-panel overload | Added the optional requested-panel context and threaded it through shop/storage hover plus blocked-click paths |
+| New startup-status tests initially failed at compile time because `BuildStartupFarmStatusMessage` only exposed the bool-only overload | Added a `FarmGrid`-aware overload, then used it during bootstrap so loaded saves can surface harvest/water priorities immediately |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`

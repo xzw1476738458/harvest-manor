@@ -90,4 +90,5 @@ Phase 6
 - Latest verified batch after that also replaced the request-completion success copy so final turn-in feedback names the delivered crop instead of the internal request id
 - Latest verified batch after that fixed an unreachable panel-toggle path so clicking the same shop or storage hotspot can now close its own panel instead of always hitting the generic modal-world blocker
 - Latest verified batch after that made blocked shop/storage hover and click feedback panel-aware, so same-hotspot interactions now advertise "click again to close" while cross-service attempts explain which open panel must close first
+- Latest verified batch after that made load-from-save startup copy farm-state-aware, so a restored session now surfaces harvest-ready or still-unwatered crops instead of always falling back to the same generic fresh-session prompt
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`

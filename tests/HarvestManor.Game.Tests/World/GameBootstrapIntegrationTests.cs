@@ -811,6 +811,29 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Equal(expectedMessage, GameBootstrap.BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave));
     }
 
+    [Fact]
+    public void BuildStartupFarmStatusMessage_WhenLoadedSaveHasHarvestReadyCrops_PrioritizesHarvestFeedback()
+    {
+        var farmGrid = new FarmGrid(3, 3);
+        farmGrid.SetPlot(new PlotState(0, 0, true, false, false, true, new CropInstance("parsnip", 4)));
+
+        Assert.Equal(
+            "Loaded slot-1.json. 1 crop is ready to harvest.",
+            GameBootstrap.BuildStartupFarmStatusMessage(saveFileExists: true, loadedExistingSave: true, farmGrid));
+    }
+
+    [Fact]
+    public void BuildStartupFarmStatusMessage_WhenLoadedSaveHasUnwateredCrops_PrioritizesWaterFeedback()
+    {
+        var farmGrid = new FarmGrid(3, 3);
+        farmGrid.SetPlot(new PlotState(0, 0, true, false, false, false, new CropInstance("parsnip", 2)));
+        farmGrid.SetPlot(new PlotState(1, 0, true, false, false, false, new CropInstance("potato", 3)));
+
+        Assert.Equal(
+            "Loaded slot-1.json. 2 planted crops still need water.",
+            GameBootstrap.BuildStartupFarmStatusMessage(saveFileExists: true, loadedExistingSave: true, farmGrid));
+    }
+
     [Theory]
     [InlineData(false, false, false, false)]
     [InlineData(true, true, false, false)]

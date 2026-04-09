@@ -141,6 +141,10 @@
   - Extended blocked world-interaction copy so shop/storage hover and blocked-click paths can distinguish same-hotspot close prompts from cross-service "close X before opening Y" guidance
   - Threaded requested panel context through the shop/storage hover handlers and blocked-click notification path without changing farm plot or request-board blocking behavior
   - Re-ran focused contextual blocked-message tests, the full suite, the game build, and the Godot smoke command after the panel-blocked-feedback polish batch
+  - Added failing startup-status tests for loaded saves that already contain harvest-ready or still-unwatered crops
+  - Added a `FarmGrid`-aware startup-status overload and used it during bootstrap so restored sessions can surface immediate farm work instead of a generic load banner
+  - Corrected one new harvest-ready startup test fixture so it actually set `IsHarvestReady` rather than only `IsWateredToday`
+  - Re-ran focused startup-status tests, the full suite, the game build, and the Godot smoke command after the save-restore startup-feedback polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -235,6 +239,10 @@
 | Full tests after contextual blocked-message batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `161/161` passed | PASS |
 | Full build after contextual blocked-message batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after contextual blocked-message batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused startup-status tests | `dotnet test ... --filter "FullyQualifiedName~BuildStartupFarmStatusMessage_WhenLoadedSave"` | New tests fail first, then pass after implementation | Failed first on the missing `FarmGrid`-aware overload, then passed `2/2` after adding restored-farm-aware startup messaging and correcting one harvest-ready fixture | PASS |
+| Full tests after save-restore startup-feedback batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `163/163` passed | PASS |
+| Full build after save-restore startup-feedback batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after save-restore startup-feedback batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -247,15 +255,16 @@
 | 2026-04-09 | One storage display-name regression test initially failed for the wrong reason because the source inventory was empty | 1 | Updated the fixture to stock `stone` so the test now reaches the intended inventory-full withdraw branch |
 | 2026-04-09 | Panel-toggle regression tests initially failed at compile time because `GameBootstrap` did not yet expose a dedicated panel-interaction routing helper | 1 | Added focused helpers plus handler wiring so same-service hotspot clicks now reach the intended toggle path |
 | 2026-04-09 | Contextual blocked-message regression tests initially failed at compile time because `BuildBlockedWorldInteractionMessage` only accepted the active panel mode | 1 | Added optional requested-panel context and wired it into shop/storage hover plus blocked-click messaging |
+| 2026-04-09 | One new startup-status regression test initially failed for the wrong reason because the fixture set `IsWateredToday` instead of `IsHarvestReady` | 1 | Corrected the `PlotState` constructor arguments so the test actually exercises the intended loaded-harvest path |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next small runtime polish candidate now that same-hotspot toggles and their hover/blocked-click feedback are aligned, with save-restore first-screen feedback still looking like the best next place to probe |
+| Where am I going? | Decide the next small runtime polish candidate now that save-restore first-screen farm feedback is state-aware, with the remaining likely wins clustered around other subtle restore/display consistency gaps |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
-| What have I learned? | After modal logic changes, the next bug often lives in the feedback layer; if blocked-message helpers only know the active panel and not the requested interaction, hover/click guidance drifts out of sync with actual runtime behavior |
-| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, and panel-aware blocked hover/click feedback in the current vertical slice |
+| What have I learned? | Save-load consistency bugs can be pure presentation bugs too; even when the restored state is correct, a bool-only bootstrap banner can make the loaded session feel less continuous than the HUD/request labels beside it |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, and farm-state-aware save-restore startup messaging in the current vertical slice |
 
 ---
 Update this log after each additional polish batch or verification pass.
