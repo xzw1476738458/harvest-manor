@@ -145,7 +145,7 @@ public partial class GameBootstrap : Node2D
 
         RefreshHud();
         RefreshRequestBoardStatus();
-        SetFarmStatus(BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave, _farmGrid));
+        SetFarmStatus(BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave, _farmGrid, _requests, _completedRequestIds, _inventory, _itemCatalog));
 
         if (ShouldAutosaveAfterBootstrap(saveFileExists, loadedExistingSave, hasMeaningfulStateChanges: false))
         {
@@ -201,6 +201,25 @@ public partial class GameBootstrap : Node2D
 
     public static string BuildStartupFarmStatusMessage(bool saveFileExists, bool loadedExistingSave, FarmGrid? farmGrid)
     {
+        return BuildStartupFarmStatusMessage(
+            saveFileExists,
+            loadedExistingSave,
+            farmGrid,
+            requests: null,
+            completedRequestIds: null,
+            inventory: null,
+            itemCatalog: null);
+    }
+
+    public static string BuildStartupFarmStatusMessage(
+        bool saveFileExists,
+        bool loadedExistingSave,
+        FarmGrid? farmGrid,
+        IReadOnlyList<RequestDefinition>? requests,
+        ISet<string>? completedRequestIds,
+        InventoryState? inventory,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog)
+    {
         if (loadedExistingSave)
         {
             if (farmGrid is not null)
@@ -215,6 +234,15 @@ public partial class GameBootstrap : Node2D
                 if (waterNeededCount > 0)
                 {
                     return $"Loaded slot-1.json. {waterNeededCount} planted {(waterNeededCount == 1 ? "crop still needs" : "crops still need")} water.";
+                }
+            }
+
+            if (requests is not null && completedRequestIds is not null && inventory is not null)
+            {
+                var requestStatus = BuildRequestBoardStatusText(requests, completedRequestIds, inventory, itemCatalog);
+                if (!string.Equals(requestStatus, "All requests completed.", StringComparison.Ordinal))
+                {
+                    return $"Loaded slot-1.json. {requestStatus}";
                 }
             }
 

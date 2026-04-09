@@ -834,6 +834,30 @@ public sealed class GameBootstrapIntegrationTests
             GameBootstrap.BuildStartupFarmStatusMessage(saveFileExists: true, loadedExistingSave: true, farmGrid));
     }
 
+    [Fact]
+    public void BuildStartupFarmStatusMessage_WhenLoadedSaveHasReadyRequestAndNoUrgentFarmWork_UsesRequestProgressCopy()
+    {
+        var farmGrid = new FarmGrid(3, 3);
+        var requests = new[]
+        {
+            new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120)
+        };
+        var completedRequests = new HashSet<string>();
+        var inventory = new InventoryState(12, 99);
+        Assert.True(inventory.TryAdd("parsnip_crop", 5));
+
+        Assert.Equal(
+            "Loaded slot-1.json. Request ready: Parsnip 5/5. Click board to turn in.",
+            GameBootstrap.BuildStartupFarmStatusMessage(
+                saveFileExists: true,
+                loadedExistingSave: true,
+                farmGrid,
+                requests,
+                completedRequests,
+                inventory,
+                CreateItemCatalog()));
+    }
+
     [Theory]
     [InlineData(false, false, false, false)]
     [InlineData(true, true, false, false)]
