@@ -322,6 +322,21 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Theory]
+    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Shop, "Shop open. Click again or press Esc to close.")]
+    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Storage, "Storage open. Click again or press Esc to close.")]
+    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Storage, "Close the shop panel before opening storage.")]
+    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Shop, "Close the storage panel before opening shop.")]
+    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.None, "Close the shop panel before interacting with the world.")]
+    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.None, "Close the storage panel before interacting with the world.")]
+    public void BuildBlockedWorldInteractionMessage_UsesRequestedPanelContextWhenAvailable(
+        GameBootstrap.PanelMode currentMode,
+        GameBootstrap.PanelMode requestedMode,
+        string expectedMessage)
+    {
+        Assert.Equal(expectedMessage, GameBootstrap.BuildBlockedWorldInteractionMessage(currentMode, requestedMode));
+    }
+
+    [Theory]
     [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.None, null)]
     [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Shop, "Shop open. Use Buy/Sell or press Esc to close.")]
     [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Storage, "Storage open. Move items or press Esc to close.")]

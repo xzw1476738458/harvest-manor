@@ -89,4 +89,5 @@ Phase 6
 - Latest verified batch after that threaded player-facing item display names through request-board, shop, and storage world-status helpers so farm/town feedback no longer leaks internal ids outside the panels
 - Latest verified batch after that also replaced the request-completion success copy so final turn-in feedback names the delivered crop instead of the internal request id
 - Latest verified batch after that fixed an unreachable panel-toggle path so clicking the same shop or storage hotspot can now close its own panel instead of always hitting the generic modal-world blocker
+- Latest verified batch after that made blocked shop/storage hover and click feedback panel-aware, so same-hotspot interactions now advertise "click again to close" while cross-service attempts explain which open panel must close first
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`

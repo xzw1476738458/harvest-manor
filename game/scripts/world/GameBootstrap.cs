@@ -296,8 +296,28 @@ public partial class GameBootstrap : Node2D
         return keycode == Key.F7 && !BlocksWorldInteractions(currentMode);
     }
 
-    public static string? BuildBlockedWorldInteractionMessage(PanelMode mode)
+    public static string? BuildBlockedWorldInteractionMessage(PanelMode mode, PanelMode requestedMode = PanelMode.None)
     {
+        if (mode != PanelMode.None && mode == requestedMode)
+        {
+            return mode switch
+            {
+                PanelMode.Shop => "Shop open. Click again or press Esc to close.",
+                PanelMode.Storage => "Storage open. Click again or press Esc to close.",
+                _ => null
+            };
+        }
+
+        if (mode == PanelMode.Shop && requestedMode == PanelMode.Storage)
+        {
+            return "Close the shop panel before opening storage.";
+        }
+
+        if (mode == PanelMode.Storage && requestedMode == PanelMode.Shop)
+        {
+            return "Close the storage panel before opening shop.";
+        }
+
         return mode switch
         {
             PanelMode.Shop => "Close the shop panel before interacting with the world.",
@@ -1021,7 +1041,7 @@ public partial class GameBootstrap : Node2D
         else
         {
             shop.ShopRequested += OnShopRequested;
-            shop.MouseEntered += () => OnWorldInteractionHovered("shop", "buy or sell items");
+            shop.MouseEntered += () => OnWorldInteractionHovered("shop", "buy or sell items", PanelMode.Shop);
             shop.MouseExited += OnWorldInteractionHoverEnded;
         }
 
@@ -1033,7 +1053,7 @@ public partial class GameBootstrap : Node2D
         else
         {
             storage.StorageRequested += OnStorageRequested;
-            storage.MouseEntered += () => OnWorldInteractionHovered("storage", "move items");
+            storage.MouseEntered += () => OnWorldInteractionHovered("storage", "move items", PanelMode.Storage);
             storage.MouseExited += OnWorldInteractionHoverEnded;
         }
 
@@ -1087,11 +1107,11 @@ public partial class GameBootstrap : Node2D
                 : BuildFarmPlotHoverStatusMessage(_farmGrid.GetPlot(gridX, gridY), _cropCatalog, _inventory, _wallet?.Gold));
     }
 
-    private void OnWorldInteractionHovered(string interactionName, string actionDescription)
+    private void OnWorldInteractionHovered(string interactionName, string actionDescription, PanelMode requestedMode = PanelMode.None)
     {
         PreviewFarmStatus(
             BlocksWorldInteractions(_activePanelMode)
-                ? BuildBlockedWorldInteractionMessage(_activePanelMode)
+                ? BuildBlockedWorldInteractionMessage(_activePanelMode, requestedMode)
                 : BuildInteractionHoverStatusMessage(interactionName, actionDescription));
     }
 
@@ -1187,7 +1207,7 @@ public partial class GameBootstrap : Node2D
     {
         if (!CanHandlePanelInteractionRequest(_activePanelMode, PanelMode.Shop))
         {
-            TryNotifyBlockedWorldInteraction();
+            TryNotifyBlockedWorldInteraction(PanelMode.Shop);
             return;
         }
 
@@ -1214,7 +1234,7 @@ public partial class GameBootstrap : Node2D
     {
         if (!CanHandlePanelInteractionRequest(_activePanelMode, PanelMode.Storage))
         {
-            TryNotifyBlockedWorldInteraction();
+            TryNotifyBlockedWorldInteraction(PanelMode.Storage);
             return;
         }
 
@@ -1600,9 +1620,9 @@ public partial class GameBootstrap : Node2D
         _farmStatusLabel.Text = _persistedFarmStatusMessage;
     }
 
-    private bool TryNotifyBlockedWorldInteraction()
+    private bool TryNotifyBlockedWorldInteraction(PanelMode requestedMode = PanelMode.None)
     {
-        var message = BuildBlockedWorldInteractionMessage(_activePanelMode);
+        var message = BuildBlockedWorldInteractionMessage(_activePanelMode, requestedMode);
         if (string.IsNullOrWhiteSpace(message))
         {
             return false;
