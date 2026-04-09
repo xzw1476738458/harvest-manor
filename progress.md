@@ -71,6 +71,7 @@
   - Re-ran the full suite, build, and Godot smoke after the hover-feedback changes
   - Added failing tests for hover-preview status text
   - Wired hover-preview status messaging through `GameBootstrap` so plots and service hotspots explain likely click outcomes before interaction
+  - Refined plot hover previews so they also reflect current seeds, harvest inventory space, and demo unlock affordability
   - Restored the last persistent farm status automatically when the cursor leaves a world interaction
   - Re-ran the full suite, build, and Godot smoke after the hover-preview changes
 - Files created/modified:
@@ -118,7 +119,7 @@
 | Full build after hover batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after hover batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 | Focused hover preview tests | `dotnet test ... --filter FullyQualifiedName~GameBootstrapIntegrationTests` | New hover-preview tests fail first, then pass after implementation | Passed after wiring hover-preview status text | PASS |
-| Full tests after hover preview batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `113/113` passed | PASS |
+| Full tests after hover preview batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `118/118` passed | PASS |
 | Full build after hover preview batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after hover preview batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 

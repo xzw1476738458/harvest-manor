@@ -301,13 +301,22 @@ public partial class GameBootstrap : Node2D
         };
     }
 
-    public static string BuildFarmPlotHoverStatusMessage(PlotState plot, IReadOnlyDictionary<string, CropDefinition> crops)
+    public static string BuildFarmPlotHoverStatusMessage(
+        PlotState plot,
+        IReadOnlyDictionary<string, CropDefinition> crops,
+        InventoryState? inventory = null,
+        int? currentGold = null)
     {
         ArgumentNullException.ThrowIfNull(plot);
         ArgumentNullException.ThrowIfNull(crops);
 
         if (plot.IsLocked)
         {
+            if (BuildPlotKey(plot.X, plot.Y) == DemoExpansionPlotKey && currentGold is not null && currentGold < DemoExpansionCost)
+            {
+                return $"Hover plot ({plot.X},{plot.Y}): need {DemoExpansionCost}g to unlock.";
+            }
+
             return BuildPlotKey(plot.X, plot.Y) == DemoExpansionPlotKey
                 ? $"Hover plot ({plot.X},{plot.Y}): unlock for {DemoExpansionCost}g."
                 : $"Hover plot ({plot.X},{plot.Y}): locked.";
@@ -320,12 +329,23 @@ public partial class GameBootstrap : Node2D
 
         if (plot.Crop is null)
         {
+            var hasAnySeed = inventory is null || crops.Values.Any(crop => inventory.GetQuantity(crop.SeedItemId) > 0);
+            if (!hasAnySeed)
+            {
+                return $"Hover plot ({plot.X},{plot.Y}): no seeds available.";
+            }
+
             return $"Hover plot ({plot.X},{plot.Y}): click to plant.";
         }
 
         var cropName = crops.TryGetValue(plot.Crop.CropId, out var crop)
             ? crop.DisplayName
             : plot.Crop.CropId;
+
+        if (plot.IsHarvestReady && crop is not null && inventory is not null && !inventory.CanAdd(crop.HarvestItemId, 1))
+        {
+            return $"Hover {cropName}: inventory full.";
+        }
 
         if (plot.IsHarvestReady)
         {
@@ -780,7 +800,7 @@ public partial class GameBootstrap : Node2D
         PreviewFarmStatus(
             BlocksWorldInteractions(_activePanelMode)
                 ? BuildBlockedWorldInteractionMessage(_activePanelMode)
-                : BuildFarmPlotHoverStatusMessage(_farmGrid.GetPlot(gridX, gridY), _cropCatalog));
+                : BuildFarmPlotHoverStatusMessage(_farmGrid.GetPlot(gridX, gridY), _cropCatalog, _inventory, _wallet?.Gold));
     }
 
     private void OnWorldInteractionHovered(string interactionName, string actionDescription)

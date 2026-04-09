@@ -313,6 +313,39 @@ public sealed class GameBootstrapIntegrationTests
                 crops));
     }
 
+    [Fact]
+    public void BuildFarmPlotHoverStatusMessage_ReflectsCurrentResourcesBeforeClick()
+    {
+        var crops = CreateCropCatalog();
+
+        var emptyInventory = new InventoryState(12, 99);
+        Assert.Equal(
+            "Hover plot (0,0): no seeds available.",
+            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+                PlotState.Tilled(0, 0),
+                crops,
+                emptyInventory,
+                currentGold: 200));
+
+        var fullInventory = new InventoryState(1, 1);
+        Assert.True(fullInventory.TryAdd("wood", 1));
+        Assert.Equal(
+            "Hover Parsnip: inventory full.",
+            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+                new PlotState(0, 0, true, false, true, true, new CropInstance("parsnip", 4)),
+                crops,
+                fullInventory,
+                currentGold: 200));
+
+        Assert.Equal(
+            "Hover plot (2,0): need 120g to unlock.",
+            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+                new PlotState(2, 0, false, true, false, false, null),
+                crops,
+                emptyInventory,
+                currentGold: 100));
+    }
+
     [Theory]
     [InlineData("bed", "click to end day", "Hover bed: click to end day.")]
     [InlineData("shop", "buy or sell items", "Hover shop: buy or sell items.")]
