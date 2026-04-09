@@ -400,6 +400,60 @@ public partial class GameBootstrap : Node2D
         return $"Hover request board: need {remainingQuantity} more {nextRequest.RequiredItemId}.";
     }
 
+    public static string BuildShopBrowseStatusMessage(
+        IReadOnlyList<ShopOffer> offers,
+        int selectedOfferIndex,
+        InventoryState inventory,
+        Wallet wallet)
+    {
+        ArgumentNullException.ThrowIfNull(offers);
+        ArgumentNullException.ThrowIfNull(inventory);
+        ArgumentNullException.ThrowIfNull(wallet);
+
+        if (offers.Count == 0)
+        {
+            return "Shop open. No offers available.";
+        }
+
+        var clampedIndex = Math.Clamp(selectedOfferIndex, 0, offers.Count - 1);
+        var offer = offers[clampedIndex];
+        var state = ShopPanelController.EvaluateOfferState(offer, inventory, wallet);
+        return $"Shop selection: {offer.ItemId}. {state.StatusText}";
+    }
+
+    public static string BuildStorageBrowseStatusMessage(InventoryState inventory, InventoryState storage)
+    {
+        ArgumentNullException.ThrowIfNull(inventory);
+        ArgumentNullException.ThrowIfNull(storage);
+
+        var state = StoragePanelController.EvaluateTransferState(inventory, storage);
+        if (state.StoreCandidateItemId is null && state.WithdrawCandidateItemId is null)
+        {
+            return "Storage open. Nothing to move.";
+        }
+
+        if (state.CanStore && state.CanWithdraw &&
+            state.StoreCandidateItemId is not null &&
+            state.WithdrawCandidateItemId is not null)
+        {
+            return $"Storage selection: store {state.StoreCandidateItemId} or take {state.WithdrawCandidateItemId}.";
+        }
+
+        var primaryAction = state.CanStore && state.StoreCandidateItemId is not null
+            ? $"store {state.StoreCandidateItemId}"
+            : state.CanWithdraw && state.WithdrawCandidateItemId is not null
+                ? $"take {state.WithdrawCandidateItemId}"
+                : state.StoreCandidateItemId is not null
+                    ? $"store {state.StoreCandidateItemId}"
+                    : state.WithdrawCandidateItemId is not null
+                        ? $"take {state.WithdrawCandidateItemId}"
+                        : null;
+
+        return primaryAction is null
+            ? "Storage open. Nothing to move."
+            : $"Storage selection: {primaryAction}. {state.StatusText}";
+    }
+
     public static string BuildShopPurchaseStatusMessage(ShopOffer offer, InventoryState inventory, Wallet wallet, bool changed)
     {
         ArgumentNullException.ThrowIfNull(offer);
@@ -1021,8 +1075,13 @@ public partial class GameBootstrap : Node2D
         }
 
         _ = TryApplyShopOpenSideEffects(_inventory, _wallet, _shopOffers);
+        var nextMode = _activePanelMode == PanelMode.Shop ? PanelMode.None : PanelMode.Shop;
         RenderPanels();
-        SetActivePanelMode(_activePanelMode == PanelMode.Shop ? PanelMode.None : PanelMode.Shop);
+        SetActivePanelMode(nextMode);
+        if (nextMode == PanelMode.Shop)
+        {
+            SetFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+        }
     }
 
     private void OnStorageRequested()
@@ -1033,8 +1092,13 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
+        var nextMode = _activePanelMode == PanelMode.Storage ? PanelMode.None : PanelMode.Storage;
         RenderPanels();
-        SetActivePanelMode(_activePanelMode == PanelMode.Storage ? PanelMode.None : PanelMode.Storage);
+        SetActivePanelMode(nextMode);
+        if (nextMode == PanelMode.Storage && _inventory is not null && _storage is not null)
+        {
+            SetFarmStatus(BuildStorageBrowseStatusMessage(_inventory, _storage));
+        }
     }
 
     private void OnRequestBoardRequested()
@@ -1109,6 +1173,10 @@ public partial class GameBootstrap : Node2D
 
         _selectedShopOfferIndex = (_selectedShopOfferIndex - 1 + _shopOffers.Count) % _shopOffers.Count;
         RenderPanels();
+        if (_inventory is not null && _wallet is not null)
+        {
+            SetFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+        }
     }
 
     private void OnShopNextOfferRequested()
@@ -1120,6 +1188,10 @@ public partial class GameBootstrap : Node2D
 
         _selectedShopOfferIndex = (_selectedShopOfferIndex + 1) % _shopOffers.Count;
         RenderPanels();
+        if (_inventory is not null && _wallet is not null)
+        {
+            SetFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+        }
     }
 
     private void OnShopCloseRequested()

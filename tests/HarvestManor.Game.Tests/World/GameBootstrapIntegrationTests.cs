@@ -388,6 +388,49 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void BuildShopBrowseStatusMessage_ReflectsTheSelectedOfferState()
+    {
+        var offers = new[]
+        {
+            new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10),
+            new ShopOffer("parsnip_crop", BuyPrice: 0, SellPrice: 35)
+        };
+
+        var inventory = new InventoryState(12, 99);
+        var wallet = new Wallet(200);
+        Assert.Equal(
+            "Shop selection: parsnip_seed. Ready to buy 1.",
+            GameBootstrap.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, inventory, wallet));
+
+        Assert.True(inventory.TryAdd("parsnip_crop", 1));
+        Assert.Equal(
+            "Shop selection: parsnip_crop. Ready to sell 1.",
+            GameBootstrap.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 1, inventory, wallet));
+    }
+
+    [Fact]
+    public void BuildStorageBrowseStatusMessage_ReflectsCurrentTransferCandidates()
+    {
+        var inventory = new InventoryState(12, 99);
+        var storage = new InventoryState(24, 99);
+
+        Assert.True(inventory.TryAdd("parsnip_seed", 2));
+        Assert.True(storage.TryAdd("wood", 1));
+
+        Assert.Equal(
+            "Storage selection: store parsnip_seed or take wood.",
+            GameBootstrap.BuildStorageBrowseStatusMessage(inventory, storage));
+
+        var fullInventory = new InventoryState(1, 1);
+        Assert.True(fullInventory.TryAdd("stone", 1));
+        var stockedStorage = new InventoryState(24, 99);
+        Assert.True(stockedStorage.TryAdd("wood", 1));
+        Assert.Equal(
+            "Storage selection: store stone. Can store 1. Inventory is full for the selected item.",
+            GameBootstrap.BuildStorageBrowseStatusMessage(fullInventory, stockedStorage));
+    }
+
+    [Fact]
     public void BuildShopPurchaseStatusMessage_ExplainsPurchaseOutcome()
     {
         var offer = new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10);

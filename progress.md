@@ -104,6 +104,9 @@
   - Re-ran the full suite, build, and Godot smoke after the request-board hover changes
   - Tightened the persistent request-board status text so incomplete requests show remaining quantity instead of a misleading turn-in prompt
   - Re-ran focused request-status tests plus the full suite, build, and Godot smoke after the request-status text change
+  - Added failing tests for shop browse status and storage browse status messaging
+  - Added dedicated browse-status helpers and wired them into shop open, shop offer cycling, and storage open flow
+  - Re-ran the full suite, build, and Godot smoke after the panel browse-feedback changes
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
@@ -150,6 +153,10 @@
 | Full tests after request-status batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `122/122` passed | PASS |
 | Full build after request-status batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after request-status batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
+| Focused panel browse tests | `dotnet test ... --filter FullyQualifiedName~BuildShopBrowseStatusMessage|FullyQualifiedName~BuildStorageBrowseStatusMessage` | New tests fail first, then pass after implementation | Passed after adding shop/storage browse-status helpers | PASS |
+| Full tests after panel browse batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `124/124` passed | PASS |
+| Full build after panel browse batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after panel browse batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
