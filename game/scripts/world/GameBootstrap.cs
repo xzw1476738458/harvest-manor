@@ -377,7 +377,10 @@ public partial class GameBootstrap : Node2D
         ArgumentNullException.ThrowIfNull(completedRequestIds);
 
         unlockState.UnlockedPlotKeys.Clear();
-        foreach (var plotKey in snapshot.UnlockedPlotKeys.Distinct(StringComparer.Ordinal))
+        var restoredPlotKeys = snapshot.UnlockedPlotKeys.Count > 0
+            ? snapshot.UnlockedPlotKeys
+            : DefaultUnlockedPlotKeys.ToList();
+        foreach (var plotKey in restoredPlotKeys.Distinct(StringComparer.Ordinal))
         {
             unlockState.UnlockedPlotKeys.Add(plotKey);
         }

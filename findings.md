@@ -16,6 +16,9 @@
 - Some important regressions only appeared in real Godot runtime, not from compile-only checks, so smoke verification is necessary after meaningful interaction changes
 - Modal panels previously allowed confusing background interaction states; fixing those boundaries improved runtime clarity more than adding new features would have
 - Silent blocking is still player-hostile even when technically correct, so blocked world interactions benefit from explicit status messaging
+- The current branch history shows a real legacy-save shape difference: older `PlotSnapshot` payloads predate the later `isWateredToday` field
+- The more immediate compatibility break in current code was that missing `unlockedPlotKeys` or `completedRequests` caused the whole save to be rejected as unreadable
+- Even when deserialization succeeds, an empty unlock list in a legacy snapshot makes the entire farm appear locked unless the bootstrap layer restores the default starting 2x2 plots
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -24,6 +27,8 @@
 | Add pure/static helpers for interaction-policy decisions where possible | Keeps tests fast and deterministic without requiring a full Godot scene harness |
 | Use focused regression tests in `GameBootstrapIntegrationTests` for runtime policy changes | These tests already cover save/load and interaction behavior near the current problem area |
 | Keep planning files in the worktree root | They are easy for later sessions to find and align with the exact branch/worktree the user wants continued |
+| Deserialize save files through a payload shape that can supply defaults for later-added progress collections | This lets older milestone saves load instead of being forced into fresh-start fallback |
+| Preserve strict validation for inventory, storage, plot data, gold, stamina, and date fields | This avoids papering over truly broken saves while still being friendly to version drift |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -31,12 +36,15 @@
 | `rg.exe` could not be used in this shell due to an access-denied failure | Inspected files with PowerShell instead |
 | `dotnet test` emits a `ScriptPathAttributeGenerator` warning | Logged as non-blocking because automated tests still pass and runtime behavior is unaffected |
 | Background world input felt broken when a panel was open because clicks were ignored without explanation | Added actionable farm-status messages and blocked the demo expansion shortcut while a panel is open |
+| Legacy saves with no unlock history would currently restore with all plots locked | Fixed by falling back to the default starting unlocked plot keys during bootstrap |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`
 - Approved implementation plan: `D:\game project\harvest-manor\docs\superpowers\plans\2026-04-08-harvest-manor-milestone-1-foundation.md`
 - Main orchestration file: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\game\scripts\world\GameBootstrap.cs`
+- Save deserialization file: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\game\scripts\core\Saves\SaveGameStore.cs`
 - Main runtime behavior tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\World\GameBootstrapIntegrationTests.cs`
+- Save compatibility tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\Saves\SaveGameStoreTests.cs`
 - UI state tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\UI\PanelControllerStateTests.cs`
 
 ## Visual/Browser Findings

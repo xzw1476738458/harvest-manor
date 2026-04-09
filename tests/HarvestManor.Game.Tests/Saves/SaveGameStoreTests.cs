@@ -69,4 +69,45 @@ public sealed class SaveGameStoreTests
 
         Assert.Throws<InvalidDataException>(() => SaveGameStore.Deserialize(invalidJson));
     }
+
+    [Fact]
+    public void Deserialize_LoadsLegacyPayloadsThatOmitLaterProgressCollections()
+    {
+        var legacyJson =
+            """
+            {
+              "date": { "season": 0, "day": 4 },
+              "minuteOfDay": 480,
+              "gold": 250,
+              "stamina": 90,
+              "inventory": [
+                { "itemId": "parsnip_seed", "quantity": 3 }
+              ],
+              "storage": [
+                { "itemId": "wood", "quantity": 12 }
+              ],
+              "plots": [
+                {
+                  "x": 0,
+                  "y": 0,
+                  "isTilled": true,
+                  "isLocked": false,
+                  "isHarvestReady": false,
+                  "cropId": "parsnip",
+                  "daysGrown": 2
+                }
+              ]
+            }
+            """;
+
+        var snapshot = SaveGameStore.Deserialize(legacyJson);
+
+        Assert.Equal(new GameDate(Season.Spring, 4), snapshot.Date);
+        Assert.Single(snapshot.Inventory);
+        Assert.Single(snapshot.Storage);
+        var plot = Assert.Single(snapshot.Plots);
+        Assert.False(plot.IsWateredToday);
+        Assert.Empty(snapshot.UnlockedPlotKeys);
+        Assert.Empty(snapshot.CompletedRequests);
+    }
 }

@@ -4,7 +4,7 @@
 Continue `Harvest Manor` milestone 1 on the existing worktree and branch, prioritizing real-runtime polish, save/load reliability, and session-recoverable project context.
 
 ## Current Phase
-Phase 3
+Phase 5
 
 ## Phases
 
@@ -26,20 +26,21 @@ Phase 3
 - [x] Fix the highest-value panel/input/runtime issues exposed by real play
 - [x] Add regression tests for new runtime behavior
 - [x] Keep the worktree clean after each polished batch
-- [ ] Continue selecting the next best polish target from real-runtime behavior
-- **Status:** in_progress
+- [x] Continue selecting the next best polish target from real-runtime behavior
+- **Status:** complete
 
 ### Phase 4: Save/Load Compatibility & Display Consistency
-- [ ] Audit backward-compatible save loading behavior for future field additions
-- [ ] Verify restored HUD, farm labels, panel content, and unlock state stay in sync after load
-- [ ] Add focused regression coverage for any load-path compatibility fixes
-- **Status:** pending
+- [x] Audit backward-compatible save loading behavior for future field additions
+- [x] Verify restored unlock-state fallback behavior for legacy saves with no unlock history
+- [x] Add focused regression coverage for load-path compatibility fixes
+- [x] Run full-suite verification for the compatibility batch
+- **Status:** complete
 
 ### Phase 5: Scene/Layout & Interaction Feedback
 - [ ] Audit click regions and scene readability for farm, town, and panel interactions
 - [ ] Tighten player-facing feedback for blocked or invalid actions
 - [ ] Verify panel open/close flow remains clear across mouse and keyboard paths
-- **Status:** pending
+- **Status:** in_progress
 
 ### Phase 6: Milestone Verification & Handoff
 - [ ] Run the full automated suite
@@ -60,14 +61,17 @@ Phase 3
 | Verify each meaningful batch with `dotnet test`, `dotnet build`, and real Godot smoke | This project has already surfaced issues that only showed up at runtime |
 | Treat `misc2` controller mapping warnings and the Vulkan registry warning as environment noise unless directly tied to a bug | User explicitly pre-triaged these warnings as non-actionable noise |
 | Store persistent session context in worktree-root markdown files | New windows can recover state without relying on chat-only context |
+| Default only later-added save progress collections during deserialization, while keeping inventory/storage/plot payloads strict | This preserves backward compatibility for older milestone saves without silently accepting badly broken core state |
+| Fall back to the starting 2x2 unlocked plots when a legacy snapshot has no unlock history | An empty unlock list would otherwise make the loaded farm look completely broken and locked |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
 |-------|---------|------------|
 | `rg.exe` failed with `Access is denied` in this environment | 1 | Fell back to PowerShell `Get-Content` and `Select-String` for code inspection |
 | `ScriptPathAttributeGenerator` warning during `dotnet test` (`GodotProjectDir` null or empty) | 1 | Treated as non-blocking test-environment noise because tests and builds still pass |
+| `SaveGameStore` payload helper initially failed to compile because required namespaces were missing | 1 | Added the missing `HarvestManor.Core.Inventory` and `HarvestManor.Core.Time` usings |
 
 ## Notes
-- Latest verified commits in this phase: `d51a0c0 fix: enforce modal panels and repair unreadable saves`, `801a1a4 fix: explain blocked world interactions`
+- Latest verified commits in this phase: `d51a0c0 fix: enforce modal panels and repair unreadable saves`, `801a1a4 fix: explain blocked world interactions`, `2f9fc50 docs: add persistent milestone recovery notes`
 - Current worktree status was clean immediately after `801a1a4`
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`

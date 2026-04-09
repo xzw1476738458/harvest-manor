@@ -28,7 +28,7 @@
   - `tests/HarvestManor.Game.Tests/Progression/RewardFlowTests.cs` (modified earlier, then committed in `d51a0c0`)
 
 ### Phase 3: Runtime Polish Pass
-- **Status:** in_progress
+- **Status:** complete
 - Actions taken:
   - Identified two high-value remaining runtime issues in the current slice: silent blocked interactions while a panel is open, and the `F7` demo shortcut ignoring modal panel boundaries
   - Added failing tests for shortcut gating and blocked-world feedback
@@ -41,11 +41,19 @@
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified, committed in `801a1a4`)
 
 ### Phase 4: Save/Load Compatibility & Display Consistency
-- **Status:** pending
+- **Status:** complete
 - Actions taken:
-  - Candidate phase only; no code changes yet
+  - Inspected save-related file history to identify real legacy payload differences instead of guessing
+  - Confirmed that earlier branch history predates the `isWateredToday` plot field
+  - Added failing tests for legacy save payloads missing later progress collections and for runtime fallback when unlock history is absent
+  - Updated save deserialization to use a payload shape that defaults later-added progress collections
+  - Updated runtime snapshot restoration to fall back to the default 2x2 unlocked plots when legacy snapshots contain no unlock history
+  - Re-ran the full suite, build, and Godot smoke after the compatibility changes
 - Files created/modified:
-  - None yet
+  - `game/scripts/core/Saves/SaveGameStore.cs` (modified)
+  - `game/scripts/world/GameBootstrap.cs` (modified)
+  - `tests/HarvestManor.Game.Tests/Saves/SaveGameStoreTests.cs` (modified)
+  - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
 
 ## Test Results
 | Test | Input | Expected | Actual | Status |
@@ -57,21 +65,27 @@
 | Full tests after `801a1a4` | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `102/102` passed | PASS |
 | Full build after `801a1a4` | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after `801a1a4` | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
+| Focused legacy save tests | `dotnet test ... --filter "FullyQualifiedName~SaveGameStoreTests|FullyQualifiedName~GameBootstrapIntegrationTests"` | New compatibility tests fail first, then pass after implementation | Passed after save deserialization and unlock fallback changes | PASS |
+| Full tests after save compatibility batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `104/104` passed | PASS |
+| Full build after save compatibility batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after save compatibility batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
 |-----------|-------|---------|------------|
 | 2026-04-09 | `rg.exe` failed with `Access is denied` | 1 | Switched to PowerShell file inspection commands |
 | 2026-04-09 | `ScriptPathAttributeGenerator` warning during test build | 1 | Logged as non-blocking because test and build verification remained green |
+| 2026-04-09 | Save compatibility test initially failed for the wrong reason because the handcrafted payload used string enum text for `season` | 1 | Adjusted the legacy test fixture to match the numeric enum format emitted by the current serializer |
+| 2026-04-09 | `SaveGameStore` payload helper initially failed to compile due to missing namespaces | 1 | Added `HarvestManor.Core.Inventory` and `HarvestManor.Core.Time` usings |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 3: Runtime Polish Pass |
-| Where am I going? | Save/load compatibility, layout/input polish, then milestone verification |
+| Where am I? | Phase 5: Scene/Layout & Interaction Feedback |
+| Where am I going? | Panel/open-close feedback polish, then broader layout/input review and milestone verification |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
-| What have I learned? | Runtime-only issues are the highest-value current work; see `findings.md` |
-| What have I done? | Verified two batches, committed `d51a0c0` and `801a1a4`, and created persistent planning files |
+| What have I learned? | Legacy save compatibility needs both deserialization defaults and runtime unlock fallback; see `findings.md` |
+| What have I done? | Verified two runtime batches, committed `d51a0c0`, `801a1a4`, `2f9fc50`, and completed the next save-compatibility batch with full verification |
 
 ---
 Update this log after each additional polish batch or verification pass.

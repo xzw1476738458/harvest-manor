@@ -61,6 +61,38 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void CreateRuntimeStateFromSnapshot_FallsBackToDefaultUnlockedPlotsWhenLegacySnapshotHasNoUnlockHistory()
+    {
+        var snapshot = new SaveGameSnapshot(
+            new GameDate(Season.Spring, 2),
+            MinuteOfDay: 420,
+            Gold: 200,
+            Stamina: 100,
+            Inventory: new List<ItemStack>(),
+            Storage: new List<ItemStack>(),
+            Plots: new List<PlotSnapshot>
+            {
+                new(0, 0, true, false, false, false, "parsnip", 1),
+                new(2, 0, false, false, false, false, null, 0)
+            },
+            UnlockedPlotKeys: new List<string>(),
+            CompletedRequests: new List<string>());
+
+        var unlockState = new UnlockState(new HashSet<string>());
+        var completedRequests = new HashSet<string>();
+
+        var state = GameBootstrap.CreateRuntimeStateFromSnapshot(snapshot, unlockState, completedRequests);
+
+        Assert.Contains("0,0", unlockState.UnlockedPlotKeys);
+        Assert.Contains("1,0", unlockState.UnlockedPlotKeys);
+        Assert.Contains("0,1", unlockState.UnlockedPlotKeys);
+        Assert.Contains("1,1", unlockState.UnlockedPlotKeys);
+        Assert.DoesNotContain("2,0", unlockState.UnlockedPlotKeys);
+        Assert.False(state.FarmGrid.GetPlot(0, 0).IsLocked);
+        Assert.True(state.FarmGrid.GetPlot(2, 0).IsLocked);
+    }
+
+    [Fact]
     public void TryHandleFarmPlotInteraction_SupportsTillPlantWaterAndHarvestLoop()
     {
         var crops = CreateCropCatalog();

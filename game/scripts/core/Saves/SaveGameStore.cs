@@ -1,9 +1,32 @@
 using System.Text.Json;
+using HarvestManor.Core.Inventory;
+using HarvestManor.Core.Time;
 
 namespace HarvestManor.Core.Saves;
 
 public static class SaveGameStore
 {
+    private sealed class SaveGameSnapshotPayload
+    {
+        public GameDate? Date { get; init; }
+
+        public int MinuteOfDay { get; init; }
+
+        public int Gold { get; init; }
+
+        public int Stamina { get; init; }
+
+        public List<ItemStack>? Inventory { get; init; }
+
+        public List<ItemStack>? Storage { get; init; }
+
+        public List<PlotSnapshot>? Plots { get; init; }
+
+        public List<string>? UnlockedPlotKeys { get; init; }
+
+        public List<string>? CompletedRequests { get; init; }
+    }
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -23,20 +46,31 @@ public static class SaveGameStore
             throw new InvalidDataException("Save payload was empty.");
         }
 
-        SaveGameSnapshot? snapshot;
+        SaveGameSnapshotPayload? payload;
         try
         {
-            snapshot = JsonSerializer.Deserialize<SaveGameSnapshot>(json, JsonOptions);
+            payload = JsonSerializer.Deserialize<SaveGameSnapshotPayload>(json, JsonOptions);
         }
         catch (JsonException exception)
         {
             throw new InvalidDataException("Save payload format was invalid.", exception);
         }
 
-        if (snapshot is null)
+        if (payload is null)
         {
             throw new InvalidDataException("Save payload was empty.");
         }
+
+        var snapshot = new SaveGameSnapshot(
+            payload.Date ?? throw new InvalidDataException("Save payload is missing a valid date."),
+            payload.MinuteOfDay,
+            payload.Gold,
+            payload.Stamina,
+            payload.Inventory ?? throw new InvalidDataException("Save payload is missing inventory data."),
+            payload.Storage ?? throw new InvalidDataException("Save payload is missing storage data."),
+            payload.Plots ?? throw new InvalidDataException("Save payload is missing plot data."),
+            payload.UnlockedPlotKeys ?? new List<string>(),
+            payload.CompletedRequests ?? new List<string>());
 
         ValidateSnapshot(snapshot);
         return snapshot;
