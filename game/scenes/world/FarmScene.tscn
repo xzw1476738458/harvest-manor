@@ -42,9 +42,14 @@ script = ExtResource("2")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Bed"]
 shape = SubResource("1")
 
+[node name="HotspotVisual" type="Polygon2D" parent="Bed"]
+z_index = -1
+color = Color(0.647059, 0.501961, 0.329412, 0.8)
+polygon = PackedVector2Array(-70, -30, 70, -30, 70, 30, -70, 30)
+
 [node name="BedLabel" type="Label" parent="Bed"]
-position = Vector2(-64, -44)
-text = "Bed (click to end day)"
+position = Vector2(-58, -46)
+text = "Bed\nClick: end day"
 
 [node name="Plot00" type="Area2D" parent="."]
 position = Vector2(220, 230)
@@ -54,6 +59,11 @@ GridY = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Plot00"]
 shape = SubResource("2")
+
+[node name="PlotVisual" type="Polygon2D" parent="Plot00"]
+z_index = -1
+color = Color(0.756863, 0.658824, 0.490196, 0.8)
+polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
 
 [node name="PlotLabel" type="Label" parent="Plot00"]
 position = Vector2(-52, -54)
@@ -68,6 +78,11 @@ GridY = 0
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Plot10"]
 shape = SubResource("2")
 
+[node name="PlotVisual" type="Polygon2D" parent="Plot10"]
+z_index = -1
+color = Color(0.756863, 0.658824, 0.490196, 0.8)
+polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
+
 [node name="PlotLabel" type="Label" parent="Plot10"]
 position = Vector2(-52, -54)
 text = "Plot (1,0)"
@@ -80,6 +95,11 @@ GridY = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Plot20"]
 shape = SubResource("2")
+
+[node name="PlotVisual" type="Polygon2D" parent="Plot20"]
+z_index = -1
+color = Color(0.756863, 0.658824, 0.490196, 0.8)
+polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
 
 [node name="PlotLabel" type="Label" parent="Plot20"]
 position = Vector2(-52, -54)
@@ -94,6 +114,11 @@ GridY = 1
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Plot01"]
 shape = SubResource("2")
 
+[node name="PlotVisual" type="Polygon2D" parent="Plot01"]
+z_index = -1
+color = Color(0.756863, 0.658824, 0.490196, 0.8)
+polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
+
 [node name="PlotLabel" type="Label" parent="Plot01"]
 position = Vector2(-52, -54)
 text = "Plot (0,1)"
@@ -106,6 +131,11 @@ GridY = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Plot11"]
 shape = SubResource("2")
+
+[node name="PlotVisual" type="Polygon2D" parent="Plot11"]
+z_index = -1
+color = Color(0.756863, 0.658824, 0.490196, 0.8)
+polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
 
 [node name="PlotLabel" type="Label" parent="Plot11"]
 position = Vector2(-52, -54)

@@ -18,6 +18,19 @@ public sealed class FarmSceneLayoutTests
         Assert.Contains((2, 0), plotCoordinates);
     }
 
+    [Fact]
+    public void FarmScene_AddsVisibleHotspotsForBedAndPlots()
+    {
+        var sceneContents = File.ReadAllText(FindFarmScenePath());
+
+        Assert.Contains("[node name=\"HotspotVisual\" type=\"Polygon2D\" parent=\"Bed\"]", sceneContents);
+        Assert.Contains("[node name=\"PlotVisual\" type=\"Polygon2D\" parent=\"Plot00\"]", sceneContents);
+        Assert.Contains("[node name=\"PlotVisual\" type=\"Polygon2D\" parent=\"Plot10\"]", sceneContents);
+        Assert.Contains("[node name=\"PlotVisual\" type=\"Polygon2D\" parent=\"Plot20\"]", sceneContents);
+        Assert.Contains("[node name=\"PlotVisual\" type=\"Polygon2D\" parent=\"Plot01\"]", sceneContents);
+        Assert.Contains("[node name=\"PlotVisual\" type=\"Polygon2D\" parent=\"Plot11\"]", sceneContents);
+    }
+
     private static string FindFarmScenePath()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

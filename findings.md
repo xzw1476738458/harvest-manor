@@ -20,6 +20,7 @@
 - The more immediate compatibility break in current code was that missing `unlockedPlotKeys` or `completedRequests` caused the whole save to be rejected as unreadable
 - Even when deserialization succeeds, an empty unlock list in a legacy snapshot makes the entire farm appear locked unless the bootstrap layer restores the default starting 2x2 plots
 - Panel visibility changes were technically working, but the farm status label did not explain when a panel opened or closed, which made the flow feel less deliberate during real play
+- Scene inspection confirmed a separate layout problem: many interactive hotspots were effectively invisible because the scenes only exposed labels and collision shapes, not visible clickable surfaces
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -31,6 +32,7 @@
 | Deserialize save files through a payload shape that can supply defaults for later-added progress collections | This lets older milestone saves load instead of being forced into fresh-start fallback |
 | Preserve strict validation for inventory, storage, plot data, gold, stamina, and date fields | This avoids papering over truly broken saves while still being friendly to version drift |
 | Use the farm status label as the main lightweight feedback channel for panel open/close transitions | It keeps panel flow understandable without adding a larger HUD or modal overlay system |
+| Add simple visible hotspot surfaces directly in `FarmScene.tscn` and `TownScene.tscn` for current milestone interactions | This improves click discoverability without introducing new systems or larger UI architecture |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -40,6 +42,7 @@
 | Background world input felt broken when a panel was open because clicks were ignored without explanation | Added actionable farm-status messages and blocked the demo expansion shortcut while a panel is open |
 | Legacy saves with no unlock history would currently restore with all plots locked | Fixed by falling back to the default starting unlocked plot keys during bootstrap |
 | Opening and closing panels lacked explicit status feedback | Added panel-state messages for shop open, storage open, and returning to world interaction |
+| Farm/town click regions were hard to discover because only labels were rendered | Added visible `Polygon2D` hotspot backgrounds for bed, plots, and town services |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`
@@ -48,6 +51,7 @@
 - Save deserialization file: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\game\scripts\core\Saves\SaveGameStore.cs`
 - Main runtime behavior tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\World\GameBootstrapIntegrationTests.cs`
 - Save compatibility tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\Saves\SaveGameStoreTests.cs`
+- Scene layout tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\World\FarmSceneLayoutTests.cs`, `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\World\TownSceneLayoutTests.cs`
 - UI state tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\UI\PanelControllerStateTests.cs`
 
 ## Visual/Browser Findings

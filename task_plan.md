@@ -37,7 +37,7 @@ Phase 5
 - **Status:** complete
 
 ### Phase 5: Scene/Layout & Interaction Feedback
-- [ ] Audit click regions and scene readability for farm, town, and panel interactions
+- [x] Audit click regions and scene readability for farm, town, and panel interactions
 - [x] Tighten player-facing feedback for blocked or invalid actions
 - [x] Verify panel open/close flow remains clear across mouse and keyboard paths
 - **Status:** in_progress

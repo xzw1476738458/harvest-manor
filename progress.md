@@ -62,9 +62,17 @@
   - Implemented explicit farm-status updates when shop/storage panels open or close
   - Kept the change localized to `GameBootstrap` so the current vertical slice did not need broader UI surgery
   - Re-ran the full suite, build, and Godot smoke after the panel-flow feedback changes
+  - Added failing layout tests for visible hotspot surfaces in farm and town scenes
+  - Updated `FarmScene.tscn` and `TownScene.tscn` to render simple `Polygon2D` hotspot backgrounds for bed, plots, shop, storage, and request board
+  - Tightened service labels so clickable intent is more obvious at a glance
+  - Re-ran the full suite, build, and Godot smoke after the scene hotspot changes
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
+  - `game/scenes/world/FarmScene.tscn` (modified)
+  - `game/scenes/world/TownScene.tscn` (modified)
+  - `tests/HarvestManor.Game.Tests/World/FarmSceneLayoutTests.cs` (modified)
+  - `tests/HarvestManor.Game.Tests/World/TownSceneLayoutTests.cs` (created)
 
 ## Test Results
 | Test | Input | Expected | Actual | Status |
@@ -84,6 +92,10 @@
 | Full tests after panel-flow batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `109/109` passed | PASS |
 | Full build after panel-flow batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after panel-flow batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
+| Focused scene layout tests | `dotnet test ... --filter "FullyQualifiedName~FarmSceneLayoutTests|FullyQualifiedName~TownSceneLayoutTests"` | New layout tests fail first, then pass after scene updates | Passed after adding visible hotspot surfaces | PASS |
+| Full tests after hotspot batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `111/111` passed | PASS |
+| Full build after hotspot batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after hotspot batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
