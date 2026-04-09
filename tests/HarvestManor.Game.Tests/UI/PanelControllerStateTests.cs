@@ -1,3 +1,4 @@
+using HarvestManor.Core.Content;
 using HarvestManor.Core.Economy;
 using HarvestManor.Core.Inventory;
 using HarvestManor.UI;
@@ -7,6 +8,20 @@ namespace HarvestManor.Game.Tests.UI;
 
 public sealed class PanelControllerStateTests
 {
+    [Fact]
+    public void BuildInventoryBodyText_UsesDisplayNamesWhenCatalogIsAvailable()
+    {
+        var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 99);
+        Assert.True(inventory.TryAdd("parsnip_seed", 2));
+        Assert.True(inventory.TryAdd("wood", 1));
+
+        var bodyText = InventoryPanelController.BuildBodyText(inventory, CreateItemCatalog());
+
+        Assert.Contains("Parsnip Seeds x2", bodyText);
+        Assert.Contains("Wood x1", bodyText);
+        Assert.DoesNotContain("parsnip_seed", bodyText);
+    }
+
     [Fact]
     public void EvaluateOfferState_DisablesBuyWhenInventoryCannotFitSelectedOffer()
     {
@@ -119,6 +134,24 @@ public sealed class PanelControllerStateTests
     }
 
     [Fact]
+    public void BuildShopBodyText_UsesDisplayNamesWhenCatalogIsAvailable()
+    {
+        var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 99);
+        Assert.True(inventory.TryAdd("parsnip_seed", 1));
+        var wallet = new Wallet(200);
+
+        var bodyText = ShopPanelController.BuildBodyText(
+            new[] { new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10) },
+            selectedOfferIndex: 0,
+            inventory,
+            wallet,
+            CreateItemCatalog());
+
+        Assert.Contains("Item: Parsnip Seeds", bodyText);
+        Assert.DoesNotContain("Item: parsnip_seed", bodyText);
+    }
+
+    [Fact]
     public void EvaluateTransferState_DisablesWithdrawWhenInventoryCannotFitSelectedItem()
     {
         var inventory = new InventoryState(slotCapacity: 1, maxStackSize: 1);
@@ -164,6 +197,27 @@ public sealed class PanelControllerStateTests
     }
 
     [Fact]
+    public void StoragePanelSurfaceHelpers_UseDisplayNamesWhenCatalogIsAvailable()
+    {
+        var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 99);
+        Assert.True(inventory.TryAdd("parsnip_seed", 2));
+
+        var storage = new InventoryState(slotCapacity: 2, maxStackSize: 99);
+        Assert.True(storage.TryAdd("potato_crop", 1));
+
+        var state = StoragePanelController.EvaluateTransferState(inventory, storage);
+        var itemCatalog = CreateItemCatalog();
+        var bodyText = StoragePanelController.BuildBodyText(inventory, storage, itemCatalog);
+
+        Assert.Contains("Parsnip Seeds x2", bodyText);
+        Assert.Contains("Potato x1", bodyText);
+        Assert.Equal("Store 1 Parsnip Seeds", StoragePanelController.BuildStoreButtonText(state, itemCatalog));
+        Assert.Equal("Take 1 Potato", StoragePanelController.BuildWithdrawButtonText(state, itemCatalog));
+        Assert.DoesNotContain("parsnip_seed", bodyText);
+        Assert.DoesNotContain("potato_crop", bodyText);
+    }
+
+    [Fact]
     public void EvaluateTransferState_PicksFirstStoreCandidateThatActuallyFits()
     {
         var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 2);
@@ -197,5 +251,16 @@ public sealed class PanelControllerStateTests
         Assert.True(state.CanWithdraw);
         Assert.Equal("parsnip_seed", state.WithdrawCandidateItemId);
         Assert.Equal("Use Store or Take to move 1 item.", state.StatusText);
+    }
+
+    private static IReadOnlyDictionary<string, ItemDefinition> CreateItemCatalog()
+    {
+        return new Dictionary<string, ItemDefinition>(StringComparer.Ordinal)
+        {
+            ["parsnip_seed"] = new("parsnip_seed", "Parsnip Seeds", "Seed", 99),
+            ["potato_crop"] = new("potato_crop", "Potato", "Crop", 99),
+            ["wood"] = new("wood", "Wood", "Material", 99),
+            ["stone"] = new("stone", "Stone", "Material", 99)
+        };
     }
 }

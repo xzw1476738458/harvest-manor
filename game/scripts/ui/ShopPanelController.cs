@@ -1,4 +1,5 @@
 using Godot;
+using HarvestManor.Core.Content;
 using HarvestManor.Core.Economy;
 using HarvestManor.Core.Inventory;
 
@@ -76,7 +77,12 @@ public partial class ShopPanelController : Control
         }
     }
 
-    public void Render(IReadOnlyList<ShopOffer> offers, int selectedOfferIndex, InventoryState? inventory, Wallet? wallet)
+    public void Render(
+        IReadOnlyList<ShopOffer> offers,
+        int selectedOfferIndex,
+        InventoryState? inventory,
+        Wallet? wallet,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(offers);
 
@@ -95,14 +101,7 @@ public partial class ShopPanelController : Control
         var clampedIndex = Math.Clamp(selectedOfferIndex, 0, offers.Count - 1);
         var offer = offers[clampedIndex];
         var state = EvaluateOfferState(offer, inventory, wallet);
-
-        BodyLabel.Text = $"Offer {clampedIndex + 1}/{offers.Count}\n" +
-                         $"Item: {offer.ItemId}\n" +
-                         $"Gold: {state.Gold}\n" +
-                         $"Owned: {state.InventoryCount}\n" +
-                         $"Buy: {offer.BuyPrice}g\n" +
-                         $"Sell: {offer.SellPrice}g\n" +
-                         $"Status: {state.StatusText}";
+        BodyLabel.Text = BuildBodyText(offers, selectedOfferIndex, inventory, wallet, itemCatalog);
 
         if (BuyButton is not null)
         {
@@ -115,6 +114,34 @@ public partial class ShopPanelController : Control
         }
 
         SetButtonState(hasOffer: true, state.CanBuy, state.CanSell);
+    }
+
+    public static string BuildBodyText(
+        IReadOnlyList<ShopOffer> offers,
+        int selectedOfferIndex,
+        InventoryState? inventory,
+        Wallet? wallet,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
+    {
+        ArgumentNullException.ThrowIfNull(offers);
+
+        if (offers.Count == 0)
+        {
+            return "No offers available.";
+        }
+
+        var clampedIndex = Math.Clamp(selectedOfferIndex, 0, offers.Count - 1);
+        var offer = offers[clampedIndex];
+        var state = EvaluateOfferState(offer, inventory, wallet);
+        var displayName = ItemDisplayNameFormatter.Resolve(offer.ItemId, itemCatalog);
+
+        return $"Offer {clampedIndex + 1}/{offers.Count}\n" +
+               $"Item: {displayName}\n" +
+               $"Gold: {state.Gold}\n" +
+               $"Owned: {state.InventoryCount}\n" +
+               $"Buy: {offer.BuyPrice}g\n" +
+               $"Sell: {offer.SellPrice}g\n" +
+               $"Status: {state.StatusText}";
     }
 
     public static OfferUiState EvaluateOfferState(ShopOffer offer, InventoryState? inventory, Wallet? wallet)

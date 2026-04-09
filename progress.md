@@ -122,12 +122,18 @@
   - Added shop button-text helpers so disabled Buy/Sell buttons surface their blocker directly while enabled buttons keep price copy
   - Tracked the latest panel-context farm status separately so closing shop/storage restores the recent browse/action context instead of a generic close line
   - Re-ran focused panel/button tests, the full suite, the game build, and the Godot smoke command after the button/close-context polish batch
+  - Added failing UI tests for inventory, storage, and shop panel surfaces that were still leaking internal item ids instead of display names
+  - Added a small shared item-display-name formatter and threaded the loaded item catalog into panel rendering
+  - Updated inventory panel body text, storage panel body/button text, and shop panel body text to prefer player-facing item display names
+  - Re-ran focused UI tests, the full suite, the game build, and the Godot smoke command after the panel display-name polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
   - `game/scripts/ui/ShopPanelController.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
   - `tests/HarvestManor.Game.Tests/UI/PanelControllerStateTests.cs` (modified)
+  - `game/scripts/ui/InventoryPanelController.cs` (modified)
+  - `game/scripts/ui/ItemDisplayNameFormatter.cs` (created)
 
 ## Test Results
 | Test | Input | Expected | Actual | Status |
@@ -191,6 +197,10 @@
 | Full tests after button/context batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `135/135` passed | PASS |
 | Full build after button/context batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after button/context batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused panel display-name tests | `dotnet test ... --filter FullyQualifiedName~PanelControllerStateTests` | New tests fail first, then pass after implementation | Passed after threading item display names into panel surface helpers | PASS |
+| Full tests after panel display-name batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `138/138` passed | PASS |
+| Full build after panel display-name batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after panel display-name batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -204,10 +214,10 @@
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next runtime polish candidate after the shop button-copy and panel-close context batches, or close out this slice with a clean summary |
+| Where am I going? | Decide the next runtime polish candidate after the panel display-name batch, likely whether global farm/request status should stop leaking internal item ids too |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
 | What have I learned? | Interaction discoverability needed visible and hover-reactive hotspots, not just valid click wiring; see `findings.md` |
-| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, and the latest shop-button/context-restoration batch across the current vertical slice |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, and player-facing panel display names across the current vertical slice |
 
 ---
 Update this log after each additional polish batch or verification pass.

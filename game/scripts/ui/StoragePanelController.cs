@@ -1,5 +1,6 @@
 using System.Linq;
 using Godot;
+using HarvestManor.Core.Content;
 using HarvestManor.Core.Inventory;
 
 namespace HarvestManor.UI;
@@ -72,7 +73,10 @@ public partial class StoragePanelController : Control
         }
     }
 
-    public void Render(InventoryState inventory, InventoryState storage)
+    public void Render(
+        InventoryState inventory,
+        InventoryState storage,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(inventory);
         ArgumentNullException.ThrowIfNull(storage);
@@ -85,32 +89,31 @@ public partial class StoragePanelController : Control
         var state = EvaluateTransferState(inventory, storage);
         _storeCandidateItemId = state.StoreCandidateItemId;
         _withdrawCandidateItemId = state.WithdrawCandidateItemId;
-
-        var inventoryLines = inventory.Slots
-            .Select(slot => $"{slot.ItemId} x{slot.Quantity}")
-            .DefaultIfEmpty("Inventory empty.");
-
-        var storageLines = storage.Slots
-            .Select(slot => $"{slot.ItemId} x{slot.Quantity}")
-            .DefaultIfEmpty("Storage empty.");
-
-        BodyLabel.Text = "Inventory\n" +
-                         string.Join("\n", inventoryLines) +
-                         "\n\nStorage\n" +
-                         string.Join("\n", storageLines) +
-                         $"\n\nStatus\n{state.StatusText}";
+        BodyLabel.Text = BuildBodyText(inventory, storage, itemCatalog, state);
 
         if (StoreButton is not null)
         {
-            StoreButton.Text = BuildStoreButtonText(state);
+            StoreButton.Text = BuildStoreButtonText(state, itemCatalog);
             StoreButton.Disabled = !state.CanStore;
         }
 
         if (WithdrawButton is not null)
         {
-            WithdrawButton.Text = BuildWithdrawButtonText(state);
+            WithdrawButton.Text = BuildWithdrawButtonText(state, itemCatalog);
             WithdrawButton.Disabled = !state.CanWithdraw;
         }
+    }
+
+    public static string BuildBodyText(
+        InventoryState inventory,
+        InventoryState storage,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
+    {
+        ArgumentNullException.ThrowIfNull(inventory);
+        ArgumentNullException.ThrowIfNull(storage);
+
+        var state = EvaluateTransferState(inventory, storage);
+        return BuildBodyText(inventory, storage, itemCatalog, state);
     }
 
     public static TransferUiState EvaluateTransferState(InventoryState inventory, InventoryState storage)
@@ -140,24 +143,36 @@ public partial class StoragePanelController : Control
     }
 
     public static string BuildStoreButtonText(TransferUiState state)
+        => BuildStoreButtonText(state, itemCatalog: null);
+
+    public static string BuildStoreButtonText(
+        TransferUiState state,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog)
     {
         if (!string.IsNullOrWhiteSpace(state.StoreCandidateItemId))
         {
+            var displayName = ItemDisplayNameFormatter.Resolve(state.StoreCandidateItemId, itemCatalog);
             return state.CanStore
-                ? $"Store 1 {state.StoreCandidateItemId}"
-                : $"Storage full for {state.StoreCandidateItemId}";
+                ? $"Store 1 {displayName}"
+                : $"Storage full for {displayName}";
         }
 
         return "Nothing to store";
     }
 
     public static string BuildWithdrawButtonText(TransferUiState state)
+        => BuildWithdrawButtonText(state, itemCatalog: null);
+
+    public static string BuildWithdrawButtonText(
+        TransferUiState state,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog)
     {
         if (!string.IsNullOrWhiteSpace(state.WithdrawCandidateItemId))
         {
+            var displayName = ItemDisplayNameFormatter.Resolve(state.WithdrawCandidateItemId, itemCatalog);
             return state.CanWithdraw
-                ? $"Take 1 {state.WithdrawCandidateItemId}"
-                : $"Inventory full for {state.WithdrawCandidateItemId}";
+                ? $"Take 1 {displayName}"
+                : $"Inventory full for {displayName}";
         }
 
         return "Nothing to take";
@@ -168,39 +183,75 @@ public partial class StoragePanelController : Control
         string? withdrawCandidateItemId,
         bool canStore,
         bool canWithdraw)
+        => BuildTransferStatusText(storeCandidateItemId, withdrawCandidateItemId, canStore, canWithdraw, itemCatalog: null);
+
+    private static string BuildBodyText(
+        InventoryState inventory,
+        InventoryState storage,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog,
+        TransferUiState state)
     {
+        var inventoryLines = inventory.Slots
+            .Select(slot => $"{ItemDisplayNameFormatter.Resolve(slot.ItemId, itemCatalog)} x{slot.Quantity}")
+            .DefaultIfEmpty("Inventory empty.");
+
+        var storageLines = storage.Slots
+            .Select(slot => $"{ItemDisplayNameFormatter.Resolve(slot.ItemId, itemCatalog)} x{slot.Quantity}")
+            .DefaultIfEmpty("Storage empty.");
+
+        return "Inventory\n" +
+               string.Join("\n", inventoryLines) +
+               "\n\nStorage\n" +
+               string.Join("\n", storageLines) +
+               $"\n\nStatus\n{BuildTransferStatusText(state.StoreCandidateItemId, state.WithdrawCandidateItemId, state.CanStore, state.CanWithdraw, itemCatalog)}";
+    }
+
+    private static string BuildTransferStatusText(
+        string? storeCandidateItemId,
+        string? withdrawCandidateItemId,
+        bool canStore,
+        bool canWithdraw,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog)
+    {
+        var storeDisplayName = string.IsNullOrWhiteSpace(storeCandidateItemId)
+            ? null
+            : ItemDisplayNameFormatter.Resolve(storeCandidateItemId, itemCatalog);
+        var withdrawDisplayName = string.IsNullOrWhiteSpace(withdrawCandidateItemId)
+            ? null
+            : ItemDisplayNameFormatter.Resolve(withdrawCandidateItemId, itemCatalog);
+
         if (canStore && canWithdraw)
         {
             return "Use Store or Take to move 1 item.";
         }
 
-        if (canStore && !string.IsNullOrWhiteSpace(storeCandidateItemId))
+        if (canStore && !string.IsNullOrWhiteSpace(storeDisplayName))
         {
-            return !string.IsNullOrWhiteSpace(withdrawCandidateItemId)
-                ? $"Ready to store 1 {storeCandidateItemId}. Cannot take {withdrawCandidateItemId}: inventory is full."
-                : $"Ready to store 1 {storeCandidateItemId}.";
+            return !string.IsNullOrWhiteSpace(withdrawDisplayName)
+                ? $"Ready to store 1 {storeDisplayName}. Cannot take {withdrawDisplayName}: inventory is full."
+                : $"Ready to store 1 {storeDisplayName}.";
         }
 
-        if (canWithdraw && !string.IsNullOrWhiteSpace(withdrawCandidateItemId))
+        if (canWithdraw && !string.IsNullOrWhiteSpace(withdrawDisplayName))
         {
-            return !string.IsNullOrWhiteSpace(storeCandidateItemId)
-                ? $"Ready to take 1 {withdrawCandidateItemId}. Cannot store {storeCandidateItemId}: storage is full."
-                : $"Ready to take 1 {withdrawCandidateItemId}.";
+            return !string.IsNullOrWhiteSpace(storeDisplayName)
+                ? $"Ready to take 1 {withdrawDisplayName}. Cannot store {storeDisplayName}: storage is full."
+                : $"Ready to take 1 {withdrawDisplayName}.";
         }
 
-        if (!string.IsNullOrWhiteSpace(storeCandidateItemId) && !string.IsNullOrWhiteSpace(withdrawCandidateItemId))
+        if (!string.IsNullOrWhiteSpace(storeDisplayName) && !string.IsNullOrWhiteSpace(withdrawDisplayName))
         {
-            return $"Cannot store {storeCandidateItemId}: storage is full. Cannot take {withdrawCandidateItemId}: inventory is full.";
+            return $"Cannot store {storeDisplayName}: storage is full. Cannot take {withdrawDisplayName}: inventory is full.";
         }
 
-        if (!string.IsNullOrWhiteSpace(storeCandidateItemId))
+        if (!string.IsNullOrWhiteSpace(storeDisplayName))
         {
-            return $"Cannot store {storeCandidateItemId}: storage is full.";
+            return $"Cannot store {storeDisplayName}: storage is full.";
         }
 
-        if (!string.IsNullOrWhiteSpace(withdrawCandidateItemId))
+        if (!string.IsNullOrWhiteSpace(withdrawDisplayName))
         {
-            return $"Cannot take {withdrawCandidateItemId}: inventory is full.";
+            return $"Cannot take {withdrawDisplayName}: inventory is full.";
         }
 
         return "Nothing to move.";

@@ -33,6 +33,7 @@
 - Shop panel had a parallel clarity gap: if the selected offer could still be sold but buying was blocked by money or inventory space, the status copy focused only on the buy-side blocker and hid the still-available sell action
 - Shop panel still had a final button-level clarity gap after the wording passes: the body text explained why Buy or Sell was blocked, but the disabled buttons themselves still only showed generic price labels
 - Panel close flow still had a context gap after the browse-feedback passes: closing shop or storage overwrote the richer recent panel context with a generic "Panels closed" message
+- Panel surfaces still leaked internal item ids (`parsnip_seed`, `potato_crop`) even though the item catalog already contained player-facing display names
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -57,6 +58,7 @@
 | Let shop status messaging prioritize a still-available sell action when buy is blocked | The player-facing next step should stay obvious even when the selected offer cannot currently be purchased |
 | Put concise blocker reasons on disabled shop buttons while preserving price copy when the action is available | The button surface itself should explain the immediate blocker without forcing the player to cross-reference the body text |
 | Track the latest panel-context farm status separately from transient blocked/open-close copy | Closing a panel should restore the most relevant recent shop/storage context instead of flattening it into a generic close message |
+| Thread item catalog display names into panel rendering without rewriting all global status builders in the same batch | This fixes the most visible player-facing readability issue first while keeping the current polish batch small and low-risk |
 
 ## Issues Encountered
 | Issue | Resolution |

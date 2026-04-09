@@ -1,5 +1,6 @@
 using System.Linq;
 using Godot;
+using HarvestManor.Core.Content;
 using HarvestManor.Core.Inventory;
 
 namespace HarvestManor.UI;
@@ -14,7 +15,7 @@ public partial class InventoryPanelController : Control
         BodyLabel ??= GetNodeOrNull<RichTextLabel>("Panel/BodyLabel");
     }
 
-    public void Render(InventoryState inventory)
+    public void Render(InventoryState inventory, IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(inventory);
 
@@ -23,9 +24,17 @@ public partial class InventoryPanelController : Control
             return;
         }
 
+        BodyLabel.Text = BuildBodyText(inventory, itemCatalog);
+    }
+
+    public static string BuildBodyText(InventoryState inventory, IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
+    {
+        ArgumentNullException.ThrowIfNull(inventory);
+
         var lines = inventory.Slots
-            .Select(slot => $"{slot.ItemId} x{slot.Quantity}")
+            .Select(slot => $"{ItemDisplayNameFormatter.Resolve(slot.ItemId, itemCatalog)} x{slot.Quantity}")
             .DefaultIfEmpty("Inventory empty.");
-        BodyLabel.Text = string.Join("\n", lines);
+
+        return string.Join("\n", lines);
     }
 }

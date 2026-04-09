@@ -37,6 +37,7 @@ public partial class GameBootstrap : Node2D
     private readonly HashSet<string> _completedRequestIds = new();
     private readonly UnlockState _unlockState = new(new HashSet<string>(DefaultUnlockedPlotKeys));
     private readonly Dictionary<string, CropDefinition> _cropCatalog = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ItemDefinition> _itemCatalog = new(StringComparer.Ordinal);
     private readonly List<FarmPlotNode> _farmPlotNodes = new();
 
     private CropGrowthService? _growth;
@@ -94,6 +95,12 @@ public partial class GameBootstrap : Node2D
         foreach (var crop in crops)
         {
             _cropCatalog[crop.Id] = crop;
+        }
+
+        _itemCatalog.Clear();
+        foreach (var item in items)
+        {
+            _itemCatalog[item.Id] = item;
         }
 
         _growth = new CropGrowthService(_cropCatalog);
@@ -1418,14 +1425,14 @@ public partial class GameBootstrap : Node2D
     {
         if (_inventory is not null)
         {
-            _inventoryPanel?.Render(_inventory);
+            _inventoryPanel?.Render(_inventory, _itemCatalog);
         }
 
-        _shopPanel?.Render(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet);
+        _shopPanel?.Render(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog);
 
         if (_inventory is not null && _storage is not null)
         {
-            _storagePanel?.Render(_inventory, _storage);
+            _storagePanel?.Render(_inventory, _storage, _itemCatalog);
         }
     }
 
