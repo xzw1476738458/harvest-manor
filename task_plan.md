@@ -64,6 +64,7 @@ Phase 6
 | Default only later-added save progress collections during deserialization, while keeping inventory/storage/plot payloads strict | This preserves backward compatibility for older milestone saves without silently accepting badly broken core state |
 | Fall back to the starting 2x2 unlocked plots when a legacy snapshot has no unlock history | An empty unlock list would otherwise make the loaded farm look completely broken and locked |
 | Make storage panel edge-state copy item-specific instead of referring to a generic "selected item" | Single-direction and fully blocked transfer states were readable in code but still too vague in runtime, especially when the panel showed two concrete item candidates |
+| Prefer surfacing a still-available shop sell action before explaining why buy is blocked | In real play, the actionable takeaway is "you can still sell this" rather than a purely negative buy-state warning |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -76,4 +77,5 @@ Phase 6
 - Latest verified commits in this phase: `d51a0c0 fix: enforce modal panels and repair unreadable saves`, `801a1a4 fix: explain blocked world interactions`, `2f9fc50 docs: add persistent milestone recovery notes`
 - Current worktree status was clean immediately after `801a1a4`
 - Latest verified batch after those commits tightened storage panel one-way and fully blocked wording so the actionable and blocked item directions stay explicit
+- Latest verified batch after that also tightened shop single-direction wording so sell-ready states stay visible even when buy is blocked by money or inventory space
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`

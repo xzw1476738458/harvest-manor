@@ -115,9 +115,13 @@
   - Added storage button-text helpers so disabled actions explain whether storage or inventory is the limiting side
   - Updated the main storage browse message to distinguish actionable single-direction states from fully blocked transfer states
   - Re-ran focused storage tests, the full suite, the game build, and the Godot smoke command after the storage edge-state polish batch
+  - Added failing tests for shop states where selling is still possible but buying is blocked by inventory space or missing gold
+  - Reordered shop offer state messaging so sell-ready states stay visible before the buy-side blocker explanation
+  - Re-ran focused shop tests, the full suite, the game build, and the Godot smoke command after the shop single-direction polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
+  - `game/scripts/ui/ShopPanelController.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
   - `tests/HarvestManor.Game.Tests/UI/PanelControllerStateTests.cs` (modified)
 
@@ -175,6 +179,10 @@
 | Full tests after storage edge-state batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `128/128` passed | PASS |
 | Full build after storage edge-state batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after storage edge-state batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused shop single-direction tests | `dotnet test ... --filter "FullyQualifiedName~EvaluateOfferState|FullyQualifiedName~BuildShopBrowseStatusMessage_ReflectsTheSelectedOfferState"` | New tests fail first, then pass after implementation | Passed after prioritizing sell-ready wording in buy-blocked shop states | PASS |
+| Full tests after shop single-direction batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `130/130` passed | PASS |
+| Full build after shop single-direction batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after shop single-direction batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -188,10 +196,10 @@
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next runtime polish candidate after the storage edge-state clarity batch, or close out this slice with a clean summary |
+| Where am I going? | Decide the next runtime polish candidate after the storage and shop edge-state clarity batches, or close out this slice with a clean summary |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
 | What have I learned? | Interaction discoverability needed visible and hover-reactive hotspots, not just valid click wiring; see `findings.md` |
-| What have I done? | Verified and committed runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, and clearer storage edge-state messaging across the current vertical slice |
+| What have I done? | Verified and committed runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, and clearer storage/shop edge-state messaging across the current vertical slice |
 
 ---
 Update this log after each additional polish batch or verification pass.

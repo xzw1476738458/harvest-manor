@@ -24,6 +24,23 @@ public sealed class PanelControllerStateTests
     }
 
     [Fact]
+    public void EvaluateOfferState_ReportsSellReadinessWhenBuyIsBlockedByInventorySpace()
+    {
+        var inventory = new InventoryState(slotCapacity: 1, maxStackSize: 1);
+        Assert.True(inventory.TryAdd("parsnip_seed", 1));
+        var wallet = new Wallet(200);
+
+        var state = ShopPanelController.EvaluateOfferState(
+            new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10),
+            inventory,
+            wallet);
+
+        Assert.False(state.CanBuy);
+        Assert.True(state.CanSell);
+        Assert.Equal("Ready to sell 1. Cannot buy 1: inventory full.", state.StatusText);
+    }
+
+    [Fact]
     public void EvaluateOfferState_ReportsMissingGoldWhenWalletCannotCoverCost()
     {
         var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 99);
@@ -36,6 +53,23 @@ public sealed class PanelControllerStateTests
 
         Assert.False(state.CanBuy);
         Assert.Equal("Need 15g more to buy 1.", state.StatusText);
+    }
+
+    [Fact]
+    public void EvaluateOfferState_ReportsSellReadinessWhenBuyIsBlockedByMissingGold()
+    {
+        var inventory = new InventoryState(slotCapacity: 2, maxStackSize: 99);
+        Assert.True(inventory.TryAdd("parsnip_seed", 1));
+        var wallet = new Wallet(5);
+
+        var state = ShopPanelController.EvaluateOfferState(
+            new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10),
+            inventory,
+            wallet);
+
+        Assert.False(state.CanBuy);
+        Assert.True(state.CanSell);
+        Assert.Equal("Ready to sell 1. Need 15g more to buy 1.", state.StatusText);
     }
 
     [Fact]

@@ -406,6 +406,19 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Equal(
             "Shop selection: parsnip_crop. Ready to sell 1.",
             GameBootstrap.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 1, inventory, wallet));
+
+        var ownedSeeds = new InventoryState(1, 1);
+        Assert.True(ownedSeeds.TryAdd("parsnip_seed", 1));
+        Assert.Equal(
+            "Shop selection: parsnip_seed. Ready to sell 1. Cannot buy 1: inventory full.",
+            GameBootstrap.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, ownedSeeds, wallet));
+
+        var poorWallet = new Wallet(5);
+        var seedInventory = new InventoryState(12, 99);
+        Assert.True(seedInventory.TryAdd("parsnip_seed", 1));
+        Assert.Equal(
+            "Shop selection: parsnip_seed. Ready to sell 1. Need 15g more to buy 1.",
+            GameBootstrap.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, seedInventory, poorWallet));
     }
 
     [Fact]

@@ -127,17 +127,25 @@ public partial class ShopPanelController : Control
         var canSell = offer.SellPrice > 0 && inventoryCount > 0;
 
         string statusText;
-        if (offer.BuyPrice > 0 && inventory is not null && !hasInventorySpace)
+        if (canBuy && canSell)
+        {
+            statusText = "Ready to buy or sell 1.";
+        }
+        else if (canSell && offer.BuyPrice > 0 && inventory is not null && !hasInventorySpace)
+        {
+            statusText = "Ready to sell 1. Cannot buy 1: inventory full.";
+        }
+        else if (canSell && offer.BuyPrice > 0 && wallet is not null && !canAfford)
+        {
+            statusText = $"Ready to sell 1. Need {offer.BuyPrice - gold}g more to buy 1.";
+        }
+        else if (offer.BuyPrice > 0 && inventory is not null && !hasInventorySpace)
         {
             statusText = "Inventory full for selected offer.";
         }
         else if (offer.BuyPrice > 0 && wallet is not null && !canAfford)
         {
             statusText = $"Need {offer.BuyPrice - gold}g more to buy 1.";
-        }
-        else if (canBuy && canSell)
-        {
-            statusText = "Ready to buy or sell 1.";
         }
         else if (canBuy)
         {
