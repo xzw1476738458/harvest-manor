@@ -395,7 +395,8 @@ public partial class GameBootstrap : Node2D
     public static string BuildRequestBoardHoverStatusMessage(
         IReadOnlyList<RequestDefinition> requests,
         ISet<string> completedRequestIds,
-        InventoryState inventory)
+        InventoryState inventory,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(requests);
         ArgumentNullException.ThrowIfNull(completedRequestIds);
@@ -408,20 +409,22 @@ public partial class GameBootstrap : Node2D
         }
 
         var currentQuantity = inventory.GetQuantity(nextRequest.RequiredItemId);
+        var itemDisplayName = ItemDisplayNameFormatter.Resolve(nextRequest.RequiredItemId, itemCatalog);
         if (currentQuantity >= nextRequest.RequiredQuantity)
         {
-            return $"Hover request board: turn in {nextRequest.RequiredQuantity} {nextRequest.RequiredItemId} for {nextRequest.RewardGold}g.";
+            return $"Hover request board: turn in {nextRequest.RequiredQuantity} {itemDisplayName} for {nextRequest.RewardGold}g.";
         }
 
         var remainingQuantity = nextRequest.RequiredQuantity - currentQuantity;
-        return $"Hover request board: need {remainingQuantity} more {nextRequest.RequiredItemId}.";
+        return $"Hover request board: need {remainingQuantity} more {itemDisplayName}.";
     }
 
     public static string BuildShopBrowseStatusMessage(
         IReadOnlyList<ShopOffer> offers,
         int selectedOfferIndex,
         InventoryState inventory,
-        Wallet wallet)
+        Wallet wallet,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(offers);
         ArgumentNullException.ThrowIfNull(inventory);
@@ -435,15 +438,25 @@ public partial class GameBootstrap : Node2D
         var clampedIndex = Math.Clamp(selectedOfferIndex, 0, offers.Count - 1);
         var offer = offers[clampedIndex];
         var state = ShopPanelController.EvaluateOfferState(offer, inventory, wallet);
-        return $"Shop selection: {offer.ItemId}. {state.StatusText}";
+        return $"Shop selection: {ItemDisplayNameFormatter.Resolve(offer.ItemId, itemCatalog)}. {state.StatusText}";
     }
 
-    public static string BuildStorageBrowseStatusMessage(InventoryState inventory, InventoryState storage)
+    public static string BuildStorageBrowseStatusMessage(
+        InventoryState inventory,
+        InventoryState storage,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(inventory);
         ArgumentNullException.ThrowIfNull(storage);
 
         var state = StoragePanelController.EvaluateTransferState(inventory, storage);
+        var storeDisplayName = state.StoreCandidateItemId is null
+            ? null
+            : ItemDisplayNameFormatter.Resolve(state.StoreCandidateItemId, itemCatalog);
+        var withdrawDisplayName = state.WithdrawCandidateItemId is null
+            ? null
+            : ItemDisplayNameFormatter.Resolve(state.WithdrawCandidateItemId, itemCatalog);
+
         if (state.StoreCandidateItemId is null && state.WithdrawCandidateItemId is null)
         {
             return "Storage open. Nothing to move.";
@@ -453,36 +466,36 @@ public partial class GameBootstrap : Node2D
             state.StoreCandidateItemId is not null &&
             state.WithdrawCandidateItemId is not null)
         {
-            return $"Storage selection: store {state.StoreCandidateItemId} or take {state.WithdrawCandidateItemId}.";
+            return $"Storage selection: store {storeDisplayName} or take {withdrawDisplayName}.";
         }
 
         if (state.CanStore && state.StoreCandidateItemId is not null)
         {
             return state.WithdrawCandidateItemId is not null
-                ? $"Storage selection: store {state.StoreCandidateItemId}. Cannot take {state.WithdrawCandidateItemId}: inventory is full."
-                : $"Storage selection: store {state.StoreCandidateItemId}.";
+                ? $"Storage selection: store {storeDisplayName}. Cannot take {withdrawDisplayName}: inventory is full."
+                : $"Storage selection: store {storeDisplayName}.";
         }
 
         if (state.CanWithdraw && state.WithdrawCandidateItemId is not null)
         {
             return state.StoreCandidateItemId is not null
-                ? $"Storage selection: take {state.WithdrawCandidateItemId}. Cannot store {state.StoreCandidateItemId}: storage is full."
-                : $"Storage selection: take {state.WithdrawCandidateItemId}.";
+                ? $"Storage selection: take {withdrawDisplayName}. Cannot store {storeDisplayName}: storage is full."
+                : $"Storage selection: take {withdrawDisplayName}.";
         }
 
         if (state.StoreCandidateItemId is not null && state.WithdrawCandidateItemId is not null)
         {
-            return $"Storage blocked: cannot store {state.StoreCandidateItemId} (storage full) or take {state.WithdrawCandidateItemId} (inventory full).";
+            return $"Storage blocked: cannot store {storeDisplayName} (storage full) or take {withdrawDisplayName} (inventory full).";
         }
 
         if (state.StoreCandidateItemId is not null)
         {
-            return $"Storage blocked: cannot store {state.StoreCandidateItemId} (storage full).";
+            return $"Storage blocked: cannot store {storeDisplayName} (storage full).";
         }
 
         if (state.WithdrawCandidateItemId is not null)
         {
-            return $"Storage blocked: cannot take {state.WithdrawCandidateItemId} (inventory full).";
+            return $"Storage blocked: cannot take {withdrawDisplayName} (inventory full).";
         }
 
         return "Storage open. Nothing to move.";
@@ -493,59 +506,74 @@ public partial class GameBootstrap : Node2D
         IReadOnlyList<ShopOffer> offers,
         int selectedOfferIndex,
         InventoryState inventory,
-        Wallet wallet)
+        Wallet wallet,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(actionMessage);
-        return $"{actionMessage} {BuildShopBrowseStatusMessage(offers, selectedOfferIndex, inventory, wallet)}";
+        return $"{actionMessage} {BuildShopBrowseStatusMessage(offers, selectedOfferIndex, inventory, wallet, itemCatalog)}";
     }
 
     public static string BuildStorageActionStatusMessage(
         string actionMessage,
         InventoryState inventory,
-        InventoryState storage)
+        InventoryState storage,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(actionMessage);
-        return $"{actionMessage} {BuildStorageBrowseStatusMessage(inventory, storage)}";
+        return $"{actionMessage} {BuildStorageBrowseStatusMessage(inventory, storage, itemCatalog)}";
     }
 
-    public static string BuildShopPurchaseStatusMessage(ShopOffer offer, InventoryState inventory, Wallet wallet, bool changed)
+    public static string BuildShopPurchaseStatusMessage(
+        ShopOffer offer,
+        InventoryState inventory,
+        Wallet wallet,
+        bool changed,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(offer);
         ArgumentNullException.ThrowIfNull(inventory);
         ArgumentNullException.ThrowIfNull(wallet);
 
+        var itemDisplayName = ItemDisplayNameFormatter.Resolve(offer.ItemId, itemCatalog);
+
         if (changed)
         {
-            return $"Bought 1 {offer.ItemId} for {offer.BuyPrice}g.";
+            return $"Bought 1 {itemDisplayName} for {offer.BuyPrice}g.";
         }
 
         if (!inventory.CanAdd(offer.ItemId, 1))
         {
-            return $"Cannot buy {offer.ItemId}: inventory full.";
+            return $"Cannot buy {itemDisplayName}: inventory full.";
         }
 
         var missingGold = Math.Max(0, offer.BuyPrice - wallet.Gold);
         if (missingGold > 0)
         {
-            return $"Need {missingGold}g more to buy 1 {offer.ItemId}.";
+            return $"Need {missingGold}g more to buy 1 {itemDisplayName}.";
         }
 
-        return $"Cannot buy {offer.ItemId}.";
+        return $"Cannot buy {itemDisplayName}.";
     }
 
-    public static string BuildShopSellStatusMessage(ShopOffer offer, InventoryState inventory, bool changed)
+    public static string BuildShopSellStatusMessage(
+        ShopOffer offer,
+        InventoryState inventory,
+        bool changed,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(offer);
         ArgumentNullException.ThrowIfNull(inventory);
 
+        var itemDisplayName = ItemDisplayNameFormatter.Resolve(offer.ItemId, itemCatalog);
+
         if (changed)
         {
-            return $"Sold 1 {offer.ItemId} for {offer.SellPrice}g.";
+            return $"Sold 1 {itemDisplayName} for {offer.SellPrice}g.";
         }
 
         return inventory.GetQuantity(offer.ItemId) > 0
-            ? $"Cannot sell {offer.ItemId}."
-            : $"Cannot sell {offer.ItemId}: none available.";
+            ? $"Cannot sell {itemDisplayName}."
+            : $"Cannot sell {itemDisplayName}: none available.";
     }
 
     public static string BuildStorageTransferStatusMessage(
@@ -553,42 +581,46 @@ public partial class GameBootstrap : Node2D
         bool changed,
         bool intoStorage,
         InventoryState source,
-        InventoryState destination)
+        InventoryState destination,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(itemId);
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(destination);
 
+        var itemDisplayName = ItemDisplayNameFormatter.Resolve(itemId, itemCatalog);
+
         if (changed)
         {
             return intoStorage
-                ? $"Stored 1 {itemId}."
-                : $"Took 1 {itemId} from storage.";
+                ? $"Stored 1 {itemDisplayName}."
+                : $"Took 1 {itemDisplayName} from storage.";
         }
 
         if (source.GetQuantity(itemId) <= 0)
         {
             return intoStorage
-                ? $"Cannot store {itemId}: none available."
-                : $"Cannot take {itemId}: none available.";
+                ? $"Cannot store {itemDisplayName}: none available."
+                : $"Cannot take {itemDisplayName}: none available.";
         }
 
         if (!destination.CanAdd(itemId, 1))
         {
             return intoStorage
-                ? $"Cannot store {itemId}: storage is full."
-                : $"Cannot take {itemId}: inventory is full.";
+                ? $"Cannot store {itemDisplayName}: storage is full."
+                : $"Cannot take {itemDisplayName}: inventory is full.";
         }
 
         return intoStorage
-            ? $"Cannot store {itemId}."
-            : $"Cannot take {itemId}.";
+            ? $"Cannot store {itemDisplayName}."
+            : $"Cannot take {itemDisplayName}.";
     }
 
     public static string BuildRequestBoardStatusText(
         IReadOnlyList<RequestDefinition> requests,
         ISet<string> completedRequestIds,
-        InventoryState inventory)
+        InventoryState inventory,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(requests);
         ArgumentNullException.ThrowIfNull(completedRequestIds);
@@ -601,13 +633,14 @@ public partial class GameBootstrap : Node2D
         }
 
         var currentQuantity = inventory.GetQuantity(nextRequest.RequiredItemId);
+        var itemDisplayName = ItemDisplayNameFormatter.Resolve(nextRequest.RequiredItemId, itemCatalog);
         if (currentQuantity >= nextRequest.RequiredQuantity)
         {
-            return $"Request ready: {nextRequest.RequiredItemId} {currentQuantity}/{nextRequest.RequiredQuantity}. Click board to turn in.";
+            return $"Request ready: {itemDisplayName} {currentQuantity}/{nextRequest.RequiredQuantity}. Click board to turn in.";
         }
 
         var remainingQuantity = nextRequest.RequiredQuantity - currentQuantity;
-        return $"Active request: {nextRequest.RequiredItemId} {currentQuantity}/{nextRequest.RequiredQuantity}. Need {remainingQuantity} more.";
+        return $"Active request: {itemDisplayName} {currentQuantity}/{nextRequest.RequiredQuantity}. Need {remainingQuantity} more.";
     }
 
     public static string BuildPlotKey(int x, int y)
@@ -852,6 +885,25 @@ public partial class GameBootstrap : Node2D
         Wallet wallet,
         out string message)
     {
+        return TryCompleteNextRequest(
+            requests,
+            requestBoardService,
+            inventory,
+            completedRequestIds,
+            wallet,
+            itemCatalog: null,
+            out message);
+    }
+
+    public static bool TryCompleteNextRequest(
+        IReadOnlyList<RequestDefinition> requests,
+        RequestBoardService requestBoardService,
+        InventoryState inventory,
+        ISet<string> completedRequestIds,
+        Wallet wallet,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog,
+        out string message)
+    {
         ArgumentNullException.ThrowIfNull(requests);
         ArgumentNullException.ThrowIfNull(requestBoardService);
         ArgumentNullException.ThrowIfNull(inventory);
@@ -869,7 +921,8 @@ public partial class GameBootstrap : Node2D
         {
             var currentQuantity = inventory.GetQuantity(nextRequest.RequiredItemId);
             var remainingQuantity = Math.Max(0, nextRequest.RequiredQuantity - currentQuantity);
-            message = $"Need {remainingQuantity} more {nextRequest.RequiredItemId}.";
+            var itemDisplayName = ItemDisplayNameFormatter.Resolve(nextRequest.RequiredItemId, itemCatalog);
+            message = $"Need {remainingQuantity} more {itemDisplayName}.";
             return false;
         }
 
@@ -1034,7 +1087,7 @@ public partial class GameBootstrap : Node2D
                 ? BuildBlockedWorldInteractionMessage(_activePanelMode)
                 : _inventory is null
                     ? BuildInteractionHoverStatusMessage("request board", "turn in crops")
-                    : BuildRequestBoardHoverStatusMessage(_requests, _completedRequestIds, _inventory));
+                    : BuildRequestBoardHoverStatusMessage(_requests, _completedRequestIds, _inventory, _itemCatalog));
     }
 
     private void OnWorldInteractionHoverEnded()
@@ -1134,7 +1187,7 @@ public partial class GameBootstrap : Node2D
         SetActivePanelMode(nextMode);
         if (nextMode == PanelMode.Shop)
         {
-            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
         }
     }
 
@@ -1151,7 +1204,7 @@ public partial class GameBootstrap : Node2D
         SetActivePanelMode(nextMode);
         if (nextMode == PanelMode.Storage && _inventory is not null && _storage is not null)
         {
-            SetPanelContextFarmStatus(BuildStorageBrowseStatusMessage(_inventory, _storage));
+            SetPanelContextFarmStatus(BuildStorageBrowseStatusMessage(_inventory, _storage, _itemCatalog));
         }
     }
 
@@ -1168,7 +1221,7 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
-        var changed = TryCompleteNextRequest(_requests, _requestBoardService, _inventory, _completedRequestIds, _wallet, out var message);
+        var changed = TryCompleteNextRequest(_requests, _requestBoardService, _inventory, _completedRequestIds, _wallet, _itemCatalog, out var message);
         RefreshRequestBoardStatus(message);
         SetFarmStatus(message);
         RenderPanels();
@@ -1194,8 +1247,8 @@ public partial class GameBootstrap : Node2D
             Autosave();
         }
 
-        var actionMessage = BuildShopPurchaseStatusMessage(offer, _inventory, _wallet, changed);
-        SetPanelContextFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+        var actionMessage = BuildShopPurchaseStatusMessage(offer, _inventory, _wallet, changed, _itemCatalog);
+        SetPanelContextFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1214,8 +1267,8 @@ public partial class GameBootstrap : Node2D
             Autosave();
         }
 
-        var actionMessage = BuildShopSellStatusMessage(offer, _inventory, changed);
-        SetPanelContextFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+        var actionMessage = BuildShopSellStatusMessage(offer, _inventory, changed, _itemCatalog);
+        SetPanelContextFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1231,7 +1284,7 @@ public partial class GameBootstrap : Node2D
         RenderPanels();
         if (_inventory is not null && _wallet is not null)
         {
-            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
         }
     }
 
@@ -1246,7 +1299,7 @@ public partial class GameBootstrap : Node2D
         RenderPanels();
         if (_inventory is not null && _wallet is not null)
         {
-            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
+            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
         }
     }
 
@@ -1268,8 +1321,8 @@ public partial class GameBootstrap : Node2D
             Autosave();
         }
 
-        var actionMessage = BuildStorageTransferStatusMessage(itemId, changed, intoStorage: true, _inventory, _storage);
-        SetPanelContextFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage));
+        var actionMessage = BuildStorageTransferStatusMessage(itemId, changed, intoStorage: true, _inventory, _storage, _itemCatalog);
+        SetPanelContextFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage, _itemCatalog));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1287,8 +1340,8 @@ public partial class GameBootstrap : Node2D
             Autosave();
         }
 
-        var actionMessage = BuildStorageTransferStatusMessage(itemId, changed, intoStorage: false, _storage, _inventory);
-        SetPanelContextFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage));
+        var actionMessage = BuildStorageTransferStatusMessage(itemId, changed, intoStorage: false, _storage, _inventory, _itemCatalog);
+        SetPanelContextFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage, _itemCatalog));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1490,7 +1543,7 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
-        _requestStatusLabel.Text = BuildRequestBoardStatusText(_requests, _completedRequestIds, _inventory);
+        _requestStatusLabel.Text = BuildRequestBoardStatusText(_requests, _completedRequestIds, _inventory, _itemCatalog);
     }
 
     private void SetFarmStatus(string message)

@@ -126,6 +126,10 @@
   - Added a small shared item-display-name formatter and threaded the loaded item catalog into panel rendering
   - Updated inventory panel body text, storage panel body/button text, and shop panel body text to prefer player-facing item display names
   - Re-ran focused UI tests, the full suite, the game build, and the Godot smoke command after the panel display-name polish batch
+  - Added failing tests for request-board, shop, and storage global status helpers that were still exposing raw item ids outside the panels
+  - Added an `itemCatalog`-aware `TryCompleteNextRequest` overload and threaded optional item catalog inputs through the remaining request-board, shop, and storage status builders plus their runtime call sites
+  - Corrected one new storage display-name test fixture so it exercised the intended inventory-full withdraw branch instead of an empty-source branch
+  - Re-ran focused display-name status tests, the full suite, the game build, and the Godot smoke command after the global status display-name polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -201,6 +205,11 @@
 | Full tests after panel display-name batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `138/138` passed | PASS |
 | Full build after panel display-name batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after panel display-name batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused global status display-name tests | `dotnet test ... --filter "FullyQualifiedName~BuildRequestBoardStatusText|FullyQualifiedName~BuildRequestBoardHoverStatusMessage|FullyQualifiedName~BuildShopBrowseStatusMessage|FullyQualifiedName~BuildStorageBrowseStatusMessage|FullyQualifiedName~BuildShopActionStatusMessage|FullyQualifiedName~BuildStorageActionStatusMessage|FullyQualifiedName~BuildShopPurchaseStatusMessage|FullyQualifiedName~BuildStorageTransferStatusMessage|FullyQualifiedName~TryCompleteNextRequest_FailureMessage"` | New tests fail first, then pass after implementation | Failed first on missing `TryCompleteNextRequest` overload, then passed `12/12` after wiring item-catalog-aware status helpers | PASS |
+| Focused storage display-name fixture check | `dotnet test ... --filter "FullyQualifiedName~StorageStatusBuilders_UseDisplayNamesWhenCatalogIsAvailable"` | Corrected regression test should pass on the intended inventory-full path | Passed `1/1` after stocking the source storage fixture with `stone` | PASS |
+| Full tests after global status display-name batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `144/144` passed | PASS |
+| Full build after global status display-name batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after global status display-name batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -209,15 +218,17 @@
 | 2026-04-09 | `ScriptPathAttributeGenerator` warning during test build | 1 | Logged as non-blocking because test and build verification remained green |
 | 2026-04-09 | Save compatibility test initially failed for the wrong reason because the handcrafted payload used string enum text for `season` | 1 | Adjusted the legacy test fixture to match the numeric enum format emitted by the current serializer |
 | 2026-04-09 | `SaveGameStore` payload helper initially failed to compile due to missing namespaces | 1 | Added `HarvestManor.Core.Inventory` and `HarvestManor.Core.Time` usings |
+| 2026-04-09 | Global status display-name tests initially stopped at compile time because `TryCompleteNextRequest` still lacked an item-catalog-aware overload | 1 | Added an overload that preserves the old signature while letting runtime call sites opt into player-facing item names |
+| 2026-04-09 | One storage display-name regression test initially failed for the wrong reason because the source inventory was empty | 1 | Updated the fixture to stock `stone` so the test now reaches the intended inventory-full withdraw branch |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next runtime polish candidate after the panel display-name batch, likely whether global farm/request status should stop leaking internal item ids too |
+| Where am I going? | Decide the next small runtime polish candidate now that both panel surfaces and global farm/request status text use player-facing item names consistently |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
 | What have I learned? | Interaction discoverability needed visible and hover-reactive hotspots, not just valid click wiring; see `findings.md` |
-| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, and player-facing panel display names across the current vertical slice |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, and player-facing item display names across both panel surfaces and global farm/request status text in the current vertical slice |
 
 ---
 Update this log after each additional polish batch or verification pass.

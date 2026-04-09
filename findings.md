@@ -34,6 +34,7 @@
 - Shop panel still had a final button-level clarity gap after the wording passes: the body text explained why Buy or Sell was blocked, but the disabled buttons themselves still only showed generic price labels
 - Panel close flow still had a context gap after the browse-feedback passes: closing shop or storage overwrote the richer recent panel context with a generic "Panels closed" message
 - Panel surfaces still leaked internal item ids (`parsnip_seed`, `potato_crop`) even though the item catalog already contained player-facing display names
+- Even after panel surfaces switched to display names, the main farm/request status text still leaked internal item ids during request-board, shop, and storage interactions
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -59,6 +60,7 @@
 | Put concise blocker reasons on disabled shop buttons while preserving price copy when the action is available | The button surface itself should explain the immediate blocker without forcing the player to cross-reference the body text |
 | Track the latest panel-context farm status separately from transient blocked/open-close copy | Closing a panel should restore the most relevant recent shop/storage context instead of flattening it into a generic close message |
 | Thread item catalog display names into panel rendering without rewriting all global status builders in the same batch | This fixes the most visible player-facing readability issue first while keeping the current polish batch small and low-risk |
+| Add optional `itemCatalog` inputs to the remaining pure global status builders instead of replacing their existing signatures outright | This preserves old raw-id behavior for baseline tests while letting runtime call sites opt into player-facing names |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -79,6 +81,7 @@
 | Shop/storage action results still displaced the current panel context | Appended current browse-state summaries after buy/sell/store/withdraw result messages so the panel stays self-explanatory |
 | Storage edge states still sounded too generic after the earlier browse-feedback pass | Named the blocked item and direction explicitly in storage status text, added blocked-state button labels, and made the main browse text distinguish between actionable versus fully blocked transfer states |
 | Shop selection text still hid sell-ready states behind buy-side blockers | Reordered shop status messaging so the panel body and main farm status now keep "Ready to sell 1" visible before the missing-gold or inventory-full buy explanation |
+| One new storage display-name regression test initially failed for the wrong reason because the source inventory was empty, so the helper correctly returned `none available` before it could hit the intended inventory-full branch | Restocked the test fixture with `stone` so the regression now exercises the intended blocked-withdraw path and still verifies display-name output |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`

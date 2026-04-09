@@ -208,6 +208,27 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Theory]
+    [InlineData("Active request: Parsnip 0/5. Need 5 more.", 0)]
+    [InlineData("Request ready: Parsnip 5/5. Click board to turn in.", 5)]
+    public void BuildRequestBoardStatusText_UsesDisplayNamesWhenCatalogIsAvailable(string expectedMessage, int quantity)
+    {
+        var inventory = new InventoryState(12, 99);
+        if (quantity > 0)
+        {
+            Assert.True(inventory.TryAdd("parsnip_crop", quantity));
+        }
+
+        var requests = new[]
+        {
+            new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120)
+        };
+
+        Assert.Equal(
+            expectedMessage,
+            GameBootstrap.BuildRequestBoardStatusText(requests, new HashSet<string>(), inventory, CreateItemCatalog()));
+    }
+
+    [Theory]
     [InlineData(GameBootstrap.PanelMode.None, false, false, false)]
     [InlineData(GameBootstrap.PanelMode.Shop, false, true, false)]
     [InlineData(GameBootstrap.PanelMode.Storage, true, false, true)]
@@ -400,6 +421,20 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void BuildRequestBoardHoverStatusMessage_UsesDisplayNamesWhenCatalogIsAvailable()
+    {
+        var inventory = new InventoryState(12, 99);
+        var requests = new[]
+        {
+            new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120)
+        };
+
+        Assert.Equal(
+            "Hover request board: need 5 more Parsnip.",
+            GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, new HashSet<string>(), inventory, CreateItemCatalog()));
+    }
+
+    [Fact]
     public void BuildShopBrowseStatusMessage_ReflectsTheSelectedOfferState()
     {
         var offers = new[]
@@ -434,6 +469,35 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void ShopStatusBuilders_UseDisplayNamesWhenCatalogIsAvailable()
+    {
+        var offers = new[]
+        {
+            new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10)
+        };
+        var inventory = new InventoryState(12, 99);
+        Assert.True(inventory.TryAdd("parsnip_seed", 1));
+        var wallet = new Wallet(180);
+        var itemCatalog = CreateItemCatalog();
+
+        Assert.Equal(
+            "Shop selection: Parsnip Seeds. Ready to buy or sell 1.",
+            GameBootstrap.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, inventory, wallet, itemCatalog));
+        Assert.Equal(
+            "Bought 1 Parsnip Seeds for 20g. Shop selection: Parsnip Seeds. Ready to buy or sell 1.",
+            GameBootstrap.BuildShopActionStatusMessage(
+                "Bought 1 Parsnip Seeds for 20g.",
+                offers,
+                selectedOfferIndex: 0,
+                inventory,
+                wallet,
+                itemCatalog));
+        Assert.Equal(
+            "Need 15g more to buy 1 Parsnip Seeds.",
+            GameBootstrap.BuildShopPurchaseStatusMessage(offers[0], inventory, new Wallet(5), changed: false, itemCatalog));
+    }
+
+    [Fact]
     public void BuildStorageBrowseStatusMessage_ReflectsCurrentTransferCandidates()
     {
         var inventory = new InventoryState(12, 99);
@@ -461,6 +525,32 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Equal(
             "Storage blocked: cannot store stone (storage full) or take wood (inventory full).",
             GameBootstrap.BuildStorageBrowseStatusMessage(blockedInventory, blockedStorage));
+    }
+
+    [Fact]
+    public void StorageStatusBuilders_UseDisplayNamesWhenCatalogIsAvailable()
+    {
+        var inventory = new InventoryState(12, 99);
+        var storage = new InventoryState(24, 99);
+        Assert.True(inventory.TryAdd("parsnip_seed", 1));
+        Assert.True(storage.TryAdd("wood", 1));
+        var itemCatalog = CreateItemCatalog();
+
+        Assert.Equal(
+            "Storage selection: store Parsnip Seeds or take Wood.",
+            GameBootstrap.BuildStorageBrowseStatusMessage(inventory, storage, itemCatalog));
+        Assert.Equal(
+            "Stored 1 Parsnip Seeds. Storage selection: store Parsnip Seeds or take Wood.",
+            GameBootstrap.BuildStorageActionStatusMessage("Stored 1 Parsnip Seeds.", inventory, storage, itemCatalog));
+        Assert.Equal(
+            "Cannot take Stone: inventory is full.",
+            GameBootstrap.BuildStorageTransferStatusMessage(
+                "stone",
+                changed: false,
+                intoStorage: false,
+                CreateStockedStorageWithStone(),
+                CreateFullInventoryForStoneBlock(),
+                itemCatalog));
     }
 
     [Fact]
@@ -569,6 +659,30 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void TryCompleteNextRequest_FailureMessage_UsesDisplayNamesWhenCatalogIsAvailable()
+    {
+        var requests = new[]
+        {
+            new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120)
+        };
+        var inventory = new InventoryState(12, 99);
+        var completedRequests = new HashSet<string>();
+        var wallet = new Wallet(0);
+
+        var changed = GameBootstrap.TryCompleteNextRequest(
+            requests,
+            new RequestBoardService(),
+            inventory,
+            completedRequests,
+            wallet,
+            CreateItemCatalog(),
+            out var message);
+
+        Assert.False(changed);
+        Assert.Equal("Need 5 more Parsnip.", message);
+    }
+
+    [Fact]
     public void GetLockedPlotHint_ReturnsUnlockPromptForDemoExpansionPlot()
     {
         Assert.Equal("Click: unlock (120g)", GameBootstrap.GetLockedPlotHint(2, 0));
@@ -660,5 +774,30 @@ public sealed class GameBootstrapIntegrationTests
                 4,
                 new[] { 1, 1, 2 })
         };
+    }
+
+    private static IReadOnlyDictionary<string, ItemDefinition> CreateItemCatalog()
+    {
+        return new Dictionary<string, ItemDefinition>(StringComparer.Ordinal)
+        {
+            ["parsnip_seed"] = new("parsnip_seed", "Parsnip Seeds", "Seed", 99),
+            ["parsnip_crop"] = new("parsnip_crop", "Parsnip", "Crop", 99),
+            ["wood"] = new("wood", "Wood", "Material", 99),
+            ["stone"] = new("stone", "Stone", "Material", 99)
+        };
+    }
+
+    private static InventoryState CreateFullInventoryForStoneBlock()
+    {
+        var inventory = new InventoryState(1, 1);
+        Assert.True(inventory.TryAdd("wood", 1));
+        return inventory;
+    }
+
+    private static InventoryState CreateStockedStorageWithStone()
+    {
+        var storage = new InventoryState(24, 99);
+        Assert.True(storage.TryAdd("stone", 1));
+        return storage;
     }
 }
