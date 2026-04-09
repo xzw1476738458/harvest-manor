@@ -102,6 +102,8 @@
   - Added a failing test for progress-aware request-board hover messaging
   - Routed request-board hover through a dedicated helper so it previews missing items, ready turn-ins, or completion state instead of generic text
   - Re-ran the full suite, build, and Godot smoke after the request-board hover changes
+  - Tightened the persistent request-board status text so incomplete requests show remaining quantity instead of a misleading turn-in prompt
+  - Re-ran focused request-status tests plus the full suite, build, and Godot smoke after the request-status text change
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
@@ -144,6 +146,10 @@
 | Full tests after request-board hover batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `122/122` passed | PASS |
 | Full build after request-board hover batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after request-board hover batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
+| Focused request-status tests | `dotnet test ... --filter FullyQualifiedName~BuildRequestBoardStatusText` | Updated expectations fail first, then pass after implementation | Passed after distinguishing incomplete versus ready request text | PASS |
+| Full tests after request-status batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `122/122` passed | PASS |
+| Full build after request-status batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after request-status batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |

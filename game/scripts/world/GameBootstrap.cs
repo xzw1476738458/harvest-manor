@@ -493,7 +493,13 @@ public partial class GameBootstrap : Node2D
         }
 
         var currentQuantity = inventory.GetQuantity(nextRequest.RequiredItemId);
-        return $"Active request: {nextRequest.RequiredItemId} {currentQuantity}/{nextRequest.RequiredQuantity}. Click board to turn in.";
+        if (currentQuantity >= nextRequest.RequiredQuantity)
+        {
+            return $"Request ready: {nextRequest.RequiredItemId} {currentQuantity}/{nextRequest.RequiredQuantity}. Click board to turn in.";
+        }
+
+        var remainingQuantity = nextRequest.RequiredQuantity - currentQuantity;
+        return $"Active request: {nextRequest.RequiredItemId} {currentQuantity}/{nextRequest.RequiredQuantity}. Need {remainingQuantity} more.";
     }
 
     public static string BuildPlotKey(int x, int y)

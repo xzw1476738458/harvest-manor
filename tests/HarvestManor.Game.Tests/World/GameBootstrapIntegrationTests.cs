@@ -187,14 +187,18 @@ public sealed class GameBootstrapIntegrationTests
             new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120)
         };
 
+        Assert.Equal(
+            "Active request: parsnip_crop 0/5. Need 5 more.",
+            GameBootstrap.BuildRequestBoardStatusText(requests, completedRequests, inventory));
+
         Assert.True(inventory.TryAdd("parsnip_crop", 5));
         Assert.Equal(
-            "Active request: parsnip_crop 5/5. Click board to turn in.",
+            "Request ready: parsnip_crop 5/5. Click board to turn in.",
             GameBootstrap.BuildRequestBoardStatusText(requests, completedRequests, inventory));
 
         Assert.True(GameBootstrap.TryTransferItem(inventory, storage, "parsnip_crop", 2));
         Assert.Equal(
-            "Active request: parsnip_crop 3/5. Click board to turn in.",
+            "Active request: parsnip_crop 3/5. Need 2 more.",
             GameBootstrap.BuildRequestBoardStatusText(requests, completedRequests, inventory));
 
         completedRequests.Add("ship_5_parsnips");
