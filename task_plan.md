@@ -71,6 +71,7 @@ Phase 6
 | Thread item catalog display names through the remaining global request/shop/storage status builders with optional catalog inputs | This finishes the player-facing readability pass without forcing every pure helper call site or regression test to load content catalogs |
 | When request completion succeeds and an item catalog is available, report the delivered quantity and item display name instead of the internal request id | The final request-board confirmation should read like player-facing game feedback rather than a debug-facing identifier |
 | Let a shop or storage hotspot close its own already-open panel while still blocking different world interactions during modal flow | This keeps the modal boundary intact for unrelated interactions, but removes an unintuitive runtime dead end where the same hotspot could not perform its implied toggle |
+| Reuse the same auto-plant crop-selection rule for empty-plot hover copy and actual planting | Pre-click guidance should preview the crop that a click will really plant whenever the current inventory makes that knowable |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -94,4 +95,5 @@ Phase 6
 - Latest verified batch after that let loaded saves with no urgent farm work fall through to request-board progress on the main startup status, so the first-screen farm label now agrees with the request label about turn-in readiness
 - Latest verified batch after that removed `slot-1.json` from startup copy and let fully completed request boards surface on load too, so startup feedback now stays player-facing even when restored request work is already finished
 - Latest verified batch after that removed `(x,y)` grid coordinates from plot hover and demo-plot unlock feedback, so farm interaction copy now reads like player guidance instead of internal debug/state notation
+- Latest verified batch after that made empty tilled-plot hover copy name the crop that auto-plant will currently use, so pre-click farm guidance now stays aligned with the actual planting result when multiple seed types are available
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`

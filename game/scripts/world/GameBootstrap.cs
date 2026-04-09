@@ -427,13 +427,18 @@ public partial class GameBootstrap : Node2D
 
         if (plot.Crop is null)
         {
-            var hasAnySeed = inventory is null || crops.Values.Any(crop => inventory.GetQuantity(crop.SeedItemId) > 0);
-            if (!hasAnySeed)
+            if (inventory is null)
+            {
+                return "Hover plot: click to plant.";
+            }
+
+            var cropToPlant = FindAutoPlantCrop(crops, inventory);
+            if (cropToPlant is null)
             {
                 return "Hover plot: no seeds available.";
             }
 
-            return "Hover plot: click to plant.";
+            return $"Hover plot: click to plant {cropToPlant.DisplayName}.";
         }
 
         var cropName = crops.TryGetValue(plot.Crop.CropId, out var crop)
@@ -869,9 +874,7 @@ public partial class GameBootstrap : Node2D
 
         if (plot.Crop is null)
         {
-            var cropToPlant = crops.Values
-                .OrderBy(static crop => crop.DisplayName, StringComparer.Ordinal)
-                .FirstOrDefault(crop => inventory.GetQuantity(crop.SeedItemId) > 0);
+            var cropToPlant = FindAutoPlantCrop(crops, inventory);
 
             if (cropToPlant is null)
             {
@@ -923,6 +926,18 @@ public partial class GameBootstrap : Node2D
 
         message = "Crop already watered today.";
         return false;
+    }
+
+    private static CropDefinition? FindAutoPlantCrop(
+        IReadOnlyDictionary<string, CropDefinition> crops,
+        InventoryState inventory)
+    {
+        ArgumentNullException.ThrowIfNull(crops);
+        ArgumentNullException.ThrowIfNull(inventory);
+
+        return crops.Values
+            .OrderBy(static crop => crop.DisplayName, StringComparer.Ordinal)
+            .FirstOrDefault(crop => inventory.GetQuantity(crop.SeedItemId) > 0);
     }
 
     public static bool TryTransferItem(InventoryState source, InventoryState destination, string itemId, int quantity)

@@ -42,6 +42,7 @@
 - Even after startup copy became farm-state-aware, a loaded save with no immediate farm work still dropped back to a generic banner even when the request label already knew a turn-in was ready
 - Even after startup copy reflected farm urgency and request progress, it still leaked the literal filename `slot-1.json`, and fully completed request boards still fell back to the generic load banner
 - Farm plot hover and demo unlock feedback still exposed raw grid coordinates like `(2,0)` in the main status label, which read more like internal state/debug notation than player-facing guidance
+- Even after the broader player-facing plot-copy pass, empty tilled-plot hover still hid which crop would actually be auto-planted when multiple seed types were available in inventory
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -75,6 +76,7 @@
 | When a loaded save has no urgent farm task, let startup main-status copy reuse request-board progress before falling back to generic guidance | This keeps the first-screen main label aligned with the already-restored request label and gives the player a concrete next step instead of a bland load confirmation |
 | Keep startup save-load copy player-facing by removing literal save-slot filenames and by surfacing completed request-board state too | The main status label should read like game guidance, not a file-system/debug status line, even when the request loop is already fully cleared |
 | Remove grid coordinates from plot hover and demo unlock feedback | These coordinates help debugging, but on the live farm-status label they weaken the intended player-facing tone more than they help orientation |
+| Reuse one shared auto-plant crop selector for hover preview and empty-plot planting | This keeps the preview honest when inventory is known and avoids future drift between "click to plant X" copy and the crop the game will actually plant |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -102,6 +104,7 @@
 | New request-ready startup-status tests initially failed at compile time because the startup helper still had no request/inventory-aware overload | Added a request-aware startup-status overload and routed bootstrap through it so readably restored request progress can surface when farm work is idle |
 | New player-facing startup-copy tests initially failed because startup messaging still hard-coded `slot-1.json`, and a completed request board still got filtered back to the generic load banner | Swapped the startup prefix to player-facing copy and stopped suppressing the `All requests completed.` request-board branch during load-time status selection |
 | New plot-copy tests initially failed because farm hover and unlock messages still embedded raw grid coordinates in the main status label | Removed coordinates from the player-facing hover/unlock strings while keeping the underlying plot-key logic unchanged |
+| New auto-plant hover regression test failed because empty tilled-plot hover still used generic "click to plant" copy even when inventory made the chosen crop knowable | Extracted a shared auto-plant crop selector and reused it in both hover preview and actual planting |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`

@@ -426,6 +426,29 @@ public sealed class GameBootstrapIntegrationTests
                 currentGold: 100));
     }
 
+    [Fact]
+    public void BuildFarmPlotHoverStatusMessage_PreviewsTheSameAutoSelectedCropThatWillBePlanted()
+    {
+        var crops = CreateMultiCropCatalog();
+        var inventory = new InventoryState(12, 99);
+        var farmGrid = new FarmGrid(1, 1);
+        farmGrid.SetPlot(PlotState.Tilled(0, 0));
+        Assert.True(inventory.TryAdd("potato_seed", 1));
+        Assert.True(inventory.TryAdd("parsnip_seed", 1));
+
+        Assert.Equal(
+            "Hover plot: click to plant Parsnip.",
+            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+                farmGrid.GetPlot(0, 0),
+                crops,
+                inventory,
+                currentGold: 200));
+
+        Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var plantMessage));
+        Assert.Equal("Planted Parsnip.", plantMessage);
+        Assert.Equal("parsnip", farmGrid.GetPlot(0, 0).Crop!.CropId);
+    }
+
     [Theory]
     [InlineData("bed", "click to end day", "Hover bed: click to end day.")]
     [InlineData("shop", "buy or sell items", "Hover shop: buy or sell items.")]
@@ -897,22 +920,39 @@ public sealed class GameBootstrapIntegrationTests
             GameBootstrap.ShouldAutosaveAfterBootstrap(saveFileExists, loadedExistingSave, hasMeaningfulStateChanges));
     }
 
-    private static IReadOnlyDictionary<string, CropDefinition> CreateCropCatalog()
+private static IReadOnlyDictionary<string, CropDefinition> CreateCropCatalog()
+{
+    return new Dictionary<string, CropDefinition>
     {
-        return new Dictionary<string, CropDefinition>
-        {
-            ["parsnip"] = new(
+        ["parsnip"] = new(
                 "parsnip",
                 "Parsnip",
                 "Spring",
                 "parsnip_seed",
                 "parsnip_crop",
                 20,
-                35,
-                4,
-                new[] { 1, 1, 2 })
-        };
-    }
+            35,
+            4,
+            new[] { 1, 1, 2 })
+    };
+}
+
+private static IReadOnlyDictionary<string, CropDefinition> CreateMultiCropCatalog()
+{
+    return new Dictionary<string, CropDefinition>(CreateCropCatalog())
+    {
+        ["potato"] = new(
+            "potato",
+            "Potato",
+            "Spring",
+            "potato_seed",
+            "potato_crop",
+            45,
+            80,
+            6,
+            new[] { 2, 2, 2 })
+    };
+}
 
     private static IReadOnlyDictionary<string, ItemDefinition> CreateItemCatalog()
     {

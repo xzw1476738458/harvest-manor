@@ -155,6 +155,10 @@
   - Added failing tests for plot hover and demo unlock feedback that were still exposing raw `(x,y)` coordinates in player-facing status text
   - Removed grid coordinates from locked-plot hover, untilled/plantable hover, no-seeds hover, and demo unlock success/failure messaging
   - Re-ran focused plot-copy tests, the full suite, the game build, and the Godot smoke command after the player-facing plot-copy polish batch
+  - Added a failing regression test for empty tilled-plot hover when multiple seed types are available
+  - Extracted a shared auto-plant crop-selection helper so hover preview and actual planting now agree on which crop a click will plant
+  - Updated empty tilled-plot hover copy to name the current auto-selected crop whenever inventory context is available
+  - Re-ran focused plot-hover tests, the full suite, the game build, and the Godot smoke command after the auto-plant hover alignment batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -165,6 +169,8 @@
   - `game/scripts/ui/ItemDisplayNameFormatter.cs` (created)
   - `game/scripts/world/GameBootstrap.cs` (modified again for panel-hotspot toggle routing)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified again for panel-toggle rules)
+  - `game/scripts/world/GameBootstrap.cs` (modified again for shared auto-plant hover/interaction selection)
+  - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified again for auto-plant hover preview alignment)
 
 ## Test Results
 | Test | Input | Expected | Actual | Status |
@@ -265,6 +271,10 @@
 | Full tests after player-facing plot-copy batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `165/165` passed | PASS |
 | Full build after player-facing plot-copy batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after player-facing plot-copy batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused auto-plant hover preview test | `dotnet test ... --filter FullyQualifiedName~BuildFarmPlotHoverStatusMessage_PreviewsTheSameAutoSelectedCropThatWillBePlanted` | New test fails first, then passes after implementation | Failed first on generic `Hover plot: click to plant.` copy, then passed via the broader `BuildFarmPlotHoverStatusMessage` focused run `3/3` after sharing the auto-plant crop selector | PASS |
+| Full tests after auto-plant hover alignment batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `166/166` passed | PASS |
+| Full build after auto-plant hover alignment batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after auto-plant hover alignment batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -281,15 +291,16 @@
 | 2026-04-09 | Request-ready startup-status regression initially failed at compile time because `BuildStartupFarmStatusMessage` still had no request-aware overload | 1 | Added a request/inventory-aware overload and wired bootstrap through it after the farm-urgency checks |
 | 2026-04-09 | Completed-request startup-status regression failed because the helper deliberately filtered out `All requests completed.` and still hard-coded `slot-1.json` in load copy | 1 | Removed the filename from startup copy and let the restored completed-request status flow through to the main farm label |
 | 2026-04-09 | Player-facing plot-copy regression tests failed because plot hover and unlock messages still embedded raw grid coordinates | 1 | Replaced the coordinate-bearing strings with player-facing plot guidance while leaving the underlying unlock logic unchanged |
+| 2026-04-09 | Auto-plant hover regression failed because empty tilled-plot hover still used generic plant copy even when inventory made the planted crop deterministic | 1 | Added a shared auto-plant crop selector and reused it in both hover preview and actual planting |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next small runtime polish candidate now that startup and plot feedback are more consistently player-facing, with the remaining likely wins clustered around subtler panel-context or interaction-copy edge cases |
+| Where am I going? | Decide the next small runtime polish candidate now that empty-plot hover also previews the actual auto-plant target, with the remaining likely wins clustered around save-restore display consistency and subtle interaction edge cases |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
-| What have I learned? | The same message can be logically correct yet still feel wrong in runtime if it leaks implementation coordinates or filenames; the last layer of polish is often about removing those internal anchors from text the player actually sees |
-| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, startup save-restore messaging with player-facing request state, and plot hover/unlock copy that no longer leaks internal coordinates in the current vertical slice |
+| What have I learned? | Even "technically fine" hover text still causes runtime friction when it hides a deterministic next action; once the game auto-selects a crop, the preview needs to say which one |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, startup save-restore messaging with player-facing request state, plot hover/unlock copy that no longer leaks internal coordinates, and empty-plot hover preview that now names the actual auto-selected crop |
 
 ---
 Update this log after each additional polish batch or verification pass.
