@@ -22,6 +22,7 @@
 - Panel visibility changes were technically working, but the farm status label did not explain when a panel opened or closed, which made the flow feel less deliberate during real play
 - Scene inspection confirmed a separate layout problem: many interactive hotspots were effectively invisible because the scenes only exposed labels and collision shapes, not visible clickable surfaces
 - After making hotspots visible, the next discoverability gap was hover affordance: there was still no change at all when the cursor moved across an active interaction
+- After adding hover animation, the remaining clarity gap was pre-click intent: players could see a hotspot was active without always knowing what the click would do
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -35,6 +36,7 @@
 | Use the farm status label as the main lightweight feedback channel for panel open/close transitions | It keeps panel flow understandable without adding a larger HUD or modal overlay system |
 | Add simple visible hotspot surfaces directly in `FarmScene.tscn` and `TownScene.tscn` for current milestone interactions | This improves click discoverability without introducing new systems or larger UI architecture |
 | Standardize hover feedback through a tiny shared world helper instead of hand-tuning each interaction separately | It keeps the behavior consistent across bed, plots, shop, storage, and request board |
+| Reuse `FarmStatusLabel` for world hover previews instead of adding a second transient tooltip system | It gives immediate pre-click guidance with very low implementation risk |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -46,6 +48,7 @@
 | Opening and closing panels lacked explicit status feedback | Added panel-state messages for shop open, storage open, and returning to world interaction |
 | Farm/town click regions were hard to discover because only labels were rendered | Added visible `Polygon2D` hotspot backgrounds for bed, plots, and town services |
 | Visible hotspots still felt flat with no cursor-response | Added shared hover scaling and hotspot brightening to make active areas feel alive |
+| Hover animation alone still left some interactions ambiguous | Added hover-preview status text that explains likely click outcomes and restores the last persistent status when the cursor leaves |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`
@@ -56,6 +59,7 @@
 - Save compatibility tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\Saves\SaveGameStoreTests.cs`
 - Scene layout tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\World\FarmSceneLayoutTests.cs`, `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\World\TownSceneLayoutTests.cs`
 - Hover style helper: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\game\scripts\world\InteractionHoverStyle.cs`
+- Hover preview wiring: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\game\scripts\world\GameBootstrap.cs`
 - Hover style tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\World\InteractionHoverStyleTests.cs`
 - UI state tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\UI\PanelControllerStateTests.cs`
 

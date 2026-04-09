@@ -56,6 +56,7 @@ public partial class GameBootstrap : Node2D
     private IReadOnlyList<RequestDefinition> _requests = Array.Empty<RequestDefinition>();
     private int _selectedShopOfferIndex;
     private PanelMode _activePanelMode = PanelMode.None;
+    private string _persistedFarmStatusMessage = string.Empty;
 
     public sealed record RuntimeState(
         DayClock Clock,
@@ -298,6 +299,60 @@ public partial class GameBootstrap : Node2D
             PanelMode.None when previousMode != PanelMode.None => "Panels closed. Interact with the world again.",
             _ => null
         };
+    }
+
+    public static string BuildFarmPlotHoverStatusMessage(PlotState plot, IReadOnlyDictionary<string, CropDefinition> crops)
+    {
+        ArgumentNullException.ThrowIfNull(plot);
+        ArgumentNullException.ThrowIfNull(crops);
+
+        if (plot.IsLocked)
+        {
+            return BuildPlotKey(plot.X, plot.Y) == DemoExpansionPlotKey
+                ? $"Hover plot ({plot.X},{plot.Y}): unlock for {DemoExpansionCost}g."
+                : $"Hover plot ({plot.X},{plot.Y}): locked.";
+        }
+
+        if (!plot.IsTilled)
+        {
+            return $"Hover plot ({plot.X},{plot.Y}): click to till.";
+        }
+
+        if (plot.Crop is null)
+        {
+            return $"Hover plot ({plot.X},{plot.Y}): click to plant.";
+        }
+
+        var cropName = crops.TryGetValue(plot.Crop.CropId, out var crop)
+            ? crop.DisplayName
+            : plot.Crop.CropId;
+
+        if (plot.IsHarvestReady)
+        {
+            return $"Hover {cropName}: ready to harvest.";
+        }
+
+        if (plot.IsWateredToday)
+        {
+            return $"Hover {cropName}: watered today.";
+        }
+
+        return $"Hover {cropName}: click to water.";
+    }
+
+    public static string BuildInteractionHoverStatusMessage(string interactionName, string actionDescription)
+    {
+        if (string.IsNullOrWhiteSpace(interactionName))
+        {
+            throw new ArgumentException("Interaction name cannot be blank.", nameof(interactionName));
+        }
+
+        if (string.IsNullOrWhiteSpace(actionDescription))
+        {
+            throw new ArgumentException("Action description cannot be blank.", nameof(actionDescription));
+        }
+
+        return $"Hover {interactionName}: {actionDescription}.";
     }
 
     public static string BuildRequestBoardStatusText(
@@ -631,6 +686,8 @@ public partial class GameBootstrap : Node2D
             foreach (var plotNode in _farmPlotNodes)
             {
                 plotNode.PlotInteracted += OnFarmPlotInteracted;
+                plotNode.MouseEntered += () => OnFarmPlotHovered(plotNode.GridX, plotNode.GridY);
+                plotNode.MouseExited += OnWorldInteractionHoverEnded;
             }
         }
 
@@ -644,6 +701,8 @@ public partial class GameBootstrap : Node2D
         }
 
         bed.DayEndRequested += OnDayEndRequested;
+        bed.MouseEntered += () => OnWorldInteractionHovered("bed", "click to end day");
+        bed.MouseExited += OnWorldInteractionHoverEnded;
     }
 
     private void WireTownScene(Node townScene)
@@ -658,6 +717,8 @@ public partial class GameBootstrap : Node2D
         else
         {
             shop.ShopRequested += OnShopRequested;
+            shop.MouseEntered += () => OnWorldInteractionHovered("shop", "buy or sell items");
+            shop.MouseExited += OnWorldInteractionHoverEnded;
         }
 
         var storage = townScene.GetNodeOrNull<StorageInteraction>("Storage");
@@ -668,6 +729,8 @@ public partial class GameBootstrap : Node2D
         else
         {
             storage.StorageRequested += OnStorageRequested;
+            storage.MouseEntered += () => OnWorldInteractionHovered("storage", "move items");
+            storage.MouseExited += OnWorldInteractionHoverEnded;
         }
 
         var requestBoard = townScene.GetNodeOrNull<RequestBoardInteraction>("RequestBoard");
@@ -678,6 +741,8 @@ public partial class GameBootstrap : Node2D
         else
         {
             requestBoard.RequestBoardRequested += OnRequestBoardRequested;
+            requestBoard.MouseEntered += () => OnWorldInteractionHovered("request board", "turn in crops");
+            requestBoard.MouseExited += OnWorldInteractionHoverEnded;
         }
     }
 
@@ -703,6 +768,32 @@ public partial class GameBootstrap : Node2D
     private void OnDayEndRequested()
     {
         EndDay();
+    }
+
+    private void OnFarmPlotHovered(int gridX, int gridY)
+    {
+        if (_farmGrid is null)
+        {
+            return;
+        }
+
+        PreviewFarmStatus(
+            BlocksWorldInteractions(_activePanelMode)
+                ? BuildBlockedWorldInteractionMessage(_activePanelMode)
+                : BuildFarmPlotHoverStatusMessage(_farmGrid.GetPlot(gridX, gridY), _cropCatalog));
+    }
+
+    private void OnWorldInteractionHovered(string interactionName, string actionDescription)
+    {
+        PreviewFarmStatus(
+            BlocksWorldInteractions(_activePanelMode)
+                ? BuildBlockedWorldInteractionMessage(_activePanelMode)
+                : BuildInteractionHoverStatusMessage(interactionName, actionDescription));
+    }
+
+    private void OnWorldInteractionHoverEnded()
+    {
+        RestoreFarmStatus();
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -1115,10 +1206,31 @@ public partial class GameBootstrap : Node2D
 
     private void SetFarmStatus(string message)
     {
+        _persistedFarmStatusMessage = message;
         if (_farmStatusLabel is not null)
         {
             _farmStatusLabel.Text = message;
         }
+    }
+
+    private void PreviewFarmStatus(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message) || _farmStatusLabel is null)
+        {
+            return;
+        }
+
+        _farmStatusLabel.Text = message;
+    }
+
+    private void RestoreFarmStatus()
+    {
+        if (_farmStatusLabel is null || string.IsNullOrWhiteSpace(_persistedFarmStatusMessage))
+        {
+            return;
+        }
+
+        _farmStatusLabel.Text = _persistedFarmStatusMessage;
     }
 
     private bool TryNotifyBlockedWorldInteraction()

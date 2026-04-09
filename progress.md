@@ -69,6 +69,10 @@
   - Added a small shared hover-style helper and a shared hoverable area base for non-plot interactions
   - Added hover-style tests and applied subtle hover scale/highlight behavior across plots and town/farm service hotspots
   - Re-ran the full suite, build, and Godot smoke after the hover-feedback changes
+  - Added failing tests for hover-preview status text
+  - Wired hover-preview status messaging through `GameBootstrap` so plots and service hotspots explain likely click outcomes before interaction
+  - Restored the last persistent farm status automatically when the cursor leaves a world interaction
+  - Re-ran the full suite, build, and Godot smoke after the hover-preview changes
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
@@ -84,6 +88,8 @@
   - `game/scripts/world/StorageInteraction.cs` (modified)
   - `game/scripts/world/RequestBoardInteraction.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/InteractionHoverStyleTests.cs` (created)
+  - `game/scripts/world/GameBootstrap.cs` (modified again for hover previews)
+  - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified again for hover preview rules)
 
 ## Test Results
 | Test | Input | Expected | Actual | Status |
@@ -111,6 +117,10 @@
 | Full tests after hover batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `113/113` passed | PASS |
 | Full build after hover batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after hover batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
+| Focused hover preview tests | `dotnet test ... --filter FullyQualifiedName~GameBootstrapIntegrationTests` | New hover-preview tests fail first, then pass after implementation | Passed after wiring hover-preview status text | PASS |
+| Full tests after hover preview batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `113/113` passed | PASS |
+| Full build after hover preview batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after hover preview batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |

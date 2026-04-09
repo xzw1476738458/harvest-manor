@@ -283,6 +283,49 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void BuildFarmPlotHoverStatusMessage_ExplainsTheCurrentPlotActionBeforeClick()
+    {
+        var crops = CreateCropCatalog();
+
+        Assert.Equal(
+            "Hover plot (2,0): unlock for 120g.",
+            GameBootstrap.BuildFarmPlotHoverStatusMessage(new PlotState(2, 0, false, true, false, false, null), crops));
+        Assert.Equal(
+            "Hover plot (0,0): click to till.",
+            GameBootstrap.BuildFarmPlotHoverStatusMessage(PlotState.Wild(0, 0), crops));
+        Assert.Equal(
+            "Hover plot (0,0): click to plant.",
+            GameBootstrap.BuildFarmPlotHoverStatusMessage(PlotState.Tilled(0, 0), crops));
+        Assert.Equal(
+            "Hover Parsnip: click to water.",
+            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+                new PlotState(0, 0, true, false, false, false, new CropInstance("parsnip", 2)),
+                crops));
+        Assert.Equal(
+            "Hover Parsnip: watered today.",
+            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+                new PlotState(0, 0, true, false, true, false, new CropInstance("parsnip", 2)),
+                crops));
+        Assert.Equal(
+            "Hover Parsnip: ready to harvest.",
+            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+                new PlotState(0, 0, true, false, true, true, new CropInstance("parsnip", 4)),
+                crops));
+    }
+
+    [Theory]
+    [InlineData("bed", "click to end day", "Hover bed: click to end day.")]
+    [InlineData("shop", "buy or sell items", "Hover shop: buy or sell items.")]
+    [InlineData("request board", "turn in crops", "Hover request board: turn in crops.")]
+    public void BuildInteractionHoverStatusMessage_DescribesTheInteractionBeforeClick(
+        string interactionName,
+        string actionDescription,
+        string expectedMessage)
+    {
+        Assert.Equal(expectedMessage, GameBootstrap.BuildInteractionHoverStatusMessage(interactionName, actionDescription));
+    }
+
+    [Fact]
     public void GetLockedPlotHint_ReturnsUnlockPromptForDemoExpansionPlot()
     {
         Assert.Equal("Click: unlock (120g)", GameBootstrap.GetLockedPlotHint(2, 0));
