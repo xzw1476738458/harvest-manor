@@ -902,7 +902,7 @@ public partial class GameBootstrap : Node2D
         {
             if (!inventory.TryAdd(cropDefinition.HarvestItemId, 1))
             {
-                message = "Inventory full.";
+                message = $"Cannot harvest {cropDefinition.DisplayName}: inventory full.";
                 return false;
             }
 

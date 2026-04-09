@@ -159,6 +159,9 @@
   - Extracted a shared auto-plant crop-selection helper so hover preview and actual planting now agree on which crop a click will plant
   - Updated empty tilled-plot hover copy to name the current auto-selected crop whenever inventory context is available
   - Re-ran focused plot-hover tests, the full suite, the game build, and the Godot smoke command after the auto-plant hover alignment batch
+  - Added a failing regression test for ready-to-harvest clicks blocked by full inventory
+  - Updated harvest-failure click feedback to name the blocked crop instead of falling back to a generic inventory-full message
+  - Re-ran the focused blocked-harvest test, the full suite, the game build, and the Godot smoke command after the harvest-feedback polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -275,6 +278,10 @@
 | Full tests after auto-plant hover alignment batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `166/166` passed | PASS |
 | Full build after auto-plant hover alignment batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after auto-plant hover alignment batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused blocked-harvest feedback test | `dotnet test ... --filter FullyQualifiedName~TryHandleFarmPlotInteraction_WhenHarvestIsBlockedByFullInventory_NamesTheCrop` | New test fails first, then passes after implementation | Failed first on generic `Inventory full.` copy, then passed `1/1` after naming the blocked crop in the harvest-failure branch | PASS |
+| Full tests after harvest-feedback polish batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `167/167` passed | PASS |
+| Full build after harvest-feedback polish batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after harvest-feedback polish batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -292,15 +299,16 @@
 | 2026-04-09 | Completed-request startup-status regression failed because the helper deliberately filtered out `All requests completed.` and still hard-coded `slot-1.json` in load copy | 1 | Removed the filename from startup copy and let the restored completed-request status flow through to the main farm label |
 | 2026-04-09 | Player-facing plot-copy regression tests failed because plot hover and unlock messages still embedded raw grid coordinates | 1 | Replaced the coordinate-bearing strings with player-facing plot guidance while leaving the underlying unlock logic unchanged |
 | 2026-04-09 | Auto-plant hover regression failed because empty tilled-plot hover still used generic plant copy even when inventory made the planted crop deterministic | 1 | Added a shared auto-plant crop selector and reused it in both hover preview and actual planting |
+| 2026-04-09 | Blocked-harvest regression failed because a ready crop with full inventory still reported only `Inventory full.` on click | 1 | Updated the harvest-failure message to name the crop directly |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next small runtime polish candidate now that empty-plot hover also previews the actual auto-plant target, with the remaining likely wins clustered around save-restore display consistency and subtle interaction edge cases |
+| Where am I going? | Decide the next small runtime polish candidate now that both empty-plot plant previews and blocked harvest clicks preserve crop context, with the remaining likely wins clustered around save-restore display consistency and subtle interaction edge cases |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
-| What have I learned? | Even "technically fine" hover text still causes runtime friction when it hides a deterministic next action; once the game auto-selects a crop, the preview needs to say which one |
-| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, startup save-restore messaging with player-facing request state, plot hover/unlock copy that no longer leaks internal coordinates, and empty-plot hover preview that now names the actual auto-selected crop |
+| What have I learned? | Hover and click feedback need to carry the same amount of context; once the player sees a concrete crop on hover, a blocked click that drops back to a generic failure line feels like a regression |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, startup save-restore messaging with player-facing request state, plot hover/unlock copy that no longer leaks internal coordinates, empty-plot hover preview that now names the actual auto-selected crop, and crop-specific blocked-harvest click feedback |
 
 ---
 Update this log after each additional polish batch or verification pass.

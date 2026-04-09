@@ -140,6 +140,21 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void TryHandleFarmPlotInteraction_WhenHarvestIsBlockedByFullInventory_NamesTheCrop()
+    {
+        var crops = CreateCropCatalog();
+        var inventory = new InventoryState(1, 1);
+        var farmGrid = new FarmGrid(1, 1);
+        Assert.True(inventory.TryAdd("wood", 1));
+        farmGrid.SetPlot(new PlotState(0, 0, true, false, true, true, new CropInstance("parsnip", 4)));
+
+        Assert.False(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var message));
+        Assert.Equal("Cannot harvest Parsnip: inventory full.", message);
+        Assert.Equal("parsnip", farmGrid.GetPlot(0, 0).Crop!.CropId);
+        Assert.True(farmGrid.GetPlot(0, 0).IsHarvestReady);
+    }
+
+    [Fact]
     public void TryTransferItemAndCompleteNextRequest_CreatesPlayableTownLoop()
     {
         var inventory = new InventoryState(12, 99);
