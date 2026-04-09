@@ -375,6 +375,31 @@ public partial class GameBootstrap : Node2D
         return $"Hover {interactionName}: {actionDescription}.";
     }
 
+    public static string BuildRequestBoardHoverStatusMessage(
+        IReadOnlyList<RequestDefinition> requests,
+        ISet<string> completedRequestIds,
+        InventoryState inventory)
+    {
+        ArgumentNullException.ThrowIfNull(requests);
+        ArgumentNullException.ThrowIfNull(completedRequestIds);
+        ArgumentNullException.ThrowIfNull(inventory);
+
+        var nextRequest = requests.FirstOrDefault(request => !completedRequestIds.Contains(request.Id));
+        if (nextRequest is null)
+        {
+            return "Hover request board: all requests completed.";
+        }
+
+        var currentQuantity = inventory.GetQuantity(nextRequest.RequiredItemId);
+        if (currentQuantity >= nextRequest.RequiredQuantity)
+        {
+            return $"Hover request board: turn in {nextRequest.RequiredQuantity} {nextRequest.RequiredItemId} for {nextRequest.RewardGold}g.";
+        }
+
+        var remainingQuantity = nextRequest.RequiredQuantity - currentQuantity;
+        return $"Hover request board: need {remainingQuantity} more {nextRequest.RequiredItemId}.";
+    }
+
     public static string BuildShopPurchaseStatusMessage(ShopOffer offer, InventoryState inventory, Wallet wallet, bool changed)
     {
         ArgumentNullException.ThrowIfNull(offer);
@@ -838,7 +863,7 @@ public partial class GameBootstrap : Node2D
         else
         {
             requestBoard.RequestBoardRequested += OnRequestBoardRequested;
-            requestBoard.MouseEntered += () => OnWorldInteractionHovered("request board", "turn in crops");
+            requestBoard.MouseEntered += OnRequestBoardHovered;
             requestBoard.MouseExited += OnWorldInteractionHoverEnded;
         }
     }
@@ -886,6 +911,16 @@ public partial class GameBootstrap : Node2D
             BlocksWorldInteractions(_activePanelMode)
                 ? BuildBlockedWorldInteractionMessage(_activePanelMode)
                 : BuildInteractionHoverStatusMessage(interactionName, actionDescription));
+    }
+
+    private void OnRequestBoardHovered()
+    {
+        PreviewFarmStatus(
+            BlocksWorldInteractions(_activePanelMode)
+                ? BuildBlockedWorldInteractionMessage(_activePanelMode)
+                : _inventory is null
+                    ? BuildInteractionHoverStatusMessage("request board", "turn in crops")
+                    : BuildRequestBoardHoverStatusMessage(_requests, _completedRequestIds, _inventory));
     }
 
     private void OnWorldInteractionHoverEnded()

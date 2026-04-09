@@ -99,6 +99,9 @@
   - Added failing tests for shop purchase feedback, shop sell feedback, and storage transfer feedback
   - Routed shop buy/sell, storage store/withdraw, and request board result messages through the persistent farm status label
   - Re-ran focused integration tests, the full suite, the game build, and the Godot smoke command after the town-feedback changes
+  - Added a failing test for progress-aware request-board hover messaging
+  - Routed request-board hover through a dedicated helper so it previews missing items, ready turn-ins, or completion state instead of generic text
+  - Re-ran the full suite, build, and Godot smoke after the request-board hover changes
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
@@ -137,6 +140,10 @@
 | Full tests after town feedback batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `121/121` passed | PASS |
 | Full build after town feedback batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after town feedback batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
+| Focused request-board hover tests | `dotnet test ... --filter FullyQualifiedName~BuildRequestBoardHoverStatusMessage` | New test fails first, then passes after implementation | Passed after adding dedicated request-board hover messaging | PASS |
+| Full tests after request-board hover batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `122/122` passed | PASS |
+| Full build after request-board hover batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after request-board hover batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -153,7 +160,7 @@
 | Where am I going? | Decide the next runtime polish candidate or close out this milestone slice with a clean summary |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
 | What have I learned? | Interaction discoverability needed visible and hover-reactive hotspots, not just valid click wiring; see `findings.md` |
-| What have I done? | Verified and committed runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, and hover feedback across the current vertical slice |
+| What have I done? | Verified and committed runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, and state-aware hover/feedback improvements across the current vertical slice |
 
 ---
 Update this log after each additional polish batch or verification pass.

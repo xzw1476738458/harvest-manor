@@ -359,6 +359,31 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void BuildRequestBoardHoverStatusMessage_ReflectsCurrentTurnInProgress()
+    {
+        var inventory = new InventoryState(12, 99);
+        var requests = new[]
+        {
+            new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120)
+        };
+        var completedRequests = new HashSet<string>();
+
+        Assert.Equal(
+            "Hover request board: need 5 more parsnip_crop.",
+            GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
+
+        Assert.True(inventory.TryAdd("parsnip_crop", 5));
+        Assert.Equal(
+            "Hover request board: turn in 5 parsnip_crop for 120g.",
+            GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
+
+        completedRequests.Add("ship_5_parsnips");
+        Assert.Equal(
+            "Hover request board: all requests completed.",
+            GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
+    }
+
+    [Fact]
     public void BuildShopPurchaseStatusMessage_ExplainsPurchaseOutcome()
     {
         var offer = new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10);
