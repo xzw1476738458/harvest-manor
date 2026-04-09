@@ -55,6 +55,17 @@
   - `tests/HarvestManor.Game.Tests/Saves/SaveGameStoreTests.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
 
+### Phase 5: Scene/Layout & Interaction Feedback
+- **Status:** in_progress
+- Actions taken:
+  - Added failing tests for panel open/close status messaging
+  - Implemented explicit farm-status updates when shop/storage panels open or close
+  - Kept the change localized to `GameBootstrap` so the current vertical slice did not need broader UI surgery
+  - Re-ran the full suite, build, and Godot smoke after the panel-flow feedback changes
+- Files created/modified:
+  - `game/scripts/world/GameBootstrap.cs` (modified)
+  - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
+
 ## Test Results
 | Test | Input | Expected | Actual | Status |
 |------|-------|----------|--------|--------|
@@ -69,6 +80,10 @@
 | Full tests after save compatibility batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `104/104` passed | PASS |
 | Full build after save compatibility batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after save compatibility batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
+| Focused panel flow tests | `dotnet test ... --filter FullyQualifiedName~GameBootstrapIntegrationTests` | New panel-flow tests fail first, then pass after implementation | Passed after adding panel open/close status messages | PASS |
+| Full tests after panel-flow batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `109/109` passed | PASS |
+| Full build after panel-flow batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after panel-flow batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -85,7 +100,7 @@
 | Where am I going? | Panel/open-close feedback polish, then broader layout/input review and milestone verification |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
 | What have I learned? | Legacy save compatibility needs both deserialization defaults and runtime unlock fallback; see `findings.md` |
-| What have I done? | Verified two runtime batches, committed `d51a0c0`, `801a1a4`, `2f9fc50`, and completed the next save-compatibility batch with full verification |
+| What have I done? | Verified two runtime batches, committed `d51a0c0`, `801a1a4`, `2f9fc50`, completed the save-compatibility batch, and started the next panel-flow feedback polish |
 
 ---
 Update this log after each additional polish batch or verification pass.

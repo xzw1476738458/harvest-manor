@@ -268,6 +268,20 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Equal(expectedMessage, GameBootstrap.BuildBlockedWorldInteractionMessage(mode));
     }
 
+    [Theory]
+    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.None, null)]
+    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Shop, "Shop open. Use Buy/Sell or press Esc to close.")]
+    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Storage, "Storage open. Move items or press Esc to close.")]
+    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.None, "Panels closed. Interact with the world again.")]
+    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.None, "Panels closed. Interact with the world again.")]
+    public void BuildPanelModeStatusMessage_ExplainsPanelOpenAndCloseFlow(
+        GameBootstrap.PanelMode previousMode,
+        GameBootstrap.PanelMode nextMode,
+        string? expectedMessage)
+    {
+        Assert.Equal(expectedMessage, GameBootstrap.BuildPanelModeStatusMessage(previousMode, nextMode));
+    }
+
     [Fact]
     public void GetLockedPlotHint_ReturnsUnlockPromptForDemoExpansionPlot()
     {

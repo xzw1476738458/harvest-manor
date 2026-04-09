@@ -284,6 +284,22 @@ public partial class GameBootstrap : Node2D
         };
     }
 
+    public static string? BuildPanelModeStatusMessage(PanelMode previousMode, PanelMode nextMode)
+    {
+        if (previousMode == nextMode)
+        {
+            return null;
+        }
+
+        return nextMode switch
+        {
+            PanelMode.Shop => "Shop open. Use Buy/Sell or press Esc to close.",
+            PanelMode.Storage => "Storage open. Move items or press Esc to close.",
+            PanelMode.None when previousMode != PanelMode.None => "Panels closed. Interact with the world again.",
+            _ => null
+        };
+    }
+
     public static string BuildRequestBoardStatusText(
         IReadOnlyList<RequestDefinition> requests,
         ISet<string> completedRequestIds,
@@ -980,8 +996,15 @@ public partial class GameBootstrap : Node2D
 
     private void SetActivePanelMode(PanelMode mode)
     {
+        var previousMode = _activePanelMode;
         _activePanelMode = mode;
         ApplyPanelVisibility();
+
+        var statusMessage = BuildPanelModeStatusMessage(previousMode, mode);
+        if (!string.IsNullOrWhiteSpace(statusMessage))
+        {
+            SetFarmStatus(statusMessage);
+        }
     }
 
     private void ApplyPanelVisibility()
