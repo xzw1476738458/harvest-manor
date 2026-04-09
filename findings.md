@@ -1,0 +1,50 @@
+# Findings & Decisions
+
+## Requirements
+- Continue `Harvest Manor` on the existing worktree: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation`
+- Continue on the existing branch: `codex/milestone-1-foundation`
+- Do not create a new branch
+- Do not create a new worktree
+- Use the approved design spec and milestone plan as the baseline
+- Prioritize real-runtime polish and stability over adding new systems
+- Focus first on click regions, UI refresh, scene layout, interaction feedback, save/load display consistency, and panel flow
+- Treat `misc2` controller mapping warnings and the Vulkan registry warning as environment noise unless they become directly relevant
+
+## Research Findings
+- The milestone already has a minimal playable loop: save restore, farm interaction, basic shop/storage/request flow, and a demo expansion hook
+- A runtime configuration mismatch between `project.godot` and the C# project was previously the root cause of Godot assembly load failures, and that has already been fixed earlier in this branch
+- Some important regressions only appeared in real Godot runtime, not from compile-only checks, so smoke verification is necessary after meaningful interaction changes
+- Modal panels previously allowed confusing background interaction states; fixing those boundaries improved runtime clarity more than adding new features would have
+- Silent blocking is still player-hostile even when technically correct, so blocked world interactions benefit from explicit status messaging
+
+## Technical Decisions
+| Decision | Rationale |
+|----------|-----------|
+| Keep `GameBootstrap` as the orchestration point for current milestone runtime behavior | The existing vertical slice is already concentrated there, so polish changes are cheapest and safest in one place for now |
+| Add pure/static helpers for interaction-policy decisions where possible | Keeps tests fast and deterministic without requiring a full Godot scene harness |
+| Use focused regression tests in `GameBootstrapIntegrationTests` for runtime policy changes | These tests already cover save/load and interaction behavior near the current problem area |
+| Keep planning files in the worktree root | They are easy for later sessions to find and align with the exact branch/worktree the user wants continued |
+
+## Issues Encountered
+| Issue | Resolution |
+|-------|------------|
+| `rg.exe` could not be used in this shell due to an access-denied failure | Inspected files with PowerShell instead |
+| `dotnet test` emits a `ScriptPathAttributeGenerator` warning | Logged as non-blocking because automated tests still pass and runtime behavior is unaffected |
+| Background world input felt broken when a panel was open because clicks were ignored without explanation | Added actionable farm-status messages and blocked the demo expansion shortcut while a panel is open |
+
+## Resources
+- Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`
+- Approved implementation plan: `D:\game project\harvest-manor\docs\superpowers\plans\2026-04-08-harvest-manor-milestone-1-foundation.md`
+- Main orchestration file: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\game\scripts\world\GameBootstrap.cs`
+- Main runtime behavior tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\World\GameBootstrapIntegrationTests.cs`
+- UI state tests: `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation\tests\HarvestManor.Game.Tests\UI\PanelControllerStateTests.cs`
+
+## Visual/Browser Findings
+- `FarmScene.tscn` currently exposes plots `(0,0)`, `(1,0)`, `(2,0)`, `(0,1)`, and `(1,1)` in-scene, matching the unlocked 2x2 start area plus the demo expansion plot
+- `TownScene.tscn` currently places shop, storage, and request board click targets on a single lower row with labels directly above each target
+- HUD currently exposes day, gold, stamina, and unlocked plot count in a compact top-left panel
+- Inventory panel is hidden by default and becomes visible only in storage mode
+- Shop and storage panels are hidden by default and rendered as separate control trees with explicit close buttons
+
+---
+Update this file whenever new runtime discoveries, risks, or decisions show up.
