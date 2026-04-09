@@ -270,6 +270,34 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Theory]
+    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Shop, true)]
+    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Storage, true)]
+    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Shop, true)]
+    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Storage, true)]
+    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Storage, false)]
+    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Shop, false)]
+    public void CanHandlePanelInteractionRequest_AllowsOpeningAndClosingTheRequestedPanelOnly(
+        GameBootstrap.PanelMode currentMode,
+        GameBootstrap.PanelMode requestedMode,
+        bool canHandleRequest)
+    {
+        Assert.Equal(canHandleRequest, GameBootstrap.CanHandlePanelInteractionRequest(currentMode, requestedMode));
+    }
+
+    [Theory]
+    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Shop)]
+    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Storage)]
+    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.None)]
+    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.None)]
+    public void ResolvePanelModeAfterInteractionRequest_TogglesTheRequestedPanel(
+        GameBootstrap.PanelMode currentMode,
+        GameBootstrap.PanelMode requestedMode,
+        GameBootstrap.PanelMode expectedMode)
+    {
+        Assert.Equal(expectedMode, GameBootstrap.ResolvePanelModeAfterInteractionRequest(currentMode, requestedMode));
+    }
+
+    [Theory]
     [InlineData(GameBootstrap.PanelMode.None, Key.F7, true)]
     [InlineData(GameBootstrap.PanelMode.Shop, Key.F7, false)]
     [InlineData(GameBootstrap.PanelMode.Storage, Key.F7, false)]

@@ -278,6 +278,19 @@ public partial class GameBootstrap : Node2D
             : currentMode;
     }
 
+    public static bool CanHandlePanelInteractionRequest(PanelMode currentMode, PanelMode requestedMode)
+    {
+        return requestedMode != PanelMode.None
+            && (currentMode == PanelMode.None || currentMode == requestedMode);
+    }
+
+    public static PanelMode ResolvePanelModeAfterInteractionRequest(PanelMode currentMode, PanelMode requestedMode)
+    {
+        return currentMode == requestedMode
+            ? PanelMode.None
+            : requestedMode;
+    }
+
     public static bool CanTriggerDemoExpansionShortcut(PanelMode currentMode, Key keycode)
     {
         return keycode == Key.F7 && !BlocksWorldInteractions(currentMode);
@@ -1172,7 +1185,7 @@ public partial class GameBootstrap : Node2D
 
     private void OnShopRequested()
     {
-        if (BlocksWorldInteractions(_activePanelMode))
+        if (!CanHandlePanelInteractionRequest(_activePanelMode, PanelMode.Shop))
         {
             TryNotifyBlockedWorldInteraction();
             return;
@@ -1183,8 +1196,12 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
-        _ = TryApplyShopOpenSideEffects(_inventory, _wallet, _shopOffers);
-        var nextMode = _activePanelMode == PanelMode.Shop ? PanelMode.None : PanelMode.Shop;
+        var nextMode = ResolvePanelModeAfterInteractionRequest(_activePanelMode, PanelMode.Shop);
+        if (nextMode == PanelMode.Shop)
+        {
+            _ = TryApplyShopOpenSideEffects(_inventory, _wallet, _shopOffers);
+        }
+
         RenderPanels();
         SetActivePanelMode(nextMode);
         if (nextMode == PanelMode.Shop)
@@ -1195,13 +1212,13 @@ public partial class GameBootstrap : Node2D
 
     private void OnStorageRequested()
     {
-        if (BlocksWorldInteractions(_activePanelMode))
+        if (!CanHandlePanelInteractionRequest(_activePanelMode, PanelMode.Storage))
         {
             TryNotifyBlockedWorldInteraction();
             return;
         }
 
-        var nextMode = _activePanelMode == PanelMode.Storage ? PanelMode.None : PanelMode.Storage;
+        var nextMode = ResolvePanelModeAfterInteractionRequest(_activePanelMode, PanelMode.Storage);
         RenderPanels();
         SetActivePanelMode(nextMode);
         if (nextMode == PanelMode.Storage && _inventory is not null && _storage is not null)

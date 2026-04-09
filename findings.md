@@ -36,6 +36,7 @@
 - Panel surfaces still leaked internal item ids (`parsnip_seed`, `potato_crop`) even though the item catalog already contained player-facing display names
 - Even after panel surfaces switched to display names, the main farm/request status text still leaked internal item ids during request-board, shop, and storage interactions
 - After the broader status-text pass, request completion success copy still exposed the internal request id even though the rest of the request-board flow had already switched to player-facing item names
+- Shop and storage hotspot handlers already contained toggle-style `nextMode` logic, but the shared modal blocker returned before that branch could run, so clicking the same hotspot could never actually close its own panel at runtime
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -63,6 +64,7 @@
 | Thread item catalog display names into panel rendering without rewriting all global status builders in the same batch | This fixes the most visible player-facing readability issue first while keeping the current polish batch small and low-risk |
 | Add optional `itemCatalog` inputs to the remaining pure global status builders instead of replacing their existing signatures outright | This preserves old raw-id behavior for baseline tests while letting runtime call sites opt into player-facing names |
 | Keep the legacy request-completion success text only for helper calls with no catalog, but switch runtime/catalog-backed paths to a delivered-quantity display-name message | This preserves older baseline behavior while making actual turn-in confirmation read consistently with the rest of the polished town feedback |
+| Allow same-service hotspot clicks to toggle their own panel closed, but keep different service hotspots blocked while a modal panel is open | This matches the existing handler intent, improves panel-open/close flow, and avoids weakening the current modal-interaction guardrails |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -84,6 +86,7 @@
 | Storage edge states still sounded too generic after the earlier browse-feedback pass | Named the blocked item and direction explicitly in storage status text, added blocked-state button labels, and made the main browse text distinguish between actionable versus fully blocked transfer states |
 | Shop selection text still hid sell-ready states behind buy-side blockers | Reordered shop status messaging so the panel body and main farm status now keep "Ready to sell 1" visible before the missing-gold or inventory-full buy explanation |
 | One new storage display-name regression test initially failed for the wrong reason because the source inventory was empty, so the helper correctly returned `none available` before it could hit the intended inventory-full branch | Restocked the test fixture with `stone` so the regression now exercises the intended blocked-withdraw path and still verifies display-name output |
+| New panel-toggle regression tests initially failed at compile time because the panel-interaction helpers did not exist yet | Added focused `GameBootstrap` helpers, then routed the shop/storage hotspot handlers through them so the tests could drive the intended modal toggle behavior |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`

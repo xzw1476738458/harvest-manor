@@ -133,6 +133,10 @@
   - Added a failing regression test for request completion success copy when an item catalog is available
   - Updated `TryCompleteNextRequest` so catalog-backed success messages report the delivered quantity and display name instead of the internal request id
   - Re-ran the focused request-success regression, the full suite, the game build, and the Godot smoke command after the request completion copy polish batch
+  - Added failing panel-toggle tests that distinguish same-service hotspot clicks from cross-service modal-blocked requests
+  - Added focused panel-interaction helpers so shop/storage hotspot handlers can close their own open panel without weakening the broader modal world-interaction guard
+  - Limited shop-open side effects to real shop opens rather than same-hotspot close clicks
+  - Re-ran focused panel-toggle tests, the full suite, the game build, and the Godot smoke command after the panel-toggle polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -141,6 +145,8 @@
   - `tests/HarvestManor.Game.Tests/UI/PanelControllerStateTests.cs` (modified)
   - `game/scripts/ui/InventoryPanelController.cs` (modified)
   - `game/scripts/ui/ItemDisplayNameFormatter.cs` (created)
+  - `game/scripts/world/GameBootstrap.cs` (modified again for panel-hotspot toggle routing)
+  - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified again for panel-toggle rules)
 
 ## Test Results
 | Test | Input | Expected | Actual | Status |
@@ -217,6 +223,10 @@
 | Full tests after request completion copy batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `145/145` passed | PASS |
 | Full build after request completion copy batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after request completion copy batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused panel hotspot toggle tests | `dotnet test ... --filter "FullyQualifiedName~CanHandlePanelInteractionRequest|FullyQualifiedName~ResolvePanelModeAfterInteractionRequest"` | New tests fail first, then pass after implementation | Failed first on missing helper definitions, then passed `10/10` after routing same-service hotspot clicks through explicit panel-interaction helpers | PASS |
+| Full tests after panel-toggle batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `155/155` passed | PASS |
+| Full build after panel-toggle batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after panel-toggle batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -227,15 +237,16 @@
 | 2026-04-09 | `SaveGameStore` payload helper initially failed to compile due to missing namespaces | 1 | Added `HarvestManor.Core.Inventory` and `HarvestManor.Core.Time` usings |
 | 2026-04-09 | Global status display-name tests initially stopped at compile time because `TryCompleteNextRequest` still lacked an item-catalog-aware overload | 1 | Added an overload that preserves the old signature while letting runtime call sites opt into player-facing item names |
 | 2026-04-09 | One storage display-name regression test initially failed for the wrong reason because the source inventory was empty | 1 | Updated the fixture to stock `stone` so the test now reaches the intended inventory-full withdraw branch |
+| 2026-04-09 | Panel-toggle regression tests initially failed at compile time because `GameBootstrap` did not yet expose a dedicated panel-interaction routing helper | 1 | Added focused helpers plus handler wiring so same-service hotspot clicks now reach the intended toggle path |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next small runtime polish candidate now that panel surfaces, global farm/request status text, and request turn-in confirmation all use player-facing wording consistently |
+| Where am I going? | Decide the next small runtime polish candidate now that same-hotspot panel toggles work and the remaining opportunities are likely around save-restore first-screen feedback or another subtle panel/display consistency gap |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
-| What have I learned? | Interaction discoverability needed visible and hover-reactive hotspots, not just valid click wiring; see `findings.md` |
-| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, and player-facing item display names across panel surfaces, global farm/request status text, and request turn-in confirmation in the current vertical slice |
+| What have I learned? | Modal interaction rules still need request-specific routing; a generic "panel open blocks world" guard can accidentally make same-hotspot close behavior unreachable even when the handler appears to support toggling |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, and same-hotspot shop/storage panel toggles in the current vertical slice |
 
 ---
 Update this log after each additional polish batch or verification pass.

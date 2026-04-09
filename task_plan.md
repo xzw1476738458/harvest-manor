@@ -43,9 +43,9 @@ Phase 6
 - **Status:** complete
 
 ### Phase 6: Milestone Verification & Handoff
-- [ ] Run the full automated suite
-- [ ] Run the Godot smoke test after each meaningful batch
-- [ ] Summarize completed work, verification evidence, and next candidates
+- [x] Run the full automated suite for the current batch
+- [x] Run the Godot smoke test after the current batch
+- [x] Summarize the current batch, verification evidence, and next candidates
 - **Status:** in_progress
 
 ## Key Questions
@@ -70,6 +70,7 @@ Phase 6
 | Prefer player-facing display names over internal item ids on panel surfaces | Inventory, storage, and shop panels are read-heavy UI, so raw ids break the game's intended readability more than they help development |
 | Thread item catalog display names through the remaining global request/shop/storage status builders with optional catalog inputs | This finishes the player-facing readability pass without forcing every pure helper call site or regression test to load content catalogs |
 | When request completion succeeds and an item catalog is available, report the delivered quantity and item display name instead of the internal request id | The final request-board confirmation should read like player-facing game feedback rather than a debug-facing identifier |
+| Let a shop or storage hotspot close its own already-open panel while still blocking different world interactions during modal flow | This keeps the modal boundary intact for unrelated interactions, but removes an unintuitive runtime dead end where the same hotspot could not perform its implied toggle |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -87,4 +88,5 @@ Phase 6
 - Latest verified batch after that threaded item display names into inventory, storage, and shop panel rendering so panel surfaces no longer expose internal ids
 - Latest verified batch after that threaded player-facing item display names through request-board, shop, and storage world-status helpers so farm/town feedback no longer leaks internal ids outside the panels
 - Latest verified batch after that also replaced the request-completion success copy so final turn-in feedback names the delivered crop instead of the internal request id
+- Latest verified batch after that fixed an unreachable panel-toggle path so clicking the same shop or storage hotspot can now close its own panel instead of always hitting the generic modal-world blocker
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`
