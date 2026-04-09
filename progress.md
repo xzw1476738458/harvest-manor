@@ -92,6 +92,17 @@
   - `game/scripts/world/GameBootstrap.cs` (modified again for hover previews)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified again for hover preview rules)
 
+### Phase 6: Milestone Verification & Handoff
+- **Status:** in_progress
+- Actions taken:
+  - Verified and committed the resource-aware hover preview batch as `29d58b6 fix: preview actionable hover states`
+  - Added failing tests for shop purchase feedback, shop sell feedback, and storage transfer feedback
+  - Routed shop buy/sell, storage store/withdraw, and request board result messages through the persistent farm status label
+  - Re-ran focused integration tests, the full suite, the game build, and the Godot smoke command after the town-feedback changes
+- Files created/modified:
+  - `game/scripts/world/GameBootstrap.cs` (modified)
+  - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
+
 ## Test Results
 | Test | Input | Expected | Actual | Status |
 |------|-------|----------|--------|--------|
@@ -122,6 +133,10 @@
 | Full tests after hover preview batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `118/118` passed | PASS |
 | Full build after hover preview batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after hover preview batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
+| Focused town feedback tests | `dotnet test ... --filter FullyQualifiedName~GameBootstrapIntegrationTests` | New tests fail first, then pass after implementation | Passed after adding status-message builders and wiring town-action feedback | PASS |
+| Full tests after town feedback batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `121/121` passed | PASS |
+| Full build after town feedback batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after town feedback batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |

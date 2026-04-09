@@ -24,6 +24,7 @@
 - After making hotspots visible, the next discoverability gap was hover affordance: there was still no change at all when the cursor moved across an active interaction
 - After adding hover animation, the remaining clarity gap was pre-click intent: players could see a hotspot was active without always knowing what the click would do
 - Generic hover intent text was still not enough in runtime because a highlighted plot could look actionable even when the player had no seeds, no inventory space, or not enough gold for the demo unlock
+- Town-side actions still had a feedback gap after the panel polish passes: buy, sell, store, withdraw, and request turn-in refreshed local UI, but the main farm status label stayed stale and could make outcomes feel less definite
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -39,6 +40,7 @@
 | Standardize hover feedback through a tiny shared world helper instead of hand-tuning each interaction separately | It keeps the behavior consistent across bed, plots, shop, storage, and request board |
 | Reuse `FarmStatusLabel` for world hover previews instead of adding a second transient tooltip system | It gives immediate pre-click guidance with very low implementation risk |
 | Feed the current inventory and wallet state into plot hover previews | This keeps pre-click guidance honest when a highlighted interaction is blocked by missing seeds, full inventory, or insufficient gold |
+| Reuse the farm status label for post-action town feedback too | This keeps the current vertical slice readable without adding a separate notification system |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -52,6 +54,7 @@
 | Visible hotspots still felt flat with no cursor-response | Added shared hover scaling and hotspot brightening to make active areas feel alive |
 | Hover animation alone still left some interactions ambiguous | Added hover-preview status text that explains likely click outcomes and restores the last persistent status when the cursor leaves |
 | Generic hover-preview text could still over-promise an action that would fail immediately | Made plot hover previews resource-aware for seed availability, harvest inventory space, and demo unlock affordability |
+| Town actions could succeed or fail with only panel-local refreshes and no clear global confirmation | Added explicit farm-status results for shop buy/sell, storage transfer, and request board turn-in actions |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`

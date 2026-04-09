@@ -375,6 +375,83 @@ public partial class GameBootstrap : Node2D
         return $"Hover {interactionName}: {actionDescription}.";
     }
 
+    public static string BuildShopPurchaseStatusMessage(ShopOffer offer, InventoryState inventory, Wallet wallet, bool changed)
+    {
+        ArgumentNullException.ThrowIfNull(offer);
+        ArgumentNullException.ThrowIfNull(inventory);
+        ArgumentNullException.ThrowIfNull(wallet);
+
+        if (changed)
+        {
+            return $"Bought 1 {offer.ItemId} for {offer.BuyPrice}g.";
+        }
+
+        if (!inventory.CanAdd(offer.ItemId, 1))
+        {
+            return $"Cannot buy {offer.ItemId}: inventory full.";
+        }
+
+        var missingGold = Math.Max(0, offer.BuyPrice - wallet.Gold);
+        if (missingGold > 0)
+        {
+            return $"Need {missingGold}g more to buy 1 {offer.ItemId}.";
+        }
+
+        return $"Cannot buy {offer.ItemId}.";
+    }
+
+    public static string BuildShopSellStatusMessage(ShopOffer offer, InventoryState inventory, bool changed)
+    {
+        ArgumentNullException.ThrowIfNull(offer);
+        ArgumentNullException.ThrowIfNull(inventory);
+
+        if (changed)
+        {
+            return $"Sold 1 {offer.ItemId} for {offer.SellPrice}g.";
+        }
+
+        return inventory.GetQuantity(offer.ItemId) > 0
+            ? $"Cannot sell {offer.ItemId}."
+            : $"Cannot sell {offer.ItemId}: none available.";
+    }
+
+    public static string BuildStorageTransferStatusMessage(
+        string itemId,
+        bool changed,
+        bool intoStorage,
+        InventoryState source,
+        InventoryState destination)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(itemId);
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(destination);
+
+        if (changed)
+        {
+            return intoStorage
+                ? $"Stored 1 {itemId}."
+                : $"Took 1 {itemId} from storage.";
+        }
+
+        if (source.GetQuantity(itemId) <= 0)
+        {
+            return intoStorage
+                ? $"Cannot store {itemId}: none available."
+                : $"Cannot take {itemId}: none available.";
+        }
+
+        if (!destination.CanAdd(itemId, 1))
+        {
+            return intoStorage
+                ? $"Cannot store {itemId}: storage is full."
+                : $"Cannot take {itemId}: inventory is full.";
+        }
+
+        return intoStorage
+            ? $"Cannot store {itemId}."
+            : $"Cannot take {itemId}.";
+    }
+
     public static string BuildRequestBoardStatusText(
         IReadOnlyList<RequestDefinition> requests,
         ISet<string> completedRequestIds,
@@ -934,6 +1011,7 @@ public partial class GameBootstrap : Node2D
 
         var changed = TryCompleteNextRequest(_requests, _requestBoardService, _inventory, _completedRequestIds, _wallet, out var message);
         RefreshRequestBoardStatus(message);
+        SetFarmStatus(message);
         RenderPanels();
 
         if (changed)
@@ -950,12 +1028,14 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
-        if (_shopService.TryPurchase(_inventory, _wallet, offer, 1))
+        var changed = _shopService.TryPurchase(_inventory, _wallet, offer, 1);
+        if (changed)
         {
             RefreshHud();
             Autosave();
         }
 
+        SetFarmStatus(BuildShopPurchaseStatusMessage(offer, _inventory, _wallet, changed));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -967,12 +1047,14 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
-        if (_shopService.TrySell(_inventory, _wallet, offer, 1))
+        var changed = _shopService.TrySell(_inventory, _wallet, offer, 1);
+        if (changed)
         {
             RefreshHud();
             Autosave();
         }
 
+        SetFarmStatus(BuildShopSellStatusMessage(offer, _inventory, changed));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1011,11 +1093,13 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
-        if (TryTransferItem(_inventory, _storage, itemId, 1))
+        var changed = TryTransferItem(_inventory, _storage, itemId, 1);
+        if (changed)
         {
             Autosave();
         }
 
+        SetFarmStatus(BuildStorageTransferStatusMessage(itemId, changed, intoStorage: true, _inventory, _storage));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1027,11 +1111,13 @@ public partial class GameBootstrap : Node2D
             return;
         }
 
-        if (TryTransferItem(_storage, _inventory, itemId, 1))
+        var changed = TryTransferItem(_storage, _inventory, itemId, 1);
+        if (changed)
         {
             Autosave();
         }
 
+        SetFarmStatus(BuildStorageTransferStatusMessage(itemId, changed, intoStorage: false, _storage, _inventory));
         RenderPanels();
         RefreshRequestBoardStatus();
     }

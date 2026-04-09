@@ -359,6 +359,74 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void BuildShopPurchaseStatusMessage_ExplainsPurchaseOutcome()
+    {
+        var offer = new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10);
+        var wallet = new Wallet(200);
+        var inventory = new InventoryState(12, 99);
+
+        Assert.Equal(
+            "Bought 1 parsnip_seed for 20g.",
+            GameBootstrap.BuildShopPurchaseStatusMessage(offer, inventory, wallet, changed: true));
+
+        var poorWallet = new Wallet(5);
+        Assert.Equal(
+            "Need 15g more to buy 1 parsnip_seed.",
+            GameBootstrap.BuildShopPurchaseStatusMessage(offer, inventory, poorWallet, changed: false));
+
+        var fullInventory = new InventoryState(1, 1);
+        Assert.True(fullInventory.TryAdd("wood", 1));
+        Assert.Equal(
+            "Cannot buy parsnip_seed: inventory full.",
+            GameBootstrap.BuildShopPurchaseStatusMessage(offer, fullInventory, wallet, changed: false));
+    }
+
+    [Fact]
+    public void BuildShopSellStatusMessage_ExplainsSellOutcome()
+    {
+        var offer = new ShopOffer("parsnip_crop", BuyPrice: 20, SellPrice: 35);
+        var stockedInventory = new InventoryState(12, 99);
+        Assert.True(stockedInventory.TryAdd("parsnip_crop", 1));
+
+        Assert.Equal(
+            "Sold 1 parsnip_crop for 35g.",
+            GameBootstrap.BuildShopSellStatusMessage(offer, stockedInventory, changed: true));
+
+        var emptyInventory = new InventoryState(12, 99);
+        Assert.Equal(
+            "Cannot sell parsnip_crop: none available.",
+            GameBootstrap.BuildShopSellStatusMessage(offer, emptyInventory, changed: false));
+    }
+
+    [Fact]
+    public void BuildStorageTransferStatusMessage_ExplainsTransferOutcome()
+    {
+        var inventory = new InventoryState(12, 99);
+        Assert.True(inventory.TryAdd("parsnip_crop", 1));
+        var storage = new InventoryState(24, 99);
+
+        Assert.Equal(
+            "Stored 1 parsnip_crop.",
+            GameBootstrap.BuildStorageTransferStatusMessage("parsnip_crop", changed: true, intoStorage: true, inventory, storage));
+
+        var fullStorage = new InventoryState(1, 1);
+        Assert.True(fullStorage.TryAdd("wood", 1));
+        var crowdedInventory = new InventoryState(12, 99);
+        Assert.True(crowdedInventory.TryAdd("stone", 1));
+        Assert.Equal(
+            "Cannot store stone: storage is full.",
+            GameBootstrap.BuildStorageTransferStatusMessage("stone", changed: false, intoStorage: true, crowdedInventory, fullStorage));
+
+        var fullInventory = new InventoryState(1, 1);
+        Assert.True(fullInventory.TryAdd("wood", 1));
+        var stockedStorage = new InventoryState(24, 99);
+        Assert.True(stockedStorage.TryAdd("stone", 1));
+        Assert.Equal(
+            "Cannot take stone: inventory is full.",
+            GameBootstrap.BuildStorageTransferStatusMessage("stone", changed: false, intoStorage: false, stockedStorage, fullInventory));
+    }
+
+    [Fact]
     public void GetLockedPlotHint_ReturnsUnlockPromptForDemoExpansionPlot()
     {
         Assert.Equal("Click: unlock (120g)", GameBootstrap.GetLockedPlotHint(2, 0));
