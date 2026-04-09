@@ -227,30 +227,30 @@ public partial class GameBootstrap : Node2D
                 var harvestReadyCount = farmGrid.AllPlots.Count(static plot => plot.IsHarvestReady);
                 if (harvestReadyCount > 0)
                 {
-                    return $"Loaded slot-1.json. {harvestReadyCount} {(harvestReadyCount == 1 ? "crop is" : "crops are")} ready to harvest.";
+                    return $"Save loaded. {harvestReadyCount} {(harvestReadyCount == 1 ? "crop is" : "crops are")} ready to harvest.";
                 }
 
                 var waterNeededCount = farmGrid.AllPlots.Count(static plot => plot.Crop is not null && !plot.IsHarvestReady && !plot.IsWateredToday);
                 if (waterNeededCount > 0)
                 {
-                    return $"Loaded slot-1.json. {waterNeededCount} planted {(waterNeededCount == 1 ? "crop still needs" : "crops still need")} water.";
+                    return $"Save loaded. {waterNeededCount} planted {(waterNeededCount == 1 ? "crop still needs" : "crops still need")} water.";
                 }
             }
 
             if (requests is not null && completedRequestIds is not null && inventory is not null)
             {
                 var requestStatus = BuildRequestBoardStatusText(requests, completedRequestIds, inventory, itemCatalog);
-                if (!string.Equals(requestStatus, "All requests completed.", StringComparison.Ordinal))
+                if (!string.IsNullOrWhiteSpace(requestStatus))
                 {
-                    return $"Loaded slot-1.json. {requestStatus}";
+                    return $"Save loaded. {requestStatus}";
                 }
             }
 
-            return "Loaded slot-1.json. Click a plot to till, plant, water, or harvest.";
+            return "Save loaded. Click a plot to till, plant, water, or harvest.";
         }
 
         return saveFileExists
-            ? "Save file was unreadable. Started a fresh day instead."
+            ? "Previous save could not be read. Started a fresh day instead."
             : "Fresh start. Click a plot to till, plant, water, or harvest.";
     }
 

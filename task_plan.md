@@ -92,4 +92,5 @@ Phase 6
 - Latest verified batch after that made blocked shop/storage hover and click feedback panel-aware, so same-hotspot interactions now advertise "click again to close" while cross-service attempts explain which open panel must close first
 - Latest verified batch after that made load-from-save startup copy farm-state-aware, so a restored session now surfaces harvest-ready or still-unwatered crops instead of always falling back to the same generic fresh-session prompt
 - Latest verified batch after that let loaded saves with no urgent farm work fall through to request-board progress on the main startup status, so the first-screen farm label now agrees with the request label about turn-in readiness
+- Latest verified batch after that removed `slot-1.json` from startup copy and let fully completed request boards surface on load too, so startup feedback now stays player-facing even when restored request work is already finished
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`

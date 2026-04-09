@@ -148,6 +148,10 @@
   - Added a failing startup-status test for loaded saves with no urgent farm work but a request that is already ready to turn in
   - Extended the startup-status helper so, after farm urgency checks, it can fall back to request-board progress using the same restored inventory/request context as the request label
   - Re-ran the focused request-ready startup regression, the full suite, the game build, and the Godot smoke command after the startup request-progress polish batch
+  - Updated startup-status expectations so load-time copy stays player-facing instead of naming `slot-1.json`
+  - Added a failing startup-status test for loaded saves whose request board is already fully completed and no longer has urgent farm work
+  - Updated startup messaging to use `Save loaded.` / `Previous save could not be read.` phrasing and to preserve the `All requests completed.` request-board state during load
+  - Re-ran focused startup-status tests, the full suite, the game build, and the Godot smoke command after the player-facing startup-copy polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -250,6 +254,10 @@
 | Full tests after startup request-progress batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `164/164` passed | PASS |
 | Full build after startup request-progress batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after startup request-progress batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused player-facing startup-status tests | `dotnet test ... --filter "FullyQualifiedName~BuildStartupFarmStatusMessage"` | Updated expectations fail first, then pass after implementation | Failed first on `slot-1.json` and the suppressed completed-request branch, then passed `7/7` after making startup copy player-facing and preserving completed-board status on load | PASS |
+| Full tests after player-facing startup-copy batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `165/165` passed | PASS |
+| Full build after player-facing startup-copy batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after player-facing startup-copy batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -264,15 +272,16 @@
 | 2026-04-09 | Contextual blocked-message regression tests initially failed at compile time because `BuildBlockedWorldInteractionMessage` only accepted the active panel mode | 1 | Added optional requested-panel context and wired it into shop/storage hover plus blocked-click messaging |
 | 2026-04-09 | One new startup-status regression test initially failed for the wrong reason because the fixture set `IsWateredToday` instead of `IsHarvestReady` | 1 | Corrected the `PlotState` constructor arguments so the test actually exercises the intended loaded-harvest path |
 | 2026-04-09 | Request-ready startup-status regression initially failed at compile time because `BuildStartupFarmStatusMessage` still had no request-aware overload | 1 | Added a request/inventory-aware overload and wired bootstrap through it after the farm-urgency checks |
+| 2026-04-09 | Completed-request startup-status regression failed because the helper deliberately filtered out `All requests completed.` and still hard-coded `slot-1.json` in load copy | 1 | Removed the filename from startup copy and let the restored completed-request status flow through to the main farm label |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next small runtime polish candidate now that save-restore startup copy reflects both farm urgency and request readiness, with the remaining likely wins clustered around subtler restore/display consistency or panel-context edge cases |
+| Where am I going? | Decide the next small runtime polish candidate now that save-restore startup copy reflects farm urgency, request readiness, and completed-board state with player-facing wording, with the remaining likely wins clustered around subtler panel-context or interaction-copy edge cases |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
-| What have I learned? | Restore/display consistency tends to unravel in layers: once startup copy reflects restored farm urgency, the next stale spot becomes any other restored label the startup banner still ignores, like request readiness |
-| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, and startup save-restore messaging that now reflects both restored farm urgency and request readiness in the current vertical slice |
+| What have I learned? | Player-facing polish can hide in the last 10% of wording too; even after a status path is logically correct, leaking a save filename or suppressing a completed-progress branch still makes the UI feel more like tooling than a game |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, and startup save-restore messaging that now reflects farm urgency plus request status with fully player-facing wording in the current vertical slice |
 
 ---
 Update this log after each additional polish batch or verification pass.

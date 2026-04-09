@@ -801,8 +801,8 @@ public sealed class GameBootstrapIntegrationTests
 
     [Theory]
     [InlineData(false, false, "Fresh start. Click a plot to till, plant, water, or harvest.")]
-    [InlineData(true, true, "Loaded slot-1.json. Click a plot to till, plant, water, or harvest.")]
-    [InlineData(true, false, "Save file was unreadable. Started a fresh day instead.")]
+    [InlineData(true, true, "Save loaded. Click a plot to till, plant, water, or harvest.")]
+    [InlineData(true, false, "Previous save could not be read. Started a fresh day instead.")]
     public void BuildStartupFarmStatusMessage_ExplainsHowBootstrapHandledTheSave(
         bool saveFileExists,
         bool loadedExistingSave,
@@ -818,7 +818,7 @@ public sealed class GameBootstrapIntegrationTests
         farmGrid.SetPlot(new PlotState(0, 0, true, false, false, true, new CropInstance("parsnip", 4)));
 
         Assert.Equal(
-            "Loaded slot-1.json. 1 crop is ready to harvest.",
+            "Save loaded. 1 crop is ready to harvest.",
             GameBootstrap.BuildStartupFarmStatusMessage(saveFileExists: true, loadedExistingSave: true, farmGrid));
     }
 
@@ -830,7 +830,7 @@ public sealed class GameBootstrapIntegrationTests
         farmGrid.SetPlot(new PlotState(1, 0, true, false, false, false, new CropInstance("potato", 3)));
 
         Assert.Equal(
-            "Loaded slot-1.json. 2 planted crops still need water.",
+            "Save loaded. 2 planted crops still need water.",
             GameBootstrap.BuildStartupFarmStatusMessage(saveFileExists: true, loadedExistingSave: true, farmGrid));
     }
 
@@ -847,7 +847,30 @@ public sealed class GameBootstrapIntegrationTests
         Assert.True(inventory.TryAdd("parsnip_crop", 5));
 
         Assert.Equal(
-            "Loaded slot-1.json. Request ready: Parsnip 5/5. Click board to turn in.",
+            "Save loaded. Request ready: Parsnip 5/5. Click board to turn in.",
+            GameBootstrap.BuildStartupFarmStatusMessage(
+                saveFileExists: true,
+                loadedExistingSave: true,
+                farmGrid,
+                requests,
+                completedRequests,
+                inventory,
+                CreateItemCatalog()));
+    }
+
+    [Fact]
+    public void BuildStartupFarmStatusMessage_WhenLoadedSaveHasCompletedAllRequestsAndNoUrgentFarmWork_UsesCompletionCopy()
+    {
+        var farmGrid = new FarmGrid(3, 3);
+        var requests = new[]
+        {
+            new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120)
+        };
+        var completedRequests = new HashSet<string> { "ship_5_parsnips" };
+        var inventory = new InventoryState(12, 99);
+
+        Assert.Equal(
+            "Save loaded. All requests completed.",
             GameBootstrap.BuildStartupFarmStatusMessage(
                 saveFileExists: true,
                 loadedExistingSave: true,
