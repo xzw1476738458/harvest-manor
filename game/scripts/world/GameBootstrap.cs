@@ -454,6 +454,26 @@ public partial class GameBootstrap : Node2D
             : $"Storage selection: {primaryAction}. {state.StatusText}";
     }
 
+    public static string BuildShopActionStatusMessage(
+        string actionMessage,
+        IReadOnlyList<ShopOffer> offers,
+        int selectedOfferIndex,
+        InventoryState inventory,
+        Wallet wallet)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(actionMessage);
+        return $"{actionMessage} {BuildShopBrowseStatusMessage(offers, selectedOfferIndex, inventory, wallet)}";
+    }
+
+    public static string BuildStorageActionStatusMessage(
+        string actionMessage,
+        InventoryState inventory,
+        InventoryState storage)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(actionMessage);
+        return $"{actionMessage} {BuildStorageBrowseStatusMessage(inventory, storage)}";
+    }
+
     public static string BuildShopPurchaseStatusMessage(ShopOffer offer, InventoryState inventory, Wallet wallet, bool changed)
     {
         ArgumentNullException.ThrowIfNull(offer);
@@ -1140,7 +1160,8 @@ public partial class GameBootstrap : Node2D
             Autosave();
         }
 
-        SetFarmStatus(BuildShopPurchaseStatusMessage(offer, _inventory, _wallet, changed));
+        var actionMessage = BuildShopPurchaseStatusMessage(offer, _inventory, _wallet, changed);
+        SetFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1159,7 +1180,8 @@ public partial class GameBootstrap : Node2D
             Autosave();
         }
 
-        SetFarmStatus(BuildShopSellStatusMessage(offer, _inventory, changed));
+        var actionMessage = BuildShopSellStatusMessage(offer, _inventory, changed);
+        SetFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1212,7 +1234,8 @@ public partial class GameBootstrap : Node2D
             Autosave();
         }
 
-        SetFarmStatus(BuildStorageTransferStatusMessage(itemId, changed, intoStorage: true, _inventory, _storage));
+        var actionMessage = BuildStorageTransferStatusMessage(itemId, changed, intoStorage: true, _inventory, _storage);
+        SetFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -1230,7 +1253,8 @@ public partial class GameBootstrap : Node2D
             Autosave();
         }
 
-        SetFarmStatus(BuildStorageTransferStatusMessage(itemId, changed, intoStorage: false, _storage, _inventory));
+        var actionMessage = BuildStorageTransferStatusMessage(itemId, changed, intoStorage: false, _storage, _inventory);
+        SetFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage));
         RenderPanels();
         RefreshRequestBoardStatus();
     }

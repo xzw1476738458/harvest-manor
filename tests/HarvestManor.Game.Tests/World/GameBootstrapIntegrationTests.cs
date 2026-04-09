@@ -431,6 +431,43 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void BuildShopActionStatusMessage_PreservesOutcomeAndCurrentSelectionContext()
+    {
+        var offers = new[]
+        {
+            new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10)
+        };
+        var inventory = new InventoryState(12, 99);
+        Assert.True(inventory.TryAdd("parsnip_seed", 1));
+        var wallet = new Wallet(180);
+
+        Assert.Equal(
+            "Bought 1 parsnip_seed for 20g. Shop selection: parsnip_seed. Ready to buy or sell 1.",
+            GameBootstrap.BuildShopActionStatusMessage(
+                "Bought 1 parsnip_seed for 20g.",
+                offers,
+                selectedOfferIndex: 0,
+                inventory,
+                wallet));
+    }
+
+    [Fact]
+    public void BuildStorageActionStatusMessage_PreservesOutcomeAndCurrentTransferContext()
+    {
+        var inventory = new InventoryState(12, 99);
+        var storage = new InventoryState(24, 99);
+        Assert.True(inventory.TryAdd("parsnip_seed", 1));
+        Assert.True(storage.TryAdd("wood", 1));
+
+        Assert.Equal(
+            "Stored 1 parsnip_seed. Storage selection: store parsnip_seed or take wood.",
+            GameBootstrap.BuildStorageActionStatusMessage(
+                "Stored 1 parsnip_seed.",
+                inventory,
+                storage));
+    }
+
+    [Fact]
     public void BuildShopPurchaseStatusMessage_ExplainsPurchaseOutcome()
     {
         var offer = new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10);

@@ -107,6 +107,9 @@
   - Added failing tests for shop browse status and storage browse status messaging
   - Added dedicated browse-status helpers and wired them into shop open, shop offer cycling, and storage open flow
   - Re-ran the full suite, build, and Godot smoke after the panel browse-feedback changes
+  - Added failing tests for combined shop/storage action-plus-context status messages
+  - Updated buy/sell/store/withdraw feedback to preserve both the action result and the current panel browse context
+  - Re-ran the full suite, build, and Godot smoke after the panel action-follow-up changes
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
@@ -157,6 +160,10 @@
 | Full tests after panel browse batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `124/124` passed | PASS |
 | Full build after panel browse batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after panel browse batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
+| Focused panel action-follow-up tests | `dotnet test ... --filter FullyQualifiedName~BuildShopActionStatusMessage|FullyQualifiedName~BuildStorageActionStatusMessage` | New tests fail first, then pass after implementation | Passed after combining action messages with panel browse context | PASS |
+| Full tests after panel action-follow-up batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `126/126` passed | PASS |
+| Full build after panel action-follow-up batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after panel action-follow-up batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |

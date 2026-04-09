@@ -28,6 +28,7 @@
 - Request board hover was still using the generic world-interaction helper even though request progress was already computed elsewhere, so the hover preview lagged behind the actual request state shown in the town panel
 - The persistent request-status label itself was also too optimistic: it said "Click board to turn in" even when the player still needed more crops
 - Shop and storage panels still had a smaller flow gap after the town-feedback fixes: opening a panel or cycling shop offers refreshed the panel body, but the main farm status label stayed on a generic open message instead of reflecting the currently selected actionable item
+- Even after adding browse-state panel messages, shop/storage actions could still leave the main status label stuck on a one-off result string with no follow-up context about what the player could do next inside the still-open panel
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -47,6 +48,7 @@
 | Drive request-board hover from the same request-progress data the town UI already knows about | This keeps hover guidance consistent with the actual turn-in state without inventing a new request-preview system |
 | Make the persistent request-board label distinguish "not ready" from "ready to turn in" | This keeps town-side status text honest and consistent with the new hover preview |
 | Use dedicated browse-status builders for shop and storage panel selection state | This lets panel-open and offer-navigation feedback stay specific without overloading the generic panel mode status helper |
+| Combine action results with the current panel browse context when the panel stays open | This preserves immediate confirmation while keeping the next likely action visible |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -64,6 +66,7 @@
 | Request board hover still looked static even after other interactions gained state-aware previews | Added a dedicated request-board hover message that reflects missing items, ready turn-ins, and completed-board state |
 | Request progress label still implied the board was actionable before requirements were met | Updated the status text to show remaining quantity until the request is actually ready to turn in |
 | Shop/storage panel flow still felt generic right after opening or changing offers | Added main-status summaries for the currently selected shop offer and current storage transfer candidates |
+| Shop/storage action results still displaced the current panel context | Appended current browse-state summaries after buy/sell/store/withdraw result messages so the panel stays self-explanatory |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`
