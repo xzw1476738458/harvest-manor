@@ -50,7 +50,37 @@ public sealed class PanelControllerStateTests
         var state = StoragePanelController.EvaluateTransferState(inventory, storage);
 
         Assert.False(state.CanWithdraw);
-        Assert.Equal("Can store 1. Inventory is full for the selected item.", state.StatusText);
+        Assert.Equal("Ready to store 1 wood. Cannot take stone: inventory is full.", state.StatusText);
+    }
+
+    [Fact]
+    public void EvaluateTransferState_ReportsBothBlockedDirectionsWithItemNames()
+    {
+        var inventory = new InventoryState(slotCapacity: 1, maxStackSize: 1);
+        Assert.True(inventory.TryAdd("stone", 1));
+
+        var storage = new InventoryState(slotCapacity: 1, maxStackSize: 1);
+        Assert.True(storage.TryAdd("wood", 1));
+
+        var state = StoragePanelController.EvaluateTransferState(inventory, storage);
+
+        Assert.False(state.CanStore);
+        Assert.False(state.CanWithdraw);
+        Assert.Equal("Cannot store stone: storage is full. Cannot take wood: inventory is full.", state.StatusText);
+    }
+
+    [Fact]
+    public void BuildTransferButtonText_ExplainsBlockedDirections()
+    {
+        var blockedState = new StoragePanelController.TransferUiState(
+            StoreCandidateItemId: "stone",
+            WithdrawCandidateItemId: "wood",
+            CanStore: false,
+            CanWithdraw: false,
+            StatusText: "Cannot store stone: storage is full. Cannot take wood: inventory is full.");
+
+        Assert.Equal("Storage full for stone", StoragePanelController.BuildStoreButtonText(blockedState));
+        Assert.Equal("Inventory full for wood", StoragePanelController.BuildWithdrawButtonText(blockedState));
     }
 
     [Fact]

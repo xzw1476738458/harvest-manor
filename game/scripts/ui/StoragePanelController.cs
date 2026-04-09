@@ -102,13 +102,13 @@ public partial class StoragePanelController : Control
 
         if (StoreButton is not null)
         {
-            StoreButton.Text = _storeCandidateItemId is null ? "Nothing to store" : $"Store 1 {_storeCandidateItemId}";
+            StoreButton.Text = BuildStoreButtonText(state);
             StoreButton.Disabled = !state.CanStore;
         }
 
         if (WithdrawButton is not null)
         {
-            WithdrawButton.Text = _withdrawCandidateItemId is null ? "Nothing to take" : $"Take 1 {_withdrawCandidateItemId}";
+            WithdrawButton.Text = BuildWithdrawButtonText(state);
             WithdrawButton.Disabled = !state.CanWithdraw;
         }
     }
@@ -131,36 +131,78 @@ public partial class StoragePanelController : Control
         var canStore = storeCandidateItemId is not null && storage.CanAdd(storeCandidateItemId, 1);
         var canWithdraw = withdrawCandidateItemId is not null && inventory.CanAdd(withdrawCandidateItemId, 1);
 
-        string statusText;
-        if (canStore && canWithdraw)
+        return new TransferUiState(
+            storeCandidateItemId,
+            withdrawCandidateItemId,
+            canStore,
+            canWithdraw,
+            BuildTransferStatusText(storeCandidateItemId, withdrawCandidateItemId, canStore, canWithdraw));
+    }
+
+    public static string BuildStoreButtonText(TransferUiState state)
+    {
+        if (!string.IsNullOrWhiteSpace(state.StoreCandidateItemId))
         {
-            statusText = "Use Store or Take to move 1 item.";
-        }
-        else if (canStore)
-        {
-            statusText = withdrawCandidateItemId is not null
-                ? "Can store 1. Inventory is full for the selected item."
-                : "Ready to store 1.";
-        }
-        else if (canWithdraw)
-        {
-            statusText = storeCandidateItemId is not null
-                ? "Can take 1. Storage is full for the selected item."
-                : "Ready to take 1.";
-        }
-        else if (storeCandidateItemId is not null && !canStore)
-        {
-            statusText = "Storage is full for the selected item.";
-        }
-        else if (withdrawCandidateItemId is not null && !canWithdraw)
-        {
-            statusText = "Inventory is full for the selected item.";
-        }
-        else
-        {
-            statusText = "Nothing to move.";
+            return state.CanStore
+                ? $"Store 1 {state.StoreCandidateItemId}"
+                : $"Storage full for {state.StoreCandidateItemId}";
         }
 
-        return new TransferUiState(storeCandidateItemId, withdrawCandidateItemId, canStore, canWithdraw, statusText);
+        return "Nothing to store";
+    }
+
+    public static string BuildWithdrawButtonText(TransferUiState state)
+    {
+        if (!string.IsNullOrWhiteSpace(state.WithdrawCandidateItemId))
+        {
+            return state.CanWithdraw
+                ? $"Take 1 {state.WithdrawCandidateItemId}"
+                : $"Inventory full for {state.WithdrawCandidateItemId}";
+        }
+
+        return "Nothing to take";
+    }
+
+    private static string BuildTransferStatusText(
+        string? storeCandidateItemId,
+        string? withdrawCandidateItemId,
+        bool canStore,
+        bool canWithdraw)
+    {
+        if (canStore && canWithdraw)
+        {
+            return "Use Store or Take to move 1 item.";
+        }
+
+        if (canStore && !string.IsNullOrWhiteSpace(storeCandidateItemId))
+        {
+            return !string.IsNullOrWhiteSpace(withdrawCandidateItemId)
+                ? $"Ready to store 1 {storeCandidateItemId}. Cannot take {withdrawCandidateItemId}: inventory is full."
+                : $"Ready to store 1 {storeCandidateItemId}.";
+        }
+
+        if (canWithdraw && !string.IsNullOrWhiteSpace(withdrawCandidateItemId))
+        {
+            return !string.IsNullOrWhiteSpace(storeCandidateItemId)
+                ? $"Ready to take 1 {withdrawCandidateItemId}. Cannot store {storeCandidateItemId}: storage is full."
+                : $"Ready to take 1 {withdrawCandidateItemId}.";
+        }
+
+        if (!string.IsNullOrWhiteSpace(storeCandidateItemId) && !string.IsNullOrWhiteSpace(withdrawCandidateItemId))
+        {
+            return $"Cannot store {storeCandidateItemId}: storage is full. Cannot take {withdrawCandidateItemId}: inventory is full.";
+        }
+
+        if (!string.IsNullOrWhiteSpace(storeCandidateItemId))
+        {
+            return $"Cannot store {storeCandidateItemId}: storage is full.";
+        }
+
+        if (!string.IsNullOrWhiteSpace(withdrawCandidateItemId))
+        {
+            return $"Cannot take {withdrawCandidateItemId}: inventory is full.";
+        }
+
+        return "Nothing to move.";
     }
 }

@@ -439,19 +439,36 @@ public partial class GameBootstrap : Node2D
             return $"Storage selection: store {state.StoreCandidateItemId} or take {state.WithdrawCandidateItemId}.";
         }
 
-        var primaryAction = state.CanStore && state.StoreCandidateItemId is not null
-            ? $"store {state.StoreCandidateItemId}"
-            : state.CanWithdraw && state.WithdrawCandidateItemId is not null
-                ? $"take {state.WithdrawCandidateItemId}"
-                : state.StoreCandidateItemId is not null
-                    ? $"store {state.StoreCandidateItemId}"
-                    : state.WithdrawCandidateItemId is not null
-                        ? $"take {state.WithdrawCandidateItemId}"
-                        : null;
+        if (state.CanStore && state.StoreCandidateItemId is not null)
+        {
+            return state.WithdrawCandidateItemId is not null
+                ? $"Storage selection: store {state.StoreCandidateItemId}. Cannot take {state.WithdrawCandidateItemId}: inventory is full."
+                : $"Storage selection: store {state.StoreCandidateItemId}.";
+        }
 
-        return primaryAction is null
-            ? "Storage open. Nothing to move."
-            : $"Storage selection: {primaryAction}. {state.StatusText}";
+        if (state.CanWithdraw && state.WithdrawCandidateItemId is not null)
+        {
+            return state.StoreCandidateItemId is not null
+                ? $"Storage selection: take {state.WithdrawCandidateItemId}. Cannot store {state.StoreCandidateItemId}: storage is full."
+                : $"Storage selection: take {state.WithdrawCandidateItemId}.";
+        }
+
+        if (state.StoreCandidateItemId is not null && state.WithdrawCandidateItemId is not null)
+        {
+            return $"Storage blocked: cannot store {state.StoreCandidateItemId} (storage full) or take {state.WithdrawCandidateItemId} (inventory full).";
+        }
+
+        if (state.StoreCandidateItemId is not null)
+        {
+            return $"Storage blocked: cannot store {state.StoreCandidateItemId} (storage full).";
+        }
+
+        if (state.WithdrawCandidateItemId is not null)
+        {
+            return $"Storage blocked: cannot take {state.WithdrawCandidateItemId} (inventory full).";
+        }
+
+        return "Storage open. Nothing to move.";
     }
 
     public static string BuildShopActionStatusMessage(

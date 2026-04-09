@@ -426,8 +426,16 @@ public sealed class GameBootstrapIntegrationTests
         var stockedStorage = new InventoryState(24, 99);
         Assert.True(stockedStorage.TryAdd("wood", 1));
         Assert.Equal(
-            "Storage selection: store stone. Can store 1. Inventory is full for the selected item.",
+            "Storage selection: store stone. Cannot take wood: inventory is full.",
             GameBootstrap.BuildStorageBrowseStatusMessage(fullInventory, stockedStorage));
+
+        var blockedInventory = new InventoryState(1, 1);
+        Assert.True(blockedInventory.TryAdd("stone", 1));
+        var blockedStorage = new InventoryState(1, 1);
+        Assert.True(blockedStorage.TryAdd("wood", 1));
+        Assert.Equal(
+            "Storage blocked: cannot store stone (storage full) or take wood (inventory full).",
+            GameBootstrap.BuildStorageBrowseStatusMessage(blockedInventory, blockedStorage));
     }
 
     [Fact]

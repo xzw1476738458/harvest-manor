@@ -29,6 +29,7 @@
 - The persistent request-status label itself was also too optimistic: it said "Click board to turn in" even when the player still needed more crops
 - Shop and storage panels still had a smaller flow gap after the town-feedback fixes: opening a panel or cycling shop offers refreshed the panel body, but the main farm status label stayed on a generic open message instead of reflecting the currently selected actionable item
 - Even after adding browse-state panel messages, shop/storage actions could still leave the main status label stuck on a one-off result string with no follow-up context about what the player could do next inside the still-open panel
+- Storage panel still had one last clarity gap in edge cases: when only one transfer direction worked or both directions were blocked, the body/main-status copy fell back to a vague "selected item" phrasing and the disabled buttons still looked like live actions
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -49,6 +50,7 @@
 | Make the persistent request-board label distinguish "not ready" from "ready to turn in" | This keeps town-side status text honest and consistent with the new hover preview |
 | Use dedicated browse-status builders for shop and storage panel selection state | This lets panel-open and offer-navigation feedback stay specific without overloading the generic panel mode status helper |
 | Combine action results with the current panel browse context when the panel stays open | This preserves immediate confirmation while keeping the next likely action visible |
+| Keep storage transfer copy item-specific in blocked states for both the panel body and the main farm status | Players should be able to tell at a glance which concrete item can move and which direction is blocked without mentally decoding generic UI text |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -67,6 +69,7 @@
 | Request progress label still implied the board was actionable before requirements were met | Updated the status text to show remaining quantity until the request is actually ready to turn in |
 | Shop/storage panel flow still felt generic right after opening or changing offers | Added main-status summaries for the currently selected shop offer and current storage transfer candidates |
 | Shop/storage action results still displaced the current panel context | Appended current browse-state summaries after buy/sell/store/withdraw result messages so the panel stays self-explanatory |
+| Storage edge states still sounded too generic after the earlier browse-feedback pass | Named the blocked item and direction explicitly in storage status text, added blocked-state button labels, and made the main browse text distinguish between actionable versus fully blocked transfer states |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`
