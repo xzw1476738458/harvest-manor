@@ -56,7 +56,7 @@
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
 
 ### Phase 5: Scene/Layout & Interaction Feedback
-- **Status:** in_progress
+- **Status:** complete
 - Actions taken:
   - Added failing tests for panel open/close status messaging
   - Implemented explicit farm-status updates when shop/storage panels open or close
@@ -66,6 +66,9 @@
   - Updated `FarmScene.tscn` and `TownScene.tscn` to render simple `Polygon2D` hotspot backgrounds for bed, plots, shop, storage, and request board
   - Tightened service labels so clickable intent is more obvious at a glance
   - Re-ran the full suite, build, and Godot smoke after the scene hotspot changes
+  - Added a small shared hover-style helper and a shared hoverable area base for non-plot interactions
+  - Added hover-style tests and applied subtle hover scale/highlight behavior across plots and town/farm service hotspots
+  - Re-ran the full suite, build, and Godot smoke after the hover-feedback changes
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/GameBootstrapIntegrationTests.cs` (modified)
@@ -73,6 +76,14 @@
   - `game/scenes/world/TownScene.tscn` (modified)
   - `tests/HarvestManor.Game.Tests/World/FarmSceneLayoutTests.cs` (modified)
   - `tests/HarvestManor.Game.Tests/World/TownSceneLayoutTests.cs` (created)
+  - `game/scripts/world/InteractionHoverStyle.cs` (created)
+  - `game/scripts/world/HoverableInteractionArea.cs` (created)
+  - `game/scripts/world/FarmPlotNode.cs` (modified)
+  - `game/scripts/world/BedInteraction.cs` (modified)
+  - `game/scripts/world/ShopInteraction.cs` (modified)
+  - `game/scripts/world/StorageInteraction.cs` (modified)
+  - `game/scripts/world/RequestBoardInteraction.cs` (modified)
+  - `tests/HarvestManor.Game.Tests/World/InteractionHoverStyleTests.cs` (created)
 
 ## Test Results
 | Test | Input | Expected | Actual | Status |
@@ -96,6 +107,10 @@
 | Full tests after hotspot batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `111/111` passed | PASS |
 | Full build after hotspot batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after hotspot batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
+| Focused hover style tests | `dotnet test ... --filter "FullyQualifiedName~InteractionHoverStyleTests|FullyQualifiedName~FarmSceneLayoutTests|FullyQualifiedName~TownSceneLayoutTests"` | New hover-style tests fail first, then pass after implementation | Passed after adding shared hover behavior | PASS |
+| Full tests after hover batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `113/113` passed | PASS |
+| Full build after hover batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after hover batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise remains | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -108,11 +123,11 @@
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 5: Scene/Layout & Interaction Feedback |
-| Where am I going? | Panel/open-close feedback polish, then broader layout/input review and milestone verification |
+| Where am I? | Phase 6: Milestone Verification & Handoff |
+| Where am I going? | Decide the next runtime polish candidate or close out this milestone slice with a clean summary |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
-| What have I learned? | Legacy save compatibility needs both deserialization defaults and runtime unlock fallback; see `findings.md` |
-| What have I done? | Verified two runtime batches, committed `d51a0c0`, `801a1a4`, `2f9fc50`, completed the save-compatibility batch, and started the next panel-flow feedback polish |
+| What have I learned? | Interaction discoverability needed visible and hover-reactive hotspots, not just valid click wiring; see `findings.md` |
+| What have I done? | Verified and committed runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, and hover feedback across the current vertical slice |
 
 ---
 Update this log after each additional polish batch or verification pass.

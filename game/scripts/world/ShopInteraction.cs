@@ -2,7 +2,7 @@ using Godot;
 
 namespace HarvestManor.World;
 
-public partial class ShopInteraction : Area2D
+public partial class ShopInteraction : HoverableInteractionArea
 {
     [Signal]
     public delegate void ShopRequestedEventHandler();

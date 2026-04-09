@@ -2,7 +2,7 @@ using Godot;
 
 namespace HarvestManor.World;
 
-public partial class StorageInteraction : Area2D
+public partial class StorageInteraction : HoverableInteractionArea
 {
     [Signal]
     public delegate void StorageRequestedEventHandler();

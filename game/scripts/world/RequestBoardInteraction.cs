@@ -2,7 +2,7 @@ using Godot;
 
 namespace HarvestManor.World;
 
-public partial class RequestBoardInteraction : Area2D
+public partial class RequestBoardInteraction : HoverableInteractionArea
 {
     [Signal]
     public delegate void RequestBoardRequestedEventHandler();

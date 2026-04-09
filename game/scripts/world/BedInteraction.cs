@@ -2,7 +2,7 @@ using Godot;
 
 namespace HarvestManor.World;
 
-public partial class BedInteraction : Area2D
+public partial class BedInteraction : HoverableInteractionArea
 {
     [Signal]
     public delegate void DayEndRequestedEventHandler();

@@ -13,12 +13,19 @@ public partial class FarmPlotNode : Area2D
     [Export]
     public Label? PlotLabel { get; set; }
 
+    [Export]
+    public Polygon2D? PlotVisual { get; set; }
+
     [Signal]
     public delegate void PlotInteractedEventHandler(int gridX, int gridY);
 
     public override void _Ready()
     {
         PlotLabel ??= GetNodeOrNull<Label>("PlotLabel");
+        PlotVisual ??= GetNodeOrNull<Polygon2D>("PlotVisual");
+        MouseEntered += OnMouseEntered;
+        MouseExited += OnMouseExited;
+        ApplyHoverState(isHovered: false);
     }
 
     public override void _InputEvent(Viewport viewport, InputEvent @event, int shapeIdx)
@@ -60,5 +67,20 @@ public partial class FarmPlotNode : Area2D
                     : plot.IsWateredToday
                         ? new Color(0.58f, 0.78f, 1f)
                         : Colors.White;
+    }
+
+    private void OnMouseEntered()
+    {
+        ApplyHoverState(isHovered: true);
+    }
+
+    private void OnMouseExited()
+    {
+        ApplyHoverState(isHovered: false);
+    }
+
+    private void ApplyHoverState(bool isHovered)
+    {
+        Scale = InteractionHoverStyle.ResolveScale(isHovered);
     }
 }

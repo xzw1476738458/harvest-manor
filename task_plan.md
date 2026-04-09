@@ -4,7 +4,7 @@
 Continue `Harvest Manor` milestone 1 on the existing worktree and branch, prioritizing real-runtime polish, save/load reliability, and session-recoverable project context.
 
 ## Current Phase
-Phase 5
+Phase 6
 
 ## Phases
 
@@ -40,13 +40,13 @@ Phase 5
 - [x] Audit click regions and scene readability for farm, town, and panel interactions
 - [x] Tighten player-facing feedback for blocked or invalid actions
 - [x] Verify panel open/close flow remains clear across mouse and keyboard paths
-- **Status:** in_progress
+- **Status:** complete
 
 ### Phase 6: Milestone Verification & Handoff
 - [ ] Run the full automated suite
 - [ ] Run the Godot smoke test after each meaningful batch
 - [ ] Summarize completed work, verification evidence, and next candidates
-- **Status:** pending
+- **Status:** in_progress
 
 ## Key Questions
 1. Which remaining runtime issue is the most player-visible problem in the current vertical slice?
