@@ -515,12 +515,18 @@ public sealed class GameBootstrapIntegrationTests
         var completedRequests = new HashSet<string>();
 
         Assert.Equal(
-            "Hover request board: need 5 more parsnip_crop.",
+            "Hover request board: parsnip_crop 0/5. Need 5 more.",
             GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
 
+        Assert.True(inventory.TryAdd("parsnip_crop", 3));
+        Assert.Equal(
+            "Hover request board: parsnip_crop 3/5. Need 2 more.",
+            GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
+
+        Assert.True(GameBootstrap.TryTransferItem(inventory, new InventoryState(24, 99), "parsnip_crop", 3));
         Assert.True(inventory.TryAdd("parsnip_crop", 5));
         Assert.Equal(
-            "Hover request board: turn in 5 parsnip_crop for 120g.",
+            "Hover request board: parsnip_crop 5/5 ready to turn in for 120g.",
             GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
 
         completedRequests.Add("ship_5_parsnips");
@@ -539,7 +545,7 @@ public sealed class GameBootstrapIntegrationTests
         };
 
         Assert.Equal(
-            "Hover request board: need 5 more Parsnip.",
+            "Hover request board: Parsnip 0/5. Need 5 more.",
             GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, new HashSet<string>(), inventory, CreateItemCatalog()));
     }
 

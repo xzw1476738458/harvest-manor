@@ -184,6 +184,9 @@
   - Added a failing regression test for request-board clicks that fail because the order is still incomplete
   - Updated `BuildRequestBoardActionStatusMessage` so non-success turn-ins now fall back to the live request-board status instead of a shorter one-off reminder
   - Re-ran the focused request-board action-status tests, the full suite, the game build, and the Godot smoke command after the failed-turn-in status-alignment batch
+  - Updated the request-board hover regression expectations so hover guidance now needs to show current collected progress as well as the remaining quantity
+  - Updated `BuildRequestBoardHoverStatusMessage` so incomplete and ready hover states now include current progress counts
+  - Re-ran the focused request-board hover tests, the full suite, the game build, and the Godot smoke command after the hover-progress alignment batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -328,6 +331,10 @@
 | Full tests after failed-turn-in status-alignment batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `174/174` passed | PASS |
 | Full build after failed-turn-in status-alignment batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after failed-turn-in status-alignment batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused request-board hover-progress tests | `dotnet test ... --filter FullyQualifiedName~BuildRequestBoardHoverStatusMessage` | Updated hover expectations fail first, then pass after implementation | Failed first on the old `need 5 more ...` wording, then passed `2/2` after adding progress counts to incomplete and ready hover copy | PASS |
+| Full tests after request-board hover-progress batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `174/174` passed | PASS |
+| Full build after request-board hover-progress batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after request-board hover-progress batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -352,6 +359,7 @@
 | 2026-04-10 | Request-board action-context regression first failed at compile time because no helper existed to combine the completion result with refreshed board state | 1 | Added `BuildRequestBoardActionStatusMessage`, used it for the main farm status, and restored the request label to its live board text after request-board clicks |
 | 2026-04-10 | Demo-unlock follow-up regression failed because the unlock-success string still stopped after the gold cost | 1 | Updated the locked-plot success copy to append `Click again to till.` and re-ran the verification set |
 | 2026-04-10 | Failed-turn-in status regression failed because the request-board action helper still returned a shorter reminder than the live board status | 1 | Updated non-success request-board action feedback to fall back to `BuildRequestBoardStatusText(...)` and re-ran the verification set |
+| 2026-04-10 | Request-board hover-progress regressions failed because hover copy still omitted the current collected quantity | 1 | Updated the hover helper to report `current/required` progress before the remaining-quantity or ready-to-turn-in guidance and re-ran the verification set |
 
 ## 5-Question Reboot Check
 | Question | Answer |
@@ -366,6 +374,7 @@
 - The newly verified batch now also makes demo-plot unlock success copy point straight at the next action: `Click again to till.`
 - Immediate next step is to commit this batch, restore a clean worktree, and then keep scanning for the next smallest player-facing runtime polish issue
 - The latest batch after that keeps failed request-board clicks aligned with the live request progress state on the main status label too
+- The latest batch after that also makes request-board hover show current progress counts, so hover and persistent request status now tell the same story
 
 ---
 Update this log after each additional polish batch or verification pass.

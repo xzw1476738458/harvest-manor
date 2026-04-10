@@ -50,6 +50,7 @@
 - Request-board turn-in still overwrote both the main farm status and the request label with the raw completion result, so the player briefly lost sight of what the board now wanted next
 - Even after till/plant and request-board follow-up polish, demo-plot unlock success still stopped at the price confirmation instead of telling the player they could immediately till the newly opened plot
 - Even after request-board completion began preserving refreshed context, a failed board click still left the main farm status on a shorter `Need N more X.` reminder while the request label showed the fuller live progress state
+- Even after the main request-board status surfaces became more consistent, the hover preview still only showed the remaining quantity and hid the current collected progress the request label already knew
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -91,6 +92,7 @@
 | After request completion, let the main status show result plus current board context while the request label itself returns to live board status | This mirrors the earlier shop/storage action-context pattern and keeps town-side progression readable after a successful turn-in |
 | Let demo-plot unlock success copy include the immediate next step when the newly unlocked plot is directly clickable | This keeps farm expansion feedback aligned with the same guided-flow pattern already established for tilling and planting |
 | After a failed request-board turn-in, let the main farm status mirror the live request-board state instead of the shorter failure reminder | When a click does not change state, consistency between the main status label and the request label is more valuable than repeating a slightly different one-off message |
+| Let request-board hover preview surface current progress counts too | Hover is often the first place players check whether a turn-in is close, so hiding the already collected quantity makes it less useful than the persistent board label |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -126,6 +128,7 @@
 | New request-board action-context test failed at compile time because there was no helper for combining completion feedback with the refreshed board state | Added a request-board action-status helper and routed runtime request-board clicks through it while restoring the request label to the live board status text |
 | New demo-unlock follow-up regression failed because locked-plot success copy still stopped at `Unlocked a new plot for 120g.` | Updated the unlock-success branch to append `Click again to till.` so expansion feedback now points at the immediate next action |
 | New failed-turn-in regression failed because `BuildRequestBoardActionStatusMessage` still returned the shorter `Need 2 more Parsnip.` reminder instead of the live board state | Updated the helper so non-success request-board clicks now fall back to `BuildRequestBoardStatusText(...)`, keeping the main farm status aligned with the request label |
+| New request-board hover-progress regressions failed because hover copy still returned only `need N more ...` / `turn in N ...` strings | Updated the hover helper to include current progress counts so request-board hover stays aligned with the richer persistent request status |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`

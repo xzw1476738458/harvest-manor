@@ -530,11 +530,11 @@ public partial class GameBootstrap : Node2D
         var itemDisplayName = ItemDisplayNameFormatter.Resolve(nextRequest.RequiredItemId, itemCatalog);
         if (currentQuantity >= nextRequest.RequiredQuantity)
         {
-            return $"Hover request board: turn in {nextRequest.RequiredQuantity} {itemDisplayName} for {nextRequest.RewardGold}g.";
+            return $"Hover request board: {itemDisplayName} {currentQuantity}/{nextRequest.RequiredQuantity} ready to turn in for {nextRequest.RewardGold}g.";
         }
 
         var remainingQuantity = nextRequest.RequiredQuantity - currentQuantity;
-        return $"Hover request board: need {remainingQuantity} more {itemDisplayName}.";
+        return $"Hover request board: {itemDisplayName} {currentQuantity}/{nextRequest.RequiredQuantity}. Need {remainingQuantity} more.";
     }
 
     public static string BuildShopBrowseStatusMessage(
