@@ -162,6 +162,9 @@
   - Added a failing regression test for ready-to-harvest clicks blocked by full inventory
   - Updated harvest-failure click feedback to name the blocked crop instead of falling back to a generic inventory-full message
   - Re-ran the focused blocked-harvest test, the full suite, the game build, and the Godot smoke command after the harvest-feedback polish batch
+  - Added failing regression coverage for watering success and same-day repeat watering on planted crops
+  - Updated watering click feedback so both successful watering and repeated same-day attempts name the crop directly
+  - Re-ran focused farm-plot interaction tests, the full suite, the game build, and the Godot smoke command after the watering-feedback polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -282,6 +285,10 @@
 | Full tests after harvest-feedback polish batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `167/167` passed | PASS |
 | Full build after harvest-feedback polish batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after harvest-feedback polish batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused watering-feedback tests | `dotnet test ... --filter FullyQualifiedName~TryHandleFarmPlotInteraction` | Updated expectations fail first, then pass after implementation | Failed first on generic `Watered plot.` copy, then passed `3/3` after naming the crop in watering success and repeated-water branches | PASS |
+| Full tests after watering-feedback polish batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `168/168` passed | PASS |
+| Full build after watering-feedback polish batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after watering-feedback polish batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -300,15 +307,16 @@
 | 2026-04-09 | Player-facing plot-copy regression tests failed because plot hover and unlock messages still embedded raw grid coordinates | 1 | Replaced the coordinate-bearing strings with player-facing plot guidance while leaving the underlying unlock logic unchanged |
 | 2026-04-09 | Auto-plant hover regression failed because empty tilled-plot hover still used generic plant copy even when inventory made the planted crop deterministic | 1 | Added a shared auto-plant crop selector and reused it in both hover preview and actual planting |
 | 2026-04-09 | Blocked-harvest regression failed because a ready crop with full inventory still reported only `Inventory full.` on click | 1 | Updated the harvest-failure message to name the crop directly |
+| 2026-04-09 | Watering-feedback regression tests failed because planted-crop clicks still returned generic watering copy | 1 | Updated watering success and repeated-water messages to name the crop directly |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next small runtime polish candidate now that both empty-plot plant previews and blocked harvest clicks preserve crop context, with the remaining likely wins clustered around save-restore display consistency and subtle interaction edge cases |
+| Where am I going? | Decide the next small runtime polish candidate now that plant, water, and blocked-harvest plot feedback all preserve crop context, with the remaining likely wins clustered around save-restore display consistency and subtle interaction edge cases |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
-| What have I learned? | Hover and click feedback need to carry the same amount of context; once the player sees a concrete crop on hover, a blocked click that drops back to a generic failure line feels like a regression |
-| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, startup save-restore messaging with player-facing request state, plot hover/unlock copy that no longer leaks internal coordinates, empty-plot hover preview that now names the actual auto-selected crop, and crop-specific blocked-harvest click feedback |
+| What have I learned? | The farm loop feels much more deliberate when the same crop context survives across hover, success, and failure states instead of only appearing in one of them |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, startup save-restore messaging with player-facing request state, plot hover/unlock copy that no longer leaks internal coordinates, empty-plot hover preview that now names the actual auto-selected crop, crop-specific blocked-harvest click feedback, and crop-specific watering feedback |
 
 ---
 Update this log after each additional polish batch or verification pass.

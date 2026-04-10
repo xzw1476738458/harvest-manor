@@ -73,6 +73,7 @@ Phase 6
 | Let a shop or storage hotspot close its own already-open panel while still blocking different world interactions during modal flow | This keeps the modal boundary intact for unrelated interactions, but removes an unintuitive runtime dead end where the same hotspot could not perform its implied toggle |
 | Reuse the same auto-plant crop-selection rule for empty-plot hover copy and actual planting | Pre-click guidance should preview the crop that a click will really plant whenever the current inventory makes that knowable |
 | Keep blocked harvest click feedback crop-specific when inventory is full | Once hover names the crop on a ready plot, the failed click result should preserve that same context instead of falling back to a generic blocker |
+| Keep watering click feedback crop-specific on both success and same-day repeat attempts | Watering is one of the most frequent core-loop actions, so its click results should stay as concrete as the hover guidance |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -98,4 +99,5 @@ Phase 6
 - Latest verified batch after that removed `(x,y)` grid coordinates from plot hover and demo-plot unlock feedback, so farm interaction copy now reads like player guidance instead of internal debug/state notation
 - Latest verified batch after that made empty tilled-plot hover copy name the crop that auto-plant will currently use, so pre-click farm guidance now stays aligned with the actual planting result when multiple seed types are available
 - Latest verified batch after that made harvest-blocked click feedback name the crop when inventory is full, so ready-to-harvest plots now keep their player-facing context even on failure
+- Latest verified batch after that made watering success and same-day repeat feedback name the crop too, so the core farm loop now keeps crop context consistently across hover and click states
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`

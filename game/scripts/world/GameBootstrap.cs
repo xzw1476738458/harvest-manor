@@ -920,11 +920,11 @@ public partial class GameBootstrap : Node2D
         if (!plot.IsWateredToday)
         {
             farmGrid.SetPlot(plot.Water());
-            message = "Watered plot.";
+            message = $"Watered {cropDefinition.DisplayName}.";
             return true;
         }
 
-        message = "Crop already watered today.";
+        message = $"{cropDefinition.DisplayName} already watered today.";
         return false;
     }
 

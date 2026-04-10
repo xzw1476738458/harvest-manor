@@ -114,7 +114,7 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Equal("parsnip", farmGrid.GetPlot(0, 0).Crop!.CropId);
 
         Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var waterMessage));
-        Assert.Equal("Watered plot.", waterMessage);
+        Assert.Equal("Watered Parsnip.", waterMessage);
         Assert.True(farmGrid.GetPlot(0, 0).IsWateredToday);
 
         for (var day = 1; day <= 4; day++)
@@ -122,9 +122,9 @@ public sealed class GameBootstrapIntegrationTests
             Assert.True(GameBootstrap.ProcessDayEnd(clock, stamina, growth, farmGrid));
             if (day < 4)
             {
-                Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var repeatWaterMessage));
-                Assert.Equal("Watered plot.", repeatWaterMessage);
-            }
+            Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var repeatWaterMessage));
+            Assert.Equal("Watered Parsnip.", repeatWaterMessage);
+        }
         }
 
         Assert.True(farmGrid.GetPlot(0, 0).IsHarvestReady);
@@ -152,6 +152,22 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Equal("Cannot harvest Parsnip: inventory full.", message);
         Assert.Equal("parsnip", farmGrid.GetPlot(0, 0).Crop!.CropId);
         Assert.True(farmGrid.GetPlot(0, 0).IsHarvestReady);
+    }
+
+    [Fact]
+    public void TryHandleFarmPlotInteraction_WhenWateringNamesTheCropAndRepeatedWateringKeepsContext()
+    {
+        var crops = CreateCropCatalog();
+        var inventory = new InventoryState(12, 99);
+        var farmGrid = new FarmGrid(1, 1);
+        farmGrid.SetPlot(new PlotState(0, 0, true, false, false, false, new CropInstance("parsnip", 2)));
+
+        Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var firstMessage));
+        Assert.Equal("Watered Parsnip.", firstMessage);
+        Assert.True(farmGrid.GetPlot(0, 0).IsWateredToday);
+
+        Assert.False(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var repeatMessage));
+        Assert.Equal("Parsnip already watered today.", repeatMessage);
     }
 
     [Fact]
