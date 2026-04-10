@@ -45,6 +45,7 @@
 - Even after the broader player-facing plot-copy pass, empty tilled-plot hover still hid which crop would actually be auto-planted when multiple seed types were available in inventory
 - Even after hover named harvest-ready crops, the failed click result for a full inventory still collapsed back to a generic `Inventory full.` message with no crop context
 - Even after hover named waterable crops, watering click feedback still fell back to generic `Watered plot.` / `Crop already watered today.` copy
+- Day transition still reset the main farm status to a fixed `Water planted crops...` line even when the new day actually started with harvest-ready crops or request-board work as the highest-priority next action
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -81,6 +82,7 @@
 | Reuse one shared auto-plant crop selector for hover preview and empty-plot planting | This keeps the preview honest when inventory is known and avoids future drift between "click to plant X" copy and the crop the game will actually plant |
 | Keep blocked harvest copy crop-specific when the plot already tells us what is ready | This preserves the player's mental context on failure and keeps click feedback aligned with the more specific hover preview |
 | Keep watering click copy crop-specific once the crop is already known | This preserves consistency inside the main farming loop and avoids a jarring drop from concrete hover guidance back to generic action results |
+| Reuse one shared farm/request priority summary for both load-time and day-start main-status text | This keeps the game's most prominent guidance channel consistent across two entry points into the same farm state |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -111,6 +113,7 @@
 | New auto-plant hover regression test failed because empty tilled-plot hover still used generic "click to plant" copy even when inventory made the chosen crop knowable | Extracted a shared auto-plant crop selector and reused it in both hover preview and actual planting |
 | New blocked-harvest regression test failed because ready-to-harvest click feedback still returned a generic `Inventory full.` message | Updated the harvest-failure branch to name the blocked crop directly |
 | New watering-feedback regression tests failed because both watering success and same-day repeat clicks still used generic plot/crop wording | Updated the watering branches to name the crop directly in both outcomes |
+| New day-start status tests initially failed at compile time because `GameBootstrap` had no day-start status helper at all | Added a day-start helper plus a shared priority-summary helper, then routed `EndDay()` through it so day-transition copy now matches actual farm/request state |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`

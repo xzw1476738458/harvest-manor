@@ -935,6 +935,49 @@ public sealed class GameBootstrapIntegrationTests
                 CreateItemCatalog()));
     }
 
+    [Fact]
+    public void BuildDayStartFarmStatusMessage_WhenFarmHasHarvestReadyCrops_PrioritizesHarvestFeedback()
+    {
+        var farmGrid = new FarmGrid(3, 3);
+        farmGrid.SetPlot(new PlotState(0, 0, true, false, false, true, new CropInstance("parsnip", 4)));
+
+        Assert.Equal(
+            "A new day begins. 1 crop is ready to harvest.",
+            GameBootstrap.BuildDayStartFarmStatusMessage(farmGrid));
+    }
+
+    [Fact]
+    public void BuildDayStartFarmStatusMessage_WhenFarmIsIdleButRequestIsReady_UsesRequestProgressCopy()
+    {
+        var farmGrid = new FarmGrid(3, 3);
+        var requests = new[]
+        {
+            new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120)
+        };
+        var completedRequests = new HashSet<string>();
+        var inventory = new InventoryState(12, 99);
+        Assert.True(inventory.TryAdd("parsnip_crop", 5));
+
+        Assert.Equal(
+            "A new day begins. Request ready: Parsnip 5/5. Click board to turn in.",
+            GameBootstrap.BuildDayStartFarmStatusMessage(
+                farmGrid,
+                requests,
+                completedRequests,
+                inventory,
+                CreateItemCatalog()));
+    }
+
+    [Fact]
+    public void BuildDayStartFarmStatusMessage_WhenFarmIsIdleAndNoRequestIsReady_UsesGenericFallback()
+    {
+        var farmGrid = new FarmGrid(3, 3);
+
+        Assert.Equal(
+            "A new day begins. Click a plot to till, plant, water, or harvest.",
+            GameBootstrap.BuildDayStartFarmStatusMessage(farmGrid));
+    }
+
     [Theory]
     [InlineData(false, false, false, false)]
     [InlineData(true, true, false, false)]

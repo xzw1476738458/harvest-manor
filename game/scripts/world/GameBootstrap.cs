@@ -222,28 +222,10 @@ public partial class GameBootstrap : Node2D
     {
         if (loadedExistingSave)
         {
-            if (farmGrid is not null)
+            var currentFarmStatus = BuildPriorityFarmStatusMessage(farmGrid, requests, completedRequestIds, inventory, itemCatalog);
+            if (!string.IsNullOrWhiteSpace(currentFarmStatus))
             {
-                var harvestReadyCount = farmGrid.AllPlots.Count(static plot => plot.IsHarvestReady);
-                if (harvestReadyCount > 0)
-                {
-                    return $"Save loaded. {harvestReadyCount} {(harvestReadyCount == 1 ? "crop is" : "crops are")} ready to harvest.";
-                }
-
-                var waterNeededCount = farmGrid.AllPlots.Count(static plot => plot.Crop is not null && !plot.IsHarvestReady && !plot.IsWateredToday);
-                if (waterNeededCount > 0)
-                {
-                    return $"Save loaded. {waterNeededCount} planted {(waterNeededCount == 1 ? "crop still needs" : "crops still need")} water.";
-                }
-            }
-
-            if (requests is not null && completedRequestIds is not null && inventory is not null)
-            {
-                var requestStatus = BuildRequestBoardStatusText(requests, completedRequestIds, inventory, itemCatalog);
-                if (!string.IsNullOrWhiteSpace(requestStatus))
-                {
-                    return $"Save loaded. {requestStatus}";
-                }
+                return $"Save loaded. {currentFarmStatus}";
             }
 
             return "Save loaded. Click a plot to till, plant, water, or harvest.";
@@ -252,6 +234,56 @@ public partial class GameBootstrap : Node2D
         return saveFileExists
             ? "Previous save could not be read. Started a fresh day instead."
             : "Fresh start. Click a plot to till, plant, water, or harvest.";
+    }
+
+    public static string BuildDayStartFarmStatusMessage(
+        FarmGrid? farmGrid,
+        IReadOnlyList<RequestDefinition>? requests = null,
+        ISet<string>? completedRequestIds = null,
+        InventoryState? inventory = null,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
+    {
+        var currentFarmStatus = BuildPriorityFarmStatusMessage(farmGrid, requests, completedRequestIds, inventory, itemCatalog);
+        if (!string.IsNullOrWhiteSpace(currentFarmStatus))
+        {
+            return $"A new day begins. {currentFarmStatus}";
+        }
+
+        return "A new day begins. Click a plot to till, plant, water, or harvest.";
+    }
+
+    private static string? BuildPriorityFarmStatusMessage(
+        FarmGrid? farmGrid,
+        IReadOnlyList<RequestDefinition>? requests,
+        ISet<string>? completedRequestIds,
+        InventoryState? inventory,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog)
+    {
+        if (farmGrid is not null)
+        {
+            var harvestReadyCount = farmGrid.AllPlots.Count(static plot => plot.IsHarvestReady);
+            if (harvestReadyCount > 0)
+            {
+                return $"{harvestReadyCount} {(harvestReadyCount == 1 ? "crop is" : "crops are")} ready to harvest.";
+            }
+
+            var waterNeededCount = farmGrid.AllPlots.Count(static plot => plot.Crop is not null && !plot.IsHarvestReady && !plot.IsWateredToday);
+            if (waterNeededCount > 0)
+            {
+                return $"{waterNeededCount} planted {(waterNeededCount == 1 ? "crop still needs" : "crops still need")} water.";
+            }
+        }
+
+        if (requests is not null && completedRequestIds is not null && inventory is not null)
+        {
+            var requestStatus = BuildRequestBoardStatusText(requests, completedRequestIds, inventory, itemCatalog);
+            if (!string.IsNullOrWhiteSpace(requestStatus))
+            {
+                return requestStatus;
+            }
+        }
+
+        return null;
     }
 
     public static bool TryApplyShopOpenSideEffects(
@@ -1512,7 +1544,7 @@ public partial class GameBootstrap : Node2D
         {
             RefreshHud();
             RenderFarmPlots();
-            SetFarmStatus("A new day begins. Water planted crops to keep them growing.");
+            SetFarmStatus(BuildDayStartFarmStatusMessage(_farmGrid, _requests, _completedRequestIds, _inventory, _itemCatalog));
             Autosave();
         }
     }
