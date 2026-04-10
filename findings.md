@@ -47,6 +47,7 @@
 - Even after hover named waterable crops, watering click feedback still fell back to generic `Watered plot.` / `Crop already watered today.` copy
 - Day transition still reset the main farm status to a fixed `Water planted crops...` line even when the new day actually started with harvest-ready crops or request-board work as the highest-priority next action
 - Even after watering and harvest feedback became more specific, tilling and planting still stopped at bare success confirmations instead of telling the player the immediate next click they were being set up for
+- Request-board turn-in still overwrote both the main farm status and the request label with the raw completion result, so the player briefly lost sight of what the board now wanted next
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -85,6 +86,7 @@
 | Keep watering click copy crop-specific once the crop is already known | This preserves consistency inside the main farming loop and avoids a jarring drop from concrete hover guidance back to generic action results |
 | Reuse one shared farm/request priority summary for both load-time and day-start main-status text | This keeps the game's most prominent guidance channel consistent across two entry points into the same farm state |
 | Let till and plant success copy include the immediate next step when it is deterministic | This keeps the early farm loop more readable and turns the main status label into a lightweight action guide instead of a pure action log |
+| After request completion, let the main status show result plus current board context while the request label itself returns to live board status | This mirrors the earlier shop/storage action-context pattern and keeps town-side progression readable after a successful turn-in |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -117,6 +119,7 @@
 | New watering-feedback regression tests failed because both watering success and same-day repeat clicks still used generic plot/crop wording | Updated the watering branches to name the crop directly in both outcomes |
 | New day-start status tests initially failed at compile time because `GameBootstrap` had no day-start status helper at all | Added a day-start helper plus a shared priority-summary helper, then routed `EndDay()` through it so day-transition copy now matches actual farm/request state |
 | New till/plant follow-up tests failed because those branches still returned bare success copy, and a broader full-suite rerun exposed one older regression test that still expected the pre-follow-up plant message | Updated till and plant success branches to include next-step guidance and aligned the older regression expectation with the new plant wording |
+| New request-board action-context test failed at compile time because there was no helper for combining completion feedback with the refreshed board state | Added a request-board action-status helper and routed runtime request-board clicks through it while restoring the request label to the live board status text |
 
 ## Resources
 - Approved spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`

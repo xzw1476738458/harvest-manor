@@ -76,6 +76,7 @@ Phase 6
 | Keep watering click feedback crop-specific on both success and same-day repeat attempts | Watering is one of the most frequent core-loop actions, so its click results should stay as concrete as the hover guidance |
 | Reuse the farm/request priority summary for day-transition status too | The main status label after sleeping should agree with the current farm state instead of always falling back to a generic watering hint |
 | Let till and plant success messages advertise the immediate next plot action | Frequent farm-loop clicks feel clearer when result text also confirms the next sensible follow-up instead of stopping at past-tense confirmation |
+| Let request-board completion feedback preserve both the completion result and the newly current request-board state | After turning in an order, the main status should not lose either the reward confirmation or what the board now wants next |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -104,4 +105,5 @@ Phase 6
 - Latest verified batch after that made watering success and same-day repeat feedback name the crop too, so the core farm loop now keeps crop context consistently across hover and click states
 - Latest verified batch after that made post-sleep main-status copy reuse the same harvest/water/request priorities as load-time messaging, so a new day now starts with context that matches the actual farm state
 - Latest verified batch after that made till and plant success copy advertise the immediate next step too, so early farm-loop clicks now read more like guided flow than isolated confirmations
+- Latest verified batch after that made request-board completion feedback keep both the turn-in result and the current board context, while the request label itself snaps back to the live board state
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`

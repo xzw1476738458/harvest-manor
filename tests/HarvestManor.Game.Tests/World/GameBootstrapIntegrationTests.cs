@@ -695,8 +695,29 @@ public sealed class GameBootstrapIntegrationTests
             "Stored 1 parsnip_seed. Storage selection: store parsnip_seed or take wood.",
             GameBootstrap.BuildStorageActionStatusMessage(
                 "Stored 1 parsnip_seed.",
+            inventory,
+            storage));
+    }
+
+    [Fact]
+    public void BuildRequestBoardActionStatusMessage_PreservesOutcomeAndCurrentRequestContextAfterCompletion()
+    {
+        var requests = new[]
+        {
+            new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120),
+            new RequestDefinition("ship_3_potatoes", "potato_crop", 3, 90)
+        };
+        var completedRequests = new HashSet<string> { "ship_5_parsnips" };
+        var inventory = new InventoryState(12, 99);
+
+        Assert.Equal(
+            "Completed request: delivered 5 Parsnip for 120g. Active request: Potato 0/3. Need 3 more.",
+            GameBootstrap.BuildRequestBoardActionStatusMessage(
+                "Completed request: delivered 5 Parsnip for 120g.",
+                requests,
+                completedRequests,
                 inventory,
-                storage));
+                CreateItemCatalog()));
     }
 
     [Fact]
@@ -1046,6 +1067,8 @@ private static IReadOnlyDictionary<string, CropDefinition> CreateMultiCropCatalo
         {
             ["parsnip_seed"] = new("parsnip_seed", "Parsnip Seeds", "Seed", 99),
             ["parsnip_crop"] = new("parsnip_crop", "Parsnip", "Crop", 99),
+            ["potato_seed"] = new("potato_seed", "Potato Seeds", "Seed", 99),
+            ["potato_crop"] = new("potato_crop", "Potato", "Crop", 99),
             ["wood"] = new("wood", "Wood", "Material", 99),
             ["stone"] = new("stone", "Stone", "Material", 99)
         };

@@ -174,6 +174,10 @@
   - Updated plant success feedback to point straight at watering
   - Corrected one older auto-plant regression expectation that still asserted the pre-follow-up plant success string after the behavior change
   - Re-ran focused farm-plot interaction tests, the full suite, the game build, and the Godot smoke command after the till/plant follow-up polish batch
+  - Added a failing regression test for request-board completion feedback that should preserve both the action result and the current board status
+  - Added `BuildRequestBoardActionStatusMessage` and routed request-board clicks through it so the main farm status now preserves turn-in confirmation plus refreshed board context
+  - Stopped overriding the request-status label with transient completion text so it now snaps back to the live board state immediately after the interaction
+  - Re-ran the focused request-board action-context test, the full suite, the game build, and the Godot smoke command after the request-board follow-up polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -306,6 +310,10 @@
 | Full tests after till/plant follow-up polish batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `172/172` passed | PASS |
 | Full build after till/plant follow-up polish batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after till/plant follow-up polish batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused request-board action-context test | `dotnet test ... --filter FullyQualifiedName~BuildRequestBoardActionStatusMessage_PreservesOutcomeAndCurrentRequestContextAfterCompletion` | New test fails first, then passes after implementation | Failed first on the missing helper definition, then passed `1/1` after adding the request-board action-context helper | PASS |
+| Full tests after request-board follow-up polish batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `173/173` passed | PASS |
+| Full build after request-board follow-up polish batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after request-board follow-up polish batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -327,15 +335,16 @@
 | 2026-04-09 | Watering-feedback regression tests failed because planted-crop clicks still returned generic watering copy | 1 | Updated watering success and repeated-water messages to name the crop directly |
 | 2026-04-10 | Day-start status tests first failed at compile time because the runtime had no helper for “new day begins” state-aware status selection | 1 | Added `BuildDayStartFarmStatusMessage`, extracted the shared priority-summary helper, and routed `EndDay()` through it |
 | 2026-04-10 | Full-suite verification after the till/plant follow-up change failed because one older auto-plant regression test still asserted the old `Planted Parsnip.` string | 1 | Updated that older regression expectation to the new `Planted Parsnip. Click again to water.` wording and re-ran the full verification set |
+| 2026-04-10 | Request-board action-context regression first failed at compile time because no helper existed to combine the completion result with refreshed board state | 1 | Added `BuildRequestBoardActionStatusMessage`, used it for the main farm status, and restored the request label to its live board text after request-board clicks |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next small runtime polish candidate now that till, plant, water, harvest, load, and day-transition feedback all preserve more actionable context, with the remaining likely wins clustered around smaller request/town follow-up text and subtle interaction edge cases |
+| Where am I going? | Decide the next small runtime polish candidate now that plot feedback and request-board turn-ins both preserve result-plus-context guidance, with the remaining likely wins clustered around smaller shop/storage/request edge-case follow-up text |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
-| What have I learned? | In a small farming loop, the biggest clarity gains often come from one extra sentence fragment that answers “what should I click next?” right after a successful action |
-| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, startup save-restore messaging with player-facing request state, plot hover/unlock copy that no longer leaks internal coordinates, empty-plot hover preview that now names the actual auto-selected crop, crop-specific blocked-harvest click feedback, crop-specific watering feedback, day-transition main-status text that now reflects current farm/request priorities, and till/plant success messages that now tell the player the immediate next step |
+| What have I learned? | The same “result plus refreshed context” pattern keeps paying off across different surfaces; once players finish an action, they immediately want to know both what happened and what the game now expects |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, startup save-restore messaging with player-facing request state, plot hover/unlock copy that no longer leaks internal coordinates, empty-plot hover preview that now names the actual auto-selected crop, crop-specific blocked-harvest click feedback, crop-specific watering feedback, day-transition main-status text that now reflects current farm/request priorities, till/plant success messages that now tell the player the immediate next step, and request-board completion feedback that now keeps both the reward confirmation and the refreshed board context visible |
 
 ---
 Update this log after each additional polish batch or verification pass.

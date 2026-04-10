@@ -641,6 +641,26 @@ public partial class GameBootstrap : Node2D
         return $"{actionMessage} {BuildStorageBrowseStatusMessage(inventory, storage, itemCatalog)}";
     }
 
+    public static string BuildRequestBoardActionStatusMessage(
+        string actionMessage,
+        IReadOnlyList<RequestDefinition> requests,
+        ISet<string> completedRequestIds,
+        InventoryState inventory,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(actionMessage);
+        ArgumentNullException.ThrowIfNull(requests);
+        ArgumentNullException.ThrowIfNull(completedRequestIds);
+        ArgumentNullException.ThrowIfNull(inventory);
+
+        if (!actionMessage.StartsWith("Completed request", StringComparison.Ordinal))
+        {
+            return actionMessage;
+        }
+
+        return $"{actionMessage} {BuildRequestBoardStatusText(requests, completedRequestIds, inventory, itemCatalog)}";
+    }
+
     public static string BuildShopPurchaseStatusMessage(
         ShopOffer offer,
         InventoryState inventory,
@@ -1359,8 +1379,8 @@ public partial class GameBootstrap : Node2D
         }
 
         var changed = TryCompleteNextRequest(_requests, _requestBoardService, _inventory, _completedRequestIds, _wallet, _itemCatalog, out var message);
-        RefreshRequestBoardStatus(message);
-        SetFarmStatus(message);
+        RefreshRequestBoardStatus();
+        SetFarmStatus(BuildRequestBoardActionStatusMessage(message, _requests, _completedRequestIds, _inventory, _itemCatalog));
         RenderPanels();
 
         if (changed)
