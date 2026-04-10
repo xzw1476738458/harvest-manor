@@ -4,6 +4,8 @@ namespace HarvestManor.World;
 
 public partial class FarmPlotNode : Area2D
 {
+    public readonly record struct PlotVisualState(string LabelText, Color FillColor, Color LabelColor);
+
     [Export]
     public int GridX { get; set; }
 
@@ -40,33 +42,75 @@ public partial class FarmPlotNode : Area2D
     {
         ArgumentNullException.ThrowIfNull(plot);
 
-        if (PlotLabel is null)
+        var visualState = ResolveVisualState(plot, cropDisplayName, lockedHint);
+
+        if (PlotLabel is not null)
         {
-            return;
+            PlotLabel.Text = visualState.LabelText;
+            PlotLabel.Modulate = visualState.LabelColor;
         }
 
-        var text = plot.IsLocked
-            ? $"Plot ({GridX},{GridY})\n{lockedHint ?? "Locked"}"
-            : !plot.IsTilled
-                ? $"Plot ({GridX},{GridY})\nClick: till"
-                : plot.Crop is null
-                    ? $"Plot ({GridX},{GridY})\nClick: plant"
-                    : plot.IsHarvestReady
-                        ? $"{cropDisplayName}\nReady: harvest"
-                        : plot.IsWateredToday
-                            ? $"{cropDisplayName}\nWatered today"
-                            : $"{cropDisplayName}\nClick: water";
+        if (PlotVisual is not null)
+        {
+            PlotVisual.Color = visualState.FillColor;
+        }
 
-        PlotLabel.Text = text;
-        Modulate = plot.IsLocked
-            ? new Color(0.55f, 0.55f, 0.55f)
-            : plot.IsHarvestReady
-                ? new Color(0.72f, 1f, 0.72f)
-                : plot.Crop is null
-                    ? new Color(0.89f, 0.77f, 0.58f)
-                    : plot.IsWateredToday
-                        ? new Color(0.58f, 0.78f, 1f)
-                        : Colors.White;
+        Modulate = Colors.White;
+    }
+
+    public static PlotVisualState ResolveVisualState(
+        HarvestManor.Core.Farming.PlotState plot,
+        string? cropDisplayName,
+        string? lockedHint = null)
+    {
+        ArgumentNullException.ThrowIfNull(plot);
+
+        var displayName = string.IsNullOrWhiteSpace(cropDisplayName) ? "Planted Crop" : cropDisplayName;
+
+        if (plot.IsLocked)
+        {
+            return new PlotVisualState(
+                $"New Plot\n{lockedHint ?? "Locked"}",
+                new Color(0.45f, 0.42f, 0.40f, 0.95f),
+                Colors.WhiteSmoke);
+        }
+
+        if (!plot.IsTilled)
+        {
+            return new PlotVisualState(
+                "Open Plot\nClick: till",
+                new Color(0.42f, 0.62f, 0.31f, 0.95f),
+                Colors.WhiteSmoke);
+        }
+
+        if (plot.Crop is null)
+        {
+            return new PlotVisualState(
+                "Open Plot\nClick: plant",
+                new Color(0.61f, 0.43f, 0.27f, 0.95f),
+                Colors.WhiteSmoke);
+        }
+
+        if (plot.IsHarvestReady)
+        {
+            return new PlotVisualState(
+                $"{displayName}\nReady: harvest",
+                new Color(0.54f, 0.74f, 0.34f, 0.95f),
+                new Color(0.12f, 0.18f, 0.10f, 1f));
+        }
+
+        if (plot.IsWateredToday)
+        {
+            return new PlotVisualState(
+                $"{displayName}\nWatered today",
+                new Color(0.34f, 0.56f, 0.72f, 0.95f),
+                Colors.WhiteSmoke);
+        }
+
+        return new PlotVisualState(
+            $"{displayName}\nClick: water",
+            new Color(0.64f, 0.50f, 0.29f, 0.95f),
+            Colors.WhiteSmoke);
     }
 
     private void OnMouseEntered()

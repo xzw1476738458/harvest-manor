@@ -15,13 +15,36 @@ size = Vector2(180, 60)
 
 [node name="TownScene" type="Node2D"]
 
+[node name="SkyBackdrop" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.690196, 0.85098, 0.94902, 1)
+polygon = PackedVector2Array(0, 320, 760, 320, 760, 540, 0, 540)
+
+[node name="TownBackdrop" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.807843, 0.737255, 0.603922, 1)
+polygon = PackedVector2Array(0, 350, 760, 350, 760, 540, 0, 540)
+
+[node name="ServicePath" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.596078, 0.470588, 0.333333, 0.92)
+polygon = PackedVector2Array(56, 448, 704, 448, 704, 500, 56, 500)
+
+[node name="BannerStrip" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.870588, 0.32549, 0.243137, 0.9)
+polygon = PackedVector2Array(80, 338, 684, 338, 660, 366, 100, 366)
+
 [node name="TownLabel" type="Label" parent="."]
 position = Vector2(16, 360)
-text = "Town Services"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.235294, 0.168627, 0.113725, 1)
+text = "Village Crossroads"
 
 [node name="RequestStatusLabel" type="Label" parent="."]
 position = Vector2(16, 388)
 size = Vector2(620, 40)
+theme_override_colors/font_color = Color(0.235294, 0.168627, 0.113725, 1)
 text = "Active request: click board to turn in."
 
 [node name="Shop" type="Area2D" parent="."]
@@ -38,7 +61,8 @@ polygon = PackedVector2Array(-60, -30, 60, -30, 60, 30, -60, 30)
 
 [node name="ShopLabel" type="Label" parent="Shop"]
 position = Vector2(-50, -44)
-text = "Shop\nBuy / sell"
+theme_override_colors/font_color = Color(0.960784, 0.952941, 0.917647, 1)
+text = "General Store\nBuy / sell"
 
 [node name="Storage" type="Area2D" parent="."]
 position = Vector2(320, 430)
@@ -54,7 +78,8 @@ polygon = PackedVector2Array(-60, -30, 60, -30, 60, 30, -60, 30)
 
 [node name="StorageLabel" type="Label" parent="Storage"]
 position = Vector2(-56, -44)
-text = "Storage\nMove items"
+theme_override_colors/font_color = Color(0.960784, 0.952941, 0.917647, 1)
+text = "Barn Chest\nMove items"
 
 [node name="RequestBoard" type="Area2D" parent="."]
 position = Vector2(560, 430)
@@ -70,4 +95,5 @@ polygon = PackedVector2Array(-90, -30, 90, -30, 90, 30, -90, 30)
 
 [node name="RequestLabel" type="Label" parent="RequestBoard"]
 position = Vector2(-66, -44)
-text = "Requests\nTurn in crops"
+theme_override_colors/font_color = Color(0.25098, 0.188235, 0.113725, 1)
+text = "Request Board\nTurn in crops"

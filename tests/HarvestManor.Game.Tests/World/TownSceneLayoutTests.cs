@@ -14,6 +14,17 @@ public sealed class TownSceneLayoutTests
         Assert.Contains("[node name=\"HotspotVisual\" type=\"Polygon2D\" parent=\"RequestBoard\"]", sceneContents);
     }
 
+    [Fact]
+    public void TownScene_AddsBackdropLayersForMarketAtmosphere()
+    {
+        var sceneContents = File.ReadAllText(FindTownScenePath());
+
+        Assert.Contains("[node name=\"SkyBackdrop\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
+        Assert.Contains("[node name=\"TownBackdrop\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
+        Assert.Contains("[node name=\"ServicePath\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
+        Assert.Contains("[node name=\"BannerStrip\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
+    }
+
     private static string FindTownScenePath()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

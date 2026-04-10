@@ -31,6 +31,17 @@ public sealed class FarmSceneLayoutTests
         Assert.Contains("[node name=\"PlotVisual\" type=\"Polygon2D\" parent=\"Plot11\"]", sceneContents);
     }
 
+    [Fact]
+    public void FarmScene_AddsBackdropLayersForFieldAtmosphere()
+    {
+        var sceneContents = File.ReadAllText(FindFarmScenePath());
+
+        Assert.Contains("[node name=\"SkyBackdrop\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
+        Assert.Contains("[node name=\"FieldBackdrop\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
+        Assert.Contains("[node name=\"PathBackdrop\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
+        Assert.Contains("[node name=\"PorchBackdrop\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
+    }
+
     private static string FindFarmScenePath()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

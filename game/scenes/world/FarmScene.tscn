@@ -15,13 +15,35 @@ size = Vector2(20, 28)
 
 [node name="FarmScene" type="Node2D"]
 
+[node name="SkyBackdrop" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.709804, 0.866667, 0.956863, 1)
+polygon = PackedVector2Array(0, 0, 760, 0, 760, 220, 0, 220)
+
+[node name="FieldBackdrop" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.498039, 0.694118, 0.388235, 1)
+polygon = PackedVector2Array(0, 120, 760, 120, 760, 540, 0, 540)
+
+[node name="PathBackdrop" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.792157, 0.701961, 0.501961, 0.95)
+polygon = PackedVector2Array(120, 156, 546, 156, 580, 210, 160, 210)
+
+[node name="PorchBackdrop" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.45098, 0.309804, 0.207843, 0.95)
+polygon = PackedVector2Array(398, 86, 560, 86, 578, 150, 380, 150)
+
 [node name="GroundLabel" type="Label" parent="."]
 position = Vector2(16, 12)
-text = "Farm Vertical Slice"
+theme_override_font_sizes/font_size = 20
+text = "Harvest Manor"
 
 [node name="FarmStatusLabel" type="Label" parent="."]
 position = Vector2(16, 40)
-size = Vector2(420, 48)
+size = Vector2(500, 48)
+theme_override_colors/font_color = Color(0.196078, 0.14902, 0.109804, 1)
 text = "Click a plot to till, plant, water, or harvest."
 
 [node name="Player" type="CharacterBody2D" parent="."]
@@ -33,6 +55,7 @@ shape = SubResource("3")
 
 [node name="PlayerLabel" type="Label" parent="Player"]
 position = Vector2(-18, -36)
+theme_override_colors/font_color = Color(0.141176, 0.109804, 0.0901961, 1)
 text = "Player"
 
 [node name="Bed" type="Area2D" parent="."]
@@ -49,7 +72,8 @@ polygon = PackedVector2Array(-70, -30, 70, -30, 70, 30, -70, 30)
 
 [node name="BedLabel" type="Label" parent="Bed"]
 position = Vector2(-58, -46)
-text = "Bed\nClick: end day"
+theme_override_colors/font_color = Color(0.960784, 0.937255, 0.894118, 1)
+text = "Cottage Porch\nClick: end day"
 
 [node name="Plot00" type="Area2D" parent="."]
 position = Vector2(220, 230)
@@ -67,7 +91,8 @@ polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
 
 [node name="PlotLabel" type="Label" parent="Plot00"]
 position = Vector2(-52, -54)
-text = "Plot (0,0)"
+theme_override_colors/font_color = Color(0.960784, 0.937255, 0.894118, 1)
+text = "Open Plot"
 
 [node name="Plot10" type="Area2D" parent="."]
 position = Vector2(320, 230)
@@ -85,7 +110,8 @@ polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
 
 [node name="PlotLabel" type="Label" parent="Plot10"]
 position = Vector2(-52, -54)
-text = "Plot (1,0)"
+theme_override_colors/font_color = Color(0.960784, 0.937255, 0.894118, 1)
+text = "Open Plot"
 
 [node name="Plot20" type="Area2D" parent="."]
 position = Vector2(420, 230)
@@ -103,7 +129,8 @@ polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
 
 [node name="PlotLabel" type="Label" parent="Plot20"]
 position = Vector2(-52, -54)
-text = "Plot (2,0)"
+theme_override_colors/font_color = Color(0.960784, 0.937255, 0.894118, 1)
+text = "New Plot"
 
 [node name="Plot01" type="Area2D" parent="."]
 position = Vector2(220, 310)
@@ -121,7 +148,8 @@ polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
 
 [node name="PlotLabel" type="Label" parent="Plot01"]
 position = Vector2(-52, -54)
-text = "Plot (0,1)"
+theme_override_colors/font_color = Color(0.960784, 0.937255, 0.894118, 1)
+text = "Open Plot"
 
 [node name="Plot11" type="Area2D" parent="."]
 position = Vector2(320, 310)
@@ -139,4 +167,5 @@ polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
 
 [node name="PlotLabel" type="Label" parent="Plot11"]
 position = Vector2(-52, -54)
-text = "Plot (1,1)"
+theme_override_colors/font_color = Color(0.960784, 0.937255, 0.894118, 1)
+text = "Open Plot"
