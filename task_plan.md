@@ -1,115 +1,63 @@
-# Task Plan: Harvest Manor Milestone 1 Foundation Continuation
+# Task Plan: Mainline Presentation And Smoke Pass
+
+## Planning File Rules
+
+- `docs/` holds long-term project documentation.
+- Root `task_plan.md`, `findings.md`, and `progress.md` serve only the current active complex task.
+- When a task is completed, a branch is merged, or the working context changes clearly, archive the current root planning files into `docs/archive/planning/` and create a new set.
+- Long-term reference: `docs/project-workflow.md`
 
 ## Goal
-Continue `Harvest Manor` milestone 1 on the existing worktree and branch, prioritizing real-runtime polish, save/load reliability, and session-recoverable project context.
+
+Continue `Harvest Manor` on `main`, focusing on manual smoke coverage and the next round of presentation polish now that milestone-1 work has been merged and the bootstrap orchestration has been split by responsibility.
 
 ## Current Phase
-Phase 6
+
+Phase 2
 
 ## Phases
 
-### Phase 1: Context & Constraints Snapshot
-- [x] Confirm the active worktree is `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation`
-- [x] Confirm the active branch is `codex/milestone-1-foundation`
-- [x] Re-read the approved design spec and implementation plan
-- [x] Capture the current milestone guardrails in `findings.md`
+### Phase 1: Planning Reset After Merge
+- [x] Archive the stale root planning files that still referenced the deleted milestone worktree
+- [x] Write a long-term workflow document under `docs/`
+- [x] Recreate root planning files for the current `main` branch task
 - **Status:** complete
 
-### Phase 2: Validation Baseline & Recent Fixes
-- [x] Re-run `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj`
-- [x] Re-run `dotnet build game/HarvestManor.csproj`
-- [x] Re-run the Godot 4.6.2 .NET smoke command
-- [x] Commit the already-staged modal panel and unreadable save-slot repair changes
-- **Status:** complete
-
-### Phase 3: Runtime Polish Pass
-- [x] Fix the highest-value panel/input/runtime issues exposed by real play
-- [x] Add regression tests for new runtime behavior
-- [x] Keep the worktree clean after each polished batch
-- [x] Continue selecting the next best polish target from real-runtime behavior
-- **Status:** complete
-
-### Phase 4: Save/Load Compatibility & Display Consistency
-- [x] Audit backward-compatible save loading behavior for future field additions
-- [x] Verify restored unlock-state fallback behavior for legacy saves with no unlock history
-- [x] Add focused regression coverage for load-path compatibility fixes
-- [x] Run full-suite verification for the compatibility batch
-- **Status:** complete
-
-### Phase 5: Scene/Layout & Interaction Feedback
-- [x] Audit click regions and scene readability for farm, town, and panel interactions
-- [x] Tighten player-facing feedback for blocked or invalid actions
-- [x] Verify panel open/close flow remains clear across mouse and keyboard paths
-- **Status:** complete
-
-### Phase 6: Milestone Verification & Handoff
-- [x] Run the full automated suite for the current batch
-- [x] Run the Godot smoke test after the current batch
-- [x] Summarize the current batch, verification evidence, and next candidates
+### Phase 2: Verify The Mainline Experience
+- [ ] Run a manual smoke pass against the current playable slice
+- [ ] Record any UX, layout, or readability issues that only show up in interactive play
+- [ ] Decide the highest-value follow-up polish target from the smoke pass
 - **Status:** in_progress
 
+### Phase 3: Continue Presentation Polish
+- [ ] Improve scene readability without changing gameplay rules
+- [ ] Tighten panel hierarchy, buttons, and in-world affordances
+- [ ] Keep automated layout and behavior coverage aligned with visual changes
+- **Status:** pending
+
 ## Key Questions
-1. Which remaining runtime issue is the most player-visible problem in the current vertical slice?
-2. Which save/load behaviors need compatibility hardening before more milestone work piles on?
-3. Which interaction problems should get automated coverage versus smoke-only verification?
+
+1. Which issues only show up in manual play and not in the automated suite?
+2. Which visual improvements most increase clarity without introducing asset-pipeline overhead?
+3. How far should the current polish pass go before starting the next gameplay/system milestone?
 
 ## Decisions Made
+
 | Decision | Rationale |
 |----------|-----------|
-| Keep working only in `D:\game project\harvest-manor\.worktrees\codex-milestone-1-foundation` on `codex/milestone-1-foundation` | User explicitly required no new worktree and no new branch |
-| Prioritize runtime polish over adding new systems | Current milestone already has a playable vertical slice; polish issues now give the highest player value |
-| Verify each meaningful batch with `dotnet test`, `dotnet build`, and real Godot smoke | This project has already surfaced issues that only showed up at runtime |
-| Treat `misc2` controller mapping warnings and the Vulkan registry warning as environment noise unless directly tied to a bug | User explicitly pre-triaged these warnings as non-actionable noise |
-| Store persistent session context in worktree-root markdown files | New windows can recover state without relying on chat-only context |
-| Default only later-added save progress collections during deserialization, while keeping inventory/storage/plot payloads strict | This preserves backward compatibility for older milestone saves without silently accepting badly broken core state |
-| Fall back to the starting 2x2 unlocked plots when a legacy snapshot has no unlock history | An empty unlock list would otherwise make the loaded farm look completely broken and locked |
-| Make storage panel edge-state copy item-specific instead of referring to a generic "selected item" | Single-direction and fully blocked transfer states were readable in code but still too vague in runtime, especially when the panel showed two concrete item candidates |
-| Prefer surfacing a still-available shop sell action before explaining why buy is blocked | In real play, the actionable takeaway is "you can still sell this" rather than a purely negative buy-state warning |
-| Put concise blocker reasons directly on disabled shop buttons while keeping price copy for enabled actions | Players should not need to read the panel body first just to understand why Buy or Sell is currently unavailable |
-| Restore the latest shop/storage context after closing a panel instead of overwriting it with a generic close message | The main status label should stay close to the player's immediate intent and recent action flow |
-| Prefer player-facing display names over internal item ids on panel surfaces | Inventory, storage, and shop panels are read-heavy UI, so raw ids break the game's intended readability more than they help development |
-| Thread item catalog display names through the remaining global request/shop/storage status builders with optional catalog inputs | This finishes the player-facing readability pass without forcing every pure helper call site or regression test to load content catalogs |
-| When request completion succeeds and an item catalog is available, report the delivered quantity and item display name instead of the internal request id | The final request-board confirmation should read like player-facing game feedback rather than a debug-facing identifier |
-| Let a shop or storage hotspot close its own already-open panel while still blocking different world interactions during modal flow | This keeps the modal boundary intact for unrelated interactions, but removes an unintuitive runtime dead end where the same hotspot could not perform its implied toggle |
-| Reuse the same auto-plant crop-selection rule for empty-plot hover copy and actual planting | Pre-click guidance should preview the crop that a click will really plant whenever the current inventory makes that knowable |
-| Keep blocked harvest click feedback crop-specific when inventory is full | Once hover names the crop on a ready plot, the failed click result should preserve that same context instead of falling back to a generic blocker |
-| Keep watering click feedback crop-specific on both success and same-day repeat attempts | Watering is one of the most frequent core-loop actions, so its click results should stay as concrete as the hover guidance |
-| Reuse the farm/request priority summary for day-transition status too | The main status label after sleeping should agree with the current farm state instead of always falling back to a generic watering hint |
-| Let till and plant success messages advertise the immediate next plot action | Frequent farm-loop clicks feel clearer when result text also confirms the next sensible follow-up instead of stopping at past-tense confirmation |
-| Let request-board completion feedback preserve both the completion result and the newly current request-board state | After turning in an order, the main status should not lose either the reward confirmation or what the board now wants next |
-| Let demo-plot unlock success text advertise the immediate next plot action too | Farm expansion feels more continuous when the unlock confirmation immediately tells the player they can click again to till the new space |
-| After a failed request-board turn-in attempt, let the main farm status fall back to the live board state | When nothing changes, the clearest feedback is the current request progress, not a shorter one-off reminder that can drift from the board label |
-| Let request-board hover preview show current request progress, not only the remaining quantity | Hover guidance should be at least as informative as the persistent request label when the player is checking turn-in readiness |
+| `main` is now the active source of truth | Milestone-1 work has already been merged; the old feature branch/worktree no longer exists |
+| Root planning files were reset instead of extended | The old files had become inaccurate and no longer described the current working context |
+| The workflow rule is stored both here and in `docs/project-workflow.md` | New sessions should encounter the rule quickly, while `docs/` keeps the durable version |
+| The current active task is framed as mainline smoke + presentation polish | That matches the repo state after merge and the most recent verified work on scene readability |
 
 ## Errors Encountered
+
 | Error | Attempt | Resolution |
 |-------|---------|------------|
-| `rg.exe` failed with `Access is denied` in this environment | 1 | Fell back to PowerShell `Get-Content` and `Select-String` for code inspection |
-| `ScriptPathAttributeGenerator` warning during `dotnet test` (`GodotProjectDir` null or empty) | 1 | Treated as non-blocking test-environment noise because tests and builds still pass |
-| `SaveGameStore` payload helper initially failed to compile because required namespaces were missing | 1 | Added the missing `HarvestManor.Core.Inventory` and `HarvestManor.Core.Time` usings |
+| Previous root planning files referenced a deleted worktree and branch | 1 | Archived the old files and regenerated a fresh root set for `main` |
 
 ## Notes
-- Latest verified commits in this phase: `d51a0c0 fix: enforce modal panels and repair unreadable saves`, `801a1a4 fix: explain blocked world interactions`, `2f9fc50 docs: add persistent milestone recovery notes`
-- Current worktree status was clean immediately after `801a1a4`
-- Latest verified batch after those commits tightened storage panel one-way and fully blocked wording so the actionable and blocked item directions stay explicit
-- Latest verified batch after that also tightened shop single-direction wording so sell-ready states stay visible even when buy is blocked by money or inventory space
-- Latest verified batch after that made disabled shop buttons explain blocked buy/sell reasons directly and restored the latest panel-context status when shop or storage closes
-- Latest verified batch after that threaded item display names into inventory, storage, and shop panel rendering so panel surfaces no longer expose internal ids
-- Latest verified batch after that threaded player-facing item display names through request-board, shop, and storage world-status helpers so farm/town feedback no longer leaks internal ids outside the panels
-- Latest verified batch after that also replaced the request-completion success copy so final turn-in feedback names the delivered crop instead of the internal request id
-- Latest verified batch after that fixed an unreachable panel-toggle path so clicking the same shop or storage hotspot can now close its own panel instead of always hitting the generic modal-world blocker
-- Latest verified batch after that made blocked shop/storage hover and click feedback panel-aware, so same-hotspot interactions now advertise "click again to close" while cross-service attempts explain which open panel must close first
-- Latest verified batch after that made load-from-save startup copy farm-state-aware, so a restored session now surfaces harvest-ready or still-unwatered crops instead of always falling back to the same generic fresh-session prompt
-- Latest verified batch after that let loaded saves with no urgent farm work fall through to request-board progress on the main startup status, so the first-screen farm label now agrees with the request label about turn-in readiness
-- Latest verified batch after that removed `slot-1.json` from startup copy and let fully completed request boards surface on load too, so startup feedback now stays player-facing even when restored request work is already finished
-- Latest verified batch after that removed `(x,y)` grid coordinates from plot hover and demo-plot unlock feedback, so farm interaction copy now reads like player guidance instead of internal debug/state notation
-- Latest verified batch after that made empty tilled-plot hover copy name the crop that auto-plant will currently use, so pre-click farm guidance now stays aligned with the actual planting result when multiple seed types are available
-- Latest verified batch after that made harvest-blocked click feedback name the crop when inventory is full, so ready-to-harvest plots now keep their player-facing context even on failure
-- Latest verified batch after that made watering success and same-day repeat feedback name the crop too, so the core farm loop now keeps crop context consistently across hover and click states
-- Latest verified batch after that made post-sleep main-status copy reuse the same harvest/water/request priorities as load-time messaging, so a new day now starts with context that matches the actual farm state
-- Latest verified batch after that made till and plant success copy advertise the immediate next step too, so early farm-loop clicks now read more like guided flow than isolated confirmations
-- Latest verified batch after that made request-board completion feedback keep both the turn-in result and the current board context, while the request label itself snaps back to the live board state
-- Latest verified batch after that made demo-plot unlock success point straight at tilling, so expansion feedback now keeps the same result-plus-follow-up guidance pattern as the rest of the farm loop
-- Latest verified batch after that made failed request-board clicks fall back to the live request progress state on the main status label, so the farm label now stays aligned with the request-board label when a turn-in is still blocked
-- Latest verified batch after that made request-board hover preview show current collected progress too, so hover guidance no longer feels less informative than the always-visible request label
-- If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`
+
+- Archived prior planning context to `docs/archive/planning/2026-04-10-milestone-1-foundation-context/`
+- Latest verified commits before this planning reset: `778c94d feat: improve scene readability and ui atmosphere`, `5d2e95e refactor: split game bootstrap by responsibility`
+- Current repo state should stay rooted in `D:\game project\harvest-manor` on branch `main`
