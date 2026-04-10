@@ -178,6 +178,9 @@
   - Added `BuildRequestBoardActionStatusMessage` and routed request-board clicks through it so the main farm status now preserves turn-in confirmation plus refreshed board context
   - Stopped overriding the request-status label with transient completion text so it now snaps back to the live board state immediately after the interaction
   - Re-ran the focused request-board action-context test, the full suite, the game build, and the Godot smoke command after the request-board follow-up polish batch
+  - Added a failing regression test for demo-plot unlock success feedback that should preserve the same next-step guidance pattern used elsewhere in the farm loop
+  - Updated locked-plot unlock success copy so it now says `Unlocked a new plot for 120g. Click again to till.`
+  - Re-ran the full suite, the game build, and the Godot smoke command after the unlock follow-up polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -314,6 +317,10 @@
 | Full tests after request-board follow-up polish batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `173/173` passed | PASS |
 | Full build after request-board follow-up polish batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after request-board follow-up polish batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused demo-unlock follow-up regression | `dotnet test ... --filter FullyQualifiedName~TryHandleLockedPlotInteraction_UnlocksDemoPlotAndSpendsGold` | Updated expectation fails first, then passes after implementation | Failed first on the old bare unlock confirmation, then passed `1/1` after appending the tilling follow-up guidance | PASS |
+| Full tests after demo-unlock follow-up polish batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `173/173` passed | PASS |
+| Full build after demo-unlock follow-up polish batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after demo-unlock follow-up polish batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -336,6 +343,7 @@
 | 2026-04-10 | Day-start status tests first failed at compile time because the runtime had no helper for “new day begins” state-aware status selection | 1 | Added `BuildDayStartFarmStatusMessage`, extracted the shared priority-summary helper, and routed `EndDay()` through it |
 | 2026-04-10 | Full-suite verification after the till/plant follow-up change failed because one older auto-plant regression test still asserted the old `Planted Parsnip.` string | 1 | Updated that older regression expectation to the new `Planted Parsnip. Click again to water.` wording and re-ran the full verification set |
 | 2026-04-10 | Request-board action-context regression first failed at compile time because no helper existed to combine the completion result with refreshed board state | 1 | Added `BuildRequestBoardActionStatusMessage`, used it for the main farm status, and restored the request label to its live board text after request-board clicks |
+| 2026-04-10 | Demo-unlock follow-up regression failed because the unlock-success string still stopped after the gold cost | 1 | Updated the locked-plot success copy to append `Click again to till.` and re-ran the verification set |
 
 ## 5-Question Reboot Check
 | Question | Answer |
@@ -345,6 +353,10 @@
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
 | What have I learned? | The same “result plus refreshed context” pattern keeps paying off across different surfaces; once players finish an action, they immediately want to know both what happened and what the game now expects |
 | What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, startup save-restore messaging with player-facing request state, plot hover/unlock copy that no longer leaks internal coordinates, empty-plot hover preview that now names the actual auto-selected crop, crop-specific blocked-harvest click feedback, crop-specific watering feedback, day-transition main-status text that now reflects current farm/request priorities, till/plant success messages that now tell the player the immediate next step, and request-board completion feedback that now keeps both the reward confirmation and the refreshed board context visible |
+
+### Reboot Addendum: 2026-04-10
+- The newly verified batch now also makes demo-plot unlock success copy point straight at the next action: `Click again to till.`
+- Immediate next step is to commit this batch, restore a clean worktree, and then keep scanning for the next smallest player-facing runtime polish issue
 
 ---
 Update this log after each additional polish batch or verification pass.

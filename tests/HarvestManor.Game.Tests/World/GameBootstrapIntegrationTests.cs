@@ -861,7 +861,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.True(changed);
         Assert.Equal(80, updatedGold);
-        Assert.Equal("Unlocked a new plot for 120g.", message);
+        Assert.Equal("Unlocked a new plot for 120g. Click again to till.", message);
         Assert.Contains("2,0", unlockState.UnlockedPlotKeys);
     }
 

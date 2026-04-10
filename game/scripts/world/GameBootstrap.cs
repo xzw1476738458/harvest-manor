@@ -326,7 +326,7 @@ public partial class GameBootstrap : Node2D
 
         if (expansionService.TryUnlockPlot(unlockState, plotKey, DemoExpansionCost, currentGold, out updatedGold))
         {
-            message = $"Unlocked a new plot for {DemoExpansionCost}g.";
+            message = $"Unlocked a new plot for {DemoExpansionCost}g. Click again to till.";
             return true;
         }
 
