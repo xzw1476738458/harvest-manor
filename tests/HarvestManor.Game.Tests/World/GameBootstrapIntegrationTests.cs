@@ -105,11 +105,11 @@ public sealed class GameBootstrapIntegrationTests
         Assert.True(inventory.TryAdd("parsnip_seed", 1));
 
         Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var tillMessage));
-        Assert.Equal("Plot tilled.", tillMessage);
+        Assert.Equal("Plot tilled. Click again to plant Parsnip.", tillMessage);
         Assert.True(farmGrid.GetPlot(0, 0).IsTilled);
 
         Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var plantMessage));
-        Assert.Equal("Planted Parsnip.", plantMessage);
+        Assert.Equal("Planted Parsnip. Click again to water.", plantMessage);
         Assert.Equal(0, inventory.GetQuantity("parsnip_seed"));
         Assert.Equal("parsnip", farmGrid.GetPlot(0, 0).Crop!.CropId);
 
@@ -137,6 +137,18 @@ public sealed class GameBootstrapIntegrationTests
         Assert.True(harvestedPlot.IsTilled);
         Assert.Null(harvestedPlot.Crop);
         Assert.False(harvestedPlot.IsHarvestReady);
+    }
+
+    [Fact]
+    public void TryHandleFarmPlotInteraction_WhenTillingWithoutSeeds_ExplainsThatPlantingCannotContinue()
+    {
+        var crops = CreateCropCatalog();
+        var inventory = new InventoryState(12, 99);
+        var farmGrid = new FarmGrid(1, 1);
+
+        Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var tillMessage));
+        Assert.Equal("Plot tilled. No seeds available.", tillMessage);
+        Assert.True(farmGrid.GetPlot(0, 0).IsTilled);
     }
 
     [Fact]
@@ -476,7 +488,7 @@ public sealed class GameBootstrapIntegrationTests
                 currentGold: 200));
 
         Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var plantMessage));
-        Assert.Equal("Planted Parsnip.", plantMessage);
+        Assert.Equal("Planted Parsnip. Click again to water.", plantMessage);
         Assert.Equal("parsnip", farmGrid.GetPlot(0, 0).Crop!.CropId);
     }
 

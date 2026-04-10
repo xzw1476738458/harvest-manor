@@ -169,6 +169,11 @@
   - Extracted a shared farm/request priority-summary helper, added `BuildDayStartFarmStatusMessage`, and routed `EndDay()` through it
   - Reused the same priority logic already established for save-load startup copy so the first status line after sleeping now matches the real farm/request state
   - Re-ran focused day-start status tests, the full suite, the game build, and the Godot smoke command after the day-transition status polish batch
+  - Added failing tests for till success and plant success messages that should now advertise the immediate next click, plus a till-without-seeds regression
+  - Updated till success feedback to point at planting when seeds are available and to say immediately when planting cannot continue
+  - Updated plant success feedback to point straight at watering
+  - Corrected one older auto-plant regression expectation that still asserted the pre-follow-up plant success string after the behavior change
+  - Re-ran focused farm-plot interaction tests, the full suite, the game build, and the Godot smoke command after the till/plant follow-up polish batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -297,6 +302,10 @@
 | Full tests after day-transition status polish batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `171/171` passed | PASS |
 | Full build after day-transition status polish batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after day-transition status polish batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused till/plant follow-up tests | `dotnet test ... --filter FullyQualifiedName~TryHandleFarmPlotInteraction` | Updated expectations fail first, then pass after implementation | Failed first on bare `Plot tilled.` copy, then passed `4/4` after adding next-step guidance to till/plant success branches | PASS |
+| Full tests after till/plant follow-up polish batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `172/172` passed | PASS |
+| Full build after till/plant follow-up polish batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after till/plant follow-up polish batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -317,15 +326,16 @@
 | 2026-04-09 | Blocked-harvest regression failed because a ready crop with full inventory still reported only `Inventory full.` on click | 1 | Updated the harvest-failure message to name the crop directly |
 | 2026-04-09 | Watering-feedback regression tests failed because planted-crop clicks still returned generic watering copy | 1 | Updated watering success and repeated-water messages to name the crop directly |
 | 2026-04-10 | Day-start status tests first failed at compile time because the runtime had no helper for “new day begins” state-aware status selection | 1 | Added `BuildDayStartFarmStatusMessage`, extracted the shared priority-summary helper, and routed `EndDay()` through it |
+| 2026-04-10 | Full-suite verification after the till/plant follow-up change failed because one older auto-plant regression test still asserted the old `Planted Parsnip.` string | 1 | Updated that older regression expectation to the new `Planted Parsnip. Click again to water.` wording and re-ran the full verification set |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
 | Where am I? | Phase 6: Milestone Verification & Handoff |
-| Where am I going? | Decide the next small runtime polish candidate now that both save-load and day-transition main-status copy share the same farm/request priorities, with the remaining likely wins clustered around smaller action follow-up text and subtle interaction edge cases |
+| Where am I going? | Decide the next small runtime polish candidate now that till, plant, water, harvest, load, and day-transition feedback all preserve more actionable context, with the remaining likely wins clustered around smaller request/town follow-up text and subtle interaction edge cases |
 | What's the goal? | Continue milestone 1 in the current worktree/branch with runtime polish, reliability, and recoverable session context |
-| What have I learned? | The main status label needs consistency not just within one action, but across all the moments the player “re-enters” the farm loop, including loading a save and waking up on a new day |
-| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, startup save-restore messaging with player-facing request state, plot hover/unlock copy that no longer leaks internal coordinates, empty-plot hover preview that now names the actual auto-selected crop, crop-specific blocked-harvest click feedback, crop-specific watering feedback, and day-transition main-status text that now reflects current farm/request priorities |
+| What have I learned? | In a small farming loop, the biggest clarity gains often come from one extra sentence fragment that answers “what should I click next?” right after a successful action |
+| What have I done? | Verified runtime polish, legacy-save compatibility, panel flow feedback, visible hotspots, state-aware hover/feedback improvements, clearer storage/shop edge-state messaging, shop-button/context restoration, player-facing item display names across panel surfaces/global status/request completion, same-hotspot shop/storage panel toggles, panel-aware blocked hover/click feedback, startup save-restore messaging with player-facing request state, plot hover/unlock copy that no longer leaks internal coordinates, empty-plot hover preview that now names the actual auto-selected crop, crop-specific blocked-harvest click feedback, crop-specific watering feedback, day-transition main-status text that now reflects current farm/request priorities, and till/plant success messages that now tell the player the immediate next step |
 
 ---
 Update this log after each additional polish batch or verification pass.

@@ -900,7 +900,10 @@ public partial class GameBootstrap : Node2D
         if (!plot.IsTilled)
         {
             farmGrid.SetPlot(plot.Till());
-            message = "Plot tilled.";
+            var cropToPlant = FindAutoPlantCrop(crops, inventory);
+            message = cropToPlant is null
+                ? "Plot tilled. No seeds available."
+                : $"Plot tilled. Click again to plant {cropToPlant.DisplayName}.";
             return true;
         }
 
@@ -921,7 +924,7 @@ public partial class GameBootstrap : Node2D
             }
 
             farmGrid.SetPlot(plot.Plant(cropToPlant.Id));
-            message = $"Planted {cropToPlant.DisplayName}.";
+            message = $"Planted {cropToPlant.DisplayName}. Click again to water.";
             return true;
         }
 

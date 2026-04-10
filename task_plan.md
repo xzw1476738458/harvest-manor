@@ -75,6 +75,7 @@ Phase 6
 | Keep blocked harvest click feedback crop-specific when inventory is full | Once hover names the crop on a ready plot, the failed click result should preserve that same context instead of falling back to a generic blocker |
 | Keep watering click feedback crop-specific on both success and same-day repeat attempts | Watering is one of the most frequent core-loop actions, so its click results should stay as concrete as the hover guidance |
 | Reuse the farm/request priority summary for day-transition status too | The main status label after sleeping should agree with the current farm state instead of always falling back to a generic watering hint |
+| Let till and plant success messages advertise the immediate next plot action | Frequent farm-loop clicks feel clearer when result text also confirms the next sensible follow-up instead of stopping at past-tense confirmation |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -102,4 +103,5 @@ Phase 6
 - Latest verified batch after that made harvest-blocked click feedback name the crop when inventory is full, so ready-to-harvest plots now keep their player-facing context even on failure
 - Latest verified batch after that made watering success and same-day repeat feedback name the crop too, so the core farm loop now keeps crop context consistently across hover and click states
 - Latest verified batch after that made post-sleep main-status copy reuse the same harvest/water/request priorities as load-time messaging, so a new day now starts with context that matches the actual farm state
+- Latest verified batch after that made till and plant success copy advertise the immediate next step too, so early farm-loop clicks now read more like guided flow than isolated confirmations
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`
