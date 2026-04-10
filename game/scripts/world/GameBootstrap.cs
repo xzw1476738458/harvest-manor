@@ -653,12 +653,13 @@ public partial class GameBootstrap : Node2D
         ArgumentNullException.ThrowIfNull(completedRequestIds);
         ArgumentNullException.ThrowIfNull(inventory);
 
+        var currentStatus = BuildRequestBoardStatusText(requests, completedRequestIds, inventory, itemCatalog);
         if (!actionMessage.StartsWith("Completed request", StringComparison.Ordinal))
         {
-            return actionMessage;
+            return currentStatus;
         }
 
-        return $"{actionMessage} {BuildRequestBoardStatusText(requests, completedRequestIds, inventory, itemCatalog)}";
+        return $"{actionMessage} {currentStatus}";
     }
 
     public static string BuildShopPurchaseStatusMessage(

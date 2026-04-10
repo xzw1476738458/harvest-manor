@@ -721,6 +721,27 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Fact]
+    public void BuildRequestBoardActionStatusMessage_UsesCurrentRequestContextAfterFailedTurnIn()
+    {
+        var requests = new[]
+        {
+            new RequestDefinition("ship_5_parsnips", "parsnip_crop", 5, 120)
+        };
+        var completedRequests = new HashSet<string>();
+        var inventory = new InventoryState(12, 99);
+        Assert.True(inventory.TryAdd("parsnip_crop", 3));
+
+        Assert.Equal(
+            "Active request: Parsnip 3/5. Need 2 more.",
+            GameBootstrap.BuildRequestBoardActionStatusMessage(
+                "Need 2 more Parsnip.",
+                requests,
+                completedRequests,
+                inventory,
+                CreateItemCatalog()));
+    }
+
+    [Fact]
     public void BuildShopPurchaseStatusMessage_ExplainsPurchaseOutcome()
     {
         var offer = new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10);

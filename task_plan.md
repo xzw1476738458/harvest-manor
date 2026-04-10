@@ -78,6 +78,7 @@ Phase 6
 | Let till and plant success messages advertise the immediate next plot action | Frequent farm-loop clicks feel clearer when result text also confirms the next sensible follow-up instead of stopping at past-tense confirmation |
 | Let request-board completion feedback preserve both the completion result and the newly current request-board state | After turning in an order, the main status should not lose either the reward confirmation or what the board now wants next |
 | Let demo-plot unlock success text advertise the immediate next plot action too | Farm expansion feels more continuous when the unlock confirmation immediately tells the player they can click again to till the new space |
+| After a failed request-board turn-in attempt, let the main farm status fall back to the live board state | When nothing changes, the clearest feedback is the current request progress, not a shorter one-off reminder that can drift from the board label |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -108,4 +109,5 @@ Phase 6
 - Latest verified batch after that made till and plant success copy advertise the immediate next step too, so early farm-loop clicks now read more like guided flow than isolated confirmations
 - Latest verified batch after that made request-board completion feedback keep both the turn-in result and the current board context, while the request label itself snaps back to the live board state
 - Latest verified batch after that made demo-plot unlock success point straight at tilling, so expansion feedback now keeps the same result-plus-follow-up guidance pattern as the rest of the farm loop
+- Latest verified batch after that made failed request-board clicks fall back to the live request progress state on the main status label, so the farm label now stays aligned with the request-board label when a turn-in is still blocked
 - If a later session starts from a different cwd, recover by opening this worktree root first, then reading this file, `findings.md`, and `progress.md`

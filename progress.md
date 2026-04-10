@@ -181,6 +181,9 @@
   - Added a failing regression test for demo-plot unlock success feedback that should preserve the same next-step guidance pattern used elsewhere in the farm loop
   - Updated locked-plot unlock success copy so it now says `Unlocked a new plot for 120g. Click again to till.`
   - Re-ran the full suite, the game build, and the Godot smoke command after the unlock follow-up polish batch
+  - Added a failing regression test for request-board clicks that fail because the order is still incomplete
+  - Updated `BuildRequestBoardActionStatusMessage` so non-success turn-ins now fall back to the live request-board status instead of a shorter one-off reminder
+  - Re-ran the focused request-board action-status tests, the full suite, the game build, and the Godot smoke command after the failed-turn-in status-alignment batch
 - Files created/modified:
   - `game/scripts/world/GameBootstrap.cs` (modified)
   - `game/scripts/ui/StoragePanelController.cs` (modified)
@@ -321,6 +324,10 @@
 | Full tests after demo-unlock follow-up polish batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `173/173` passed | PASS |
 | Full build after demo-unlock follow-up polish batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
 | Godot runtime smoke after demo-unlock follow-up polish batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
+| Focused failed-turn-in action-status tests | `dotnet test ... --filter FullyQualifiedName~BuildRequestBoardActionStatusMessage` | New regression fails first, then both request-board action-status tests pass after implementation | Failed first on the short `Need 2 more Parsnip.` output, then passed `2/2` after falling back to the live board state for non-success clicks | PASS |
+| Full tests after failed-turn-in status-alignment batch | `dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj` | All tests pass | `174/174` passed | PASS |
+| Full build after failed-turn-in status-alignment batch | `dotnet build game/HarvestManor.csproj` | Build succeeds cleanly | `0 warnings / 0 errors` | PASS |
+| Godot runtime smoke after failed-turn-in status-alignment batch | Godot 4.6.2 .NET console smoke command | Main scene still loads cleanly | Passed; only known environment noise plus controller/Vulkan warnings remain | PASS |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -344,6 +351,7 @@
 | 2026-04-10 | Full-suite verification after the till/plant follow-up change failed because one older auto-plant regression test still asserted the old `Planted Parsnip.` string | 1 | Updated that older regression expectation to the new `Planted Parsnip. Click again to water.` wording and re-ran the full verification set |
 | 2026-04-10 | Request-board action-context regression first failed at compile time because no helper existed to combine the completion result with refreshed board state | 1 | Added `BuildRequestBoardActionStatusMessage`, used it for the main farm status, and restored the request label to its live board text after request-board clicks |
 | 2026-04-10 | Demo-unlock follow-up regression failed because the unlock-success string still stopped after the gold cost | 1 | Updated the locked-plot success copy to append `Click again to till.` and re-ran the verification set |
+| 2026-04-10 | Failed-turn-in status regression failed because the request-board action helper still returned a shorter reminder than the live board status | 1 | Updated non-success request-board action feedback to fall back to `BuildRequestBoardStatusText(...)` and re-ran the verification set |
 
 ## 5-Question Reboot Check
 | Question | Answer |
@@ -357,6 +365,7 @@
 ### Reboot Addendum: 2026-04-10
 - The newly verified batch now also makes demo-plot unlock success copy point straight at the next action: `Click again to till.`
 - Immediate next step is to commit this batch, restore a clean worktree, and then keep scanning for the next smallest player-facing runtime polish issue
+- The latest batch after that keeps failed request-board clicks aligned with the live request progress state on the main status label too
 
 ---
 Update this log after each additional polish batch or verification pass.
