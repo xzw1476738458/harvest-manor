@@ -112,8 +112,7 @@ public partial class StoragePanelController : Control
         ArgumentNullException.ThrowIfNull(inventory);
         ArgumentNullException.ThrowIfNull(storage);
 
-        var state = EvaluateTransferState(inventory, storage);
-        return BuildBodyText(inventory, storage, itemCatalog, state);
+        return BuildBodyText(inventory, storage, itemCatalog, EvaluateTransferState(inventory, storage));
     }
 
     public static TransferUiState EvaluateTransferState(InventoryState inventory, InventoryState storage)

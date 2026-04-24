@@ -32,6 +32,6 @@ public sealed class Wallet
             return;
         }
 
-        Gold += amount;
+        Gold = (int)Math.Min((long)Gold + amount, int.MaxValue);
     }
 }

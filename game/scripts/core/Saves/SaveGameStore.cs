@@ -27,11 +27,7 @@ public static class SaveGameStore
         public List<string>? CompletedRequests { get; init; }
     }
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        WriteIndented = true
-    };
+    private static readonly JsonSerializerOptions JsonOptions = JsonDefaults.WriteOptions;
 
     public static string Serialize(SaveGameSnapshot snapshot)
     {
@@ -96,15 +92,6 @@ public static class SaveGameStore
         if (snapshot.Stamina < 0)
         {
             throw new InvalidDataException("Save payload contains invalid stamina.");
-        }
-
-        if (snapshot.Inventory is null ||
-            snapshot.Storage is null ||
-            snapshot.Plots is null ||
-            snapshot.UnlockedPlotKeys is null ||
-            snapshot.CompletedRequests is null)
-        {
-            throw new InvalidDataException("Save payload is missing required collections.");
         }
 
         if (snapshot.Inventory.Any(stack => stack is null) ||

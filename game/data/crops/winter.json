@@ -1,0 +1,24 @@
+[
+  {
+    "id": "winter_root",
+    "displayName": "Winter Root",
+    "season": "Winter",
+    "seedItemId": "winter_root_seed",
+    "harvestItemId": "winter_root_crop",
+    "purchasePrice": 30,
+    "sellPrice": 70,
+    "totalGrowthDays": 8,
+    "growthStageDays": [2, 3, 3]
+  },
+  {
+    "id": "crystal_fruit",
+    "displayName": "Crystal Fruit",
+    "season": "Winter",
+    "seedItemId": "crystal_fruit_seed",
+    "harvestItemId": "crystal_fruit_crop",
+    "purchasePrice": 200,
+    "sellPrice": 350,
+    "totalGrowthDays": 15,
+    "growthStageDays": [5, 5, 5]
+  }
+]

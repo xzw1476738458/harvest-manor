@@ -9,16 +9,28 @@ public sealed class UiSceneLayoutTests
     {
         var sceneContents = File.ReadAllText(FindScenePath("Hud.tscn"));
 
-        Assert.Contains("[node name=\"HeaderLabel\" type=\"Label\" parent=\"Panel/Rows\"]", sceneContents);
-        Assert.Contains("[node name=\"HintLabel\" type=\"Label\" parent=\"Panel/Rows\"]", sceneContents);
+        Assert.Contains("[node name=\"HeaderLabel\" type=\"Label\" parent=\"TopBar/Margin/Content/BrandColumn\"]", sceneContents);
+        Assert.Contains("[node name=\"HintLabel\" type=\"Label\" parent=\"TopBar/Margin/Content/BrandColumn\"]", sceneContents);
+    }
+
+    [Fact]
+    public void HudScene_SplitsBrandingAndStatsIntoSeparateColumns()
+    {
+        var sceneContents = File.ReadAllText(FindScenePath("Hud.tscn"));
+
+        Assert.Contains("[node name=\"BrandColumn\" type=\"VBoxContainer\" parent=\"TopBar/Margin/Content\"]", sceneContents);
+        Assert.Contains("[node name=\"StatColumn\" type=\"VBoxContainer\" parent=\"TopBar/Margin/Content\"]", sceneContents);
     }
 
     [Fact]
     public void ShopAndStoragePanels_AddTitlesAndHelperCopy()
     {
+        var inventoryContents = File.ReadAllText(FindScenePath("InventoryPanel.tscn"));
         var shopContents = File.ReadAllText(FindScenePath("ShopPanel.tscn"));
         var storageContents = File.ReadAllText(FindScenePath("StoragePanel.tscn"));
 
+        Assert.Contains("[node name=\"TitleLabel\" type=\"Label\" parent=\"Panel/Rows\"]", inventoryContents);
+        Assert.Contains("[node name=\"HintLabel\" type=\"Label\" parent=\"Panel/Rows\"]", inventoryContents);
         Assert.Contains("[node name=\"TitleLabel\" type=\"Label\" parent=\"Panel/Rows\"]", shopContents);
         Assert.Contains("[node name=\"HintLabel\" type=\"Label\" parent=\"Panel/Rows\"]", shopContents);
         Assert.Contains("[node name=\"TitleLabel\" type=\"Label\" parent=\"Panel/Rows\"]", storageContents);

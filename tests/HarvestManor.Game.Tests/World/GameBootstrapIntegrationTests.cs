@@ -5,6 +5,7 @@ using HarvestManor.Core.Inventory;
 using HarvestManor.Core.Progression;
 using HarvestManor.Core.Saves;
 using HarvestManor.Core.Time;
+using HarvestManor.UI;
 using HarvestManor.World;
 using Godot;
 using Xunit;
@@ -119,7 +120,7 @@ public sealed class GameBootstrapIntegrationTests
 
         for (var day = 1; day <= 4; day++)
         {
-            Assert.True(GameBootstrap.ProcessDayEnd(clock, stamina, growth, farmGrid));
+            Assert.True(GameBootstrap.ProcessDayEnd(clock, stamina, growth, farmGrid, crops).DayRolled);
             if (day < 4)
             {
             Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var repeatWaterMessage));
@@ -211,6 +212,7 @@ public sealed class GameBootstrapIntegrationTests
                 inventory,
                 completedRequests,
                 wallet,
+                null,
                 out var completionMessage));
 
         Assert.Equal("Completed request ship_5_parsnips for 120g.", completionMessage);
@@ -232,22 +234,22 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Active request: parsnip_crop 0/5. Need 5 more.",
-            GameBootstrap.BuildRequestBoardStatusText(requests, completedRequests, inventory));
+            StatusMessageBuilder.BuildRequestBoardStatusText(requests, completedRequests, inventory));
 
         Assert.True(inventory.TryAdd("parsnip_crop", 5));
         Assert.Equal(
             "Request ready: parsnip_crop 5/5. Click board to turn in.",
-            GameBootstrap.BuildRequestBoardStatusText(requests, completedRequests, inventory));
+            StatusMessageBuilder.BuildRequestBoardStatusText(requests, completedRequests, inventory));
 
         Assert.True(GameBootstrap.TryTransferItem(inventory, storage, "parsnip_crop", 2));
         Assert.Equal(
             "Active request: parsnip_crop 3/5. Need 2 more.",
-            GameBootstrap.BuildRequestBoardStatusText(requests, completedRequests, inventory));
+            StatusMessageBuilder.BuildRequestBoardStatusText(requests, completedRequests, inventory));
 
         completedRequests.Add("ship_5_parsnips");
         Assert.Equal(
             "All requests completed.",
-            GameBootstrap.BuildRequestBoardStatusText(requests, completedRequests, inventory));
+            StatusMessageBuilder.BuildRequestBoardStatusText(requests, completedRequests, inventory));
     }
 
     [Theory]
@@ -268,15 +270,15 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             expectedMessage,
-            GameBootstrap.BuildRequestBoardStatusText(requests, new HashSet<string>(), inventory, CreateItemCatalog()));
+            StatusMessageBuilder.BuildRequestBoardStatusText(requests, new HashSet<string>(), inventory, CreateItemCatalog()));
     }
 
     [Theory]
-    [InlineData(GameBootstrap.PanelMode.None, false, false, false)]
-    [InlineData(GameBootstrap.PanelMode.Shop, false, true, false)]
-    [InlineData(GameBootstrap.PanelMode.Storage, true, false, true)]
+    [InlineData(PanelMode.None, false, false, false)]
+    [InlineData(PanelMode.Shop, false, true, false)]
+    [InlineData(PanelMode.Storage, true, false, true)]
     public void ResolvePanelVisibility_ReturnsExclusivePanelModes(
-        GameBootstrap.PanelMode mode,
+        PanelMode mode,
         bool inventoryVisible,
         bool shopVisible,
         bool storageVisible)
@@ -289,64 +291,64 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Theory]
-    [InlineData(GameBootstrap.PanelMode.None, false)]
-    [InlineData(GameBootstrap.PanelMode.Shop, true)]
-    [InlineData(GameBootstrap.PanelMode.Storage, true)]
+    [InlineData(PanelMode.None, false)]
+    [InlineData(PanelMode.Shop, true)]
+    [InlineData(PanelMode.Storage, true)]
     public void BlocksWorldInteractions_ReturnsTrueOnlyWhenAPanelIsOpen(
-        GameBootstrap.PanelMode mode,
+        PanelMode mode,
         bool blocksWorldInteraction)
     {
         Assert.Equal(blocksWorldInteraction, GameBootstrap.BlocksWorldInteractions(mode));
     }
 
     [Theory]
-    [InlineData(GameBootstrap.PanelMode.None, Key.Escape, GameBootstrap.PanelMode.None)]
-    [InlineData(GameBootstrap.PanelMode.Shop, Key.Escape, GameBootstrap.PanelMode.None)]
-    [InlineData(GameBootstrap.PanelMode.Storage, Key.Escape, GameBootstrap.PanelMode.None)]
-    [InlineData(GameBootstrap.PanelMode.Shop, Key.F7, GameBootstrap.PanelMode.Shop)]
+    [InlineData(PanelMode.None, Key.Escape, PanelMode.None)]
+    [InlineData(PanelMode.Shop, Key.Escape, PanelMode.None)]
+    [InlineData(PanelMode.Storage, Key.Escape, PanelMode.None)]
+    [InlineData(PanelMode.Shop, Key.F7, PanelMode.Shop)]
     public void ResolvePanelModeAfterUnhandledKey_ClosesPanelsOnlyOnEscape(
-        GameBootstrap.PanelMode currentMode,
+        PanelMode currentMode,
         Key keycode,
-        GameBootstrap.PanelMode expectedMode)
+        PanelMode expectedMode)
     {
         Assert.Equal(expectedMode, GameBootstrap.ResolvePanelModeAfterUnhandledKey(currentMode, keycode));
     }
 
     [Theory]
-    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Shop, true)]
-    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Storage, true)]
-    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Shop, true)]
-    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Storage, true)]
-    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Storage, false)]
-    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Shop, false)]
+    [InlineData(PanelMode.None, PanelMode.Shop, true)]
+    [InlineData(PanelMode.None, PanelMode.Storage, true)]
+    [InlineData(PanelMode.Shop, PanelMode.Shop, true)]
+    [InlineData(PanelMode.Storage, PanelMode.Storage, true)]
+    [InlineData(PanelMode.Shop, PanelMode.Storage, false)]
+    [InlineData(PanelMode.Storage, PanelMode.Shop, false)]
     public void CanHandlePanelInteractionRequest_AllowsOpeningAndClosingTheRequestedPanelOnly(
-        GameBootstrap.PanelMode currentMode,
-        GameBootstrap.PanelMode requestedMode,
+        PanelMode currentMode,
+        PanelMode requestedMode,
         bool canHandleRequest)
     {
         Assert.Equal(canHandleRequest, GameBootstrap.CanHandlePanelInteractionRequest(currentMode, requestedMode));
     }
 
     [Theory]
-    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Shop)]
-    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Storage)]
-    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.None)]
-    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.None)]
+    [InlineData(PanelMode.None, PanelMode.Shop, PanelMode.Shop)]
+    [InlineData(PanelMode.None, PanelMode.Storage, PanelMode.Storage)]
+    [InlineData(PanelMode.Shop, PanelMode.Shop, PanelMode.None)]
+    [InlineData(PanelMode.Storage, PanelMode.Storage, PanelMode.None)]
     public void ResolvePanelModeAfterInteractionRequest_TogglesTheRequestedPanel(
-        GameBootstrap.PanelMode currentMode,
-        GameBootstrap.PanelMode requestedMode,
-        GameBootstrap.PanelMode expectedMode)
+        PanelMode currentMode,
+        PanelMode requestedMode,
+        PanelMode expectedMode)
     {
         Assert.Equal(expectedMode, GameBootstrap.ResolvePanelModeAfterInteractionRequest(currentMode, requestedMode));
     }
 
     [Theory]
-    [InlineData(GameBootstrap.PanelMode.None, Key.F7, true)]
-    [InlineData(GameBootstrap.PanelMode.Shop, Key.F7, false)]
-    [InlineData(GameBootstrap.PanelMode.Storage, Key.F7, false)]
-    [InlineData(GameBootstrap.PanelMode.Shop, Key.Escape, false)]
+    [InlineData(PanelMode.None, Key.F7, true)]
+    [InlineData(PanelMode.Shop, Key.F7, false)]
+    [InlineData(PanelMode.Storage, Key.F7, false)]
+    [InlineData(PanelMode.Shop, Key.Escape, false)]
     public void CanTriggerDemoExpansionShortcut_OnlyWorksWithoutAnOpenPanel(
-        GameBootstrap.PanelMode currentMode,
+        PanelMode currentMode,
         Key keycode,
         bool canTriggerShortcut)
     {
@@ -354,55 +356,55 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Theory]
-    [InlineData(GameBootstrap.PanelMode.None, null)]
-    [InlineData(GameBootstrap.PanelMode.Shop, "Close the shop panel before interacting with the world.")]
-    [InlineData(GameBootstrap.PanelMode.Storage, "Close the storage panel before interacting with the world.")]
+    [InlineData(PanelMode.None, null)]
+    [InlineData(PanelMode.Shop, "Close the shop panel before interacting with the world.")]
+    [InlineData(PanelMode.Storage, "Close the storage panel before interacting with the world.")]
     public void BuildBlockedWorldInteractionMessage_ProvidesActionablePanelFeedback(
-        GameBootstrap.PanelMode mode,
+        PanelMode mode,
         string? expectedMessage)
     {
-        Assert.Equal(expectedMessage, GameBootstrap.BuildBlockedWorldInteractionMessage(mode));
+        Assert.Equal(expectedMessage, StatusMessageBuilder.BuildBlockedWorldInteractionMessage(mode));
     }
 
     [Theory]
-    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Shop, "Shop open. Click again or press Esc to close.")]
-    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Storage, "Storage open. Click again or press Esc to close.")]
-    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.Storage, "Close the shop panel before opening storage.")]
-    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.Shop, "Close the storage panel before opening shop.")]
-    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.None, "Close the shop panel before interacting with the world.")]
-    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.None, "Close the storage panel before interacting with the world.")]
+    [InlineData(PanelMode.Shop, PanelMode.Shop, "Shop open. Click again or press Esc to close.")]
+    [InlineData(PanelMode.Storage, PanelMode.Storage, "Storage open. Click again or press Esc to close.")]
+    [InlineData(PanelMode.Shop, PanelMode.Storage, "Close the shop panel before opening storage.")]
+    [InlineData(PanelMode.Storage, PanelMode.Shop, "Close the storage panel before opening shop.")]
+    [InlineData(PanelMode.Shop, PanelMode.None, "Close the shop panel before interacting with the world.")]
+    [InlineData(PanelMode.Storage, PanelMode.None, "Close the storage panel before interacting with the world.")]
     public void BuildBlockedWorldInteractionMessage_UsesRequestedPanelContextWhenAvailable(
-        GameBootstrap.PanelMode currentMode,
-        GameBootstrap.PanelMode requestedMode,
+        PanelMode currentMode,
+        PanelMode requestedMode,
         string expectedMessage)
     {
-        Assert.Equal(expectedMessage, GameBootstrap.BuildBlockedWorldInteractionMessage(currentMode, requestedMode));
+        Assert.Equal(expectedMessage, StatusMessageBuilder.BuildBlockedWorldInteractionMessage(currentMode, requestedMode));
     }
 
     [Theory]
-    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.None, null)]
-    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Shop, "Shop open. Use Buy/Sell or press Esc to close.")]
-    [InlineData(GameBootstrap.PanelMode.None, GameBootstrap.PanelMode.Storage, "Storage open. Move items or press Esc to close.")]
-    [InlineData(GameBootstrap.PanelMode.Shop, GameBootstrap.PanelMode.None, null)]
-    [InlineData(GameBootstrap.PanelMode.Storage, GameBootstrap.PanelMode.None, null)]
+    [InlineData(PanelMode.None, PanelMode.None, null)]
+    [InlineData(PanelMode.None, PanelMode.Shop, "Shop open. Use Buy/Sell or press Esc to close.")]
+    [InlineData(PanelMode.None, PanelMode.Storage, "Storage open. Move items or press Esc to close.")]
+    [InlineData(PanelMode.Shop, PanelMode.None, null)]
+    [InlineData(PanelMode.Storage, PanelMode.None, null)]
     public void BuildPanelModeStatusMessage_ExplainsPanelOpenAndCloseFlow(
-        GameBootstrap.PanelMode previousMode,
-        GameBootstrap.PanelMode nextMode,
+        PanelMode previousMode,
+        PanelMode nextMode,
         string? expectedMessage)
     {
-        Assert.Equal(expectedMessage, GameBootstrap.BuildPanelModeStatusMessage(previousMode, nextMode));
+        Assert.Equal(expectedMessage, StatusMessageBuilder.BuildPanelModeStatusMessage(previousMode, nextMode));
     }
 
     [Theory]
-    [InlineData(GameBootstrap.PanelMode.Shop, "Shop selection: parsnip_seed. Ready to buy 1.", "Shop selection: parsnip_seed. Ready to buy 1.")]
-    [InlineData(GameBootstrap.PanelMode.Storage, "Stored 1 parsnip_seed. Storage selection: store parsnip_seed or take wood.", "Stored 1 parsnip_seed. Storage selection: store parsnip_seed or take wood.")]
-    [InlineData(GameBootstrap.PanelMode.Shop, null, "Panels closed. Interact with the world again.")]
+    [InlineData(PanelMode.Shop, "Shop selection: parsnip_seed. Ready to buy 1.", "Shop selection: parsnip_seed. Ready to buy 1.")]
+    [InlineData(PanelMode.Storage, "Stored 1 parsnip_seed. Storage selection: store parsnip_seed or take wood.", "Stored 1 parsnip_seed. Storage selection: store parsnip_seed or take wood.")]
+    [InlineData(PanelMode.Shop, null, "Panels closed. Interact with the world again.")]
     public void BuildPanelCloseStatusMessage_RestoresTheLatestPanelContextWhenAvailable(
-        GameBootstrap.PanelMode previousMode,
+        PanelMode previousMode,
         string? latestPanelContextMessage,
         string expectedMessage)
     {
-        Assert.Equal(expectedMessage, GameBootstrap.BuildPanelCloseStatusMessage(previousMode, latestPanelContextMessage));
+        Assert.Equal(expectedMessage, StatusMessageBuilder.BuildPanelCloseStatusMessage(previousMode, latestPanelContextMessage));
     }
 
     [Fact]
@@ -412,26 +414,26 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Hover plot: unlock for 120g.",
-            GameBootstrap.BuildFarmPlotHoverStatusMessage(new PlotState(2, 0, false, true, false, false, null), crops));
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(new PlotState(2, 0, false, true, false, false, null), crops, expansionPlotKey: "2,0", expansionCost: 120));
         Assert.Equal(
             "Hover plot: click to till.",
-            GameBootstrap.BuildFarmPlotHoverStatusMessage(PlotState.Wild(0, 0), crops));
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(PlotState.Wild(0, 0), crops));
         Assert.Equal(
             "Hover plot: click to plant.",
-            GameBootstrap.BuildFarmPlotHoverStatusMessage(PlotState.Tilled(0, 0), crops));
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(PlotState.Tilled(0, 0), crops));
         Assert.Equal(
             "Hover Parsnip: click to water.",
-            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(
                 new PlotState(0, 0, true, false, false, false, new CropInstance("parsnip", 2)),
                 crops));
         Assert.Equal(
             "Hover Parsnip: watered today.",
-            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(
                 new PlotState(0, 0, true, false, true, false, new CropInstance("parsnip", 2)),
                 crops));
         Assert.Equal(
             "Hover Parsnip: ready to harvest.",
-            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(
                 new PlotState(0, 0, true, false, true, true, new CropInstance("parsnip", 4)),
                 crops));
     }
@@ -444,7 +446,7 @@ public sealed class GameBootstrapIntegrationTests
         var emptyInventory = new InventoryState(12, 99);
         Assert.Equal(
             "Hover plot: no seeds available.",
-            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(
                 PlotState.Tilled(0, 0),
                 crops,
                 emptyInventory,
@@ -454,7 +456,7 @@ public sealed class GameBootstrapIntegrationTests
         Assert.True(fullInventory.TryAdd("wood", 1));
         Assert.Equal(
             "Hover Parsnip: inventory full.",
-            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(
                 new PlotState(0, 0, true, false, true, true, new CropInstance("parsnip", 4)),
                 crops,
                 fullInventory,
@@ -462,11 +464,13 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Hover plot: need 120g to unlock.",
-            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(
                 new PlotState(2, 0, false, true, false, false, null),
                 crops,
                 emptyInventory,
-                currentGold: 100));
+                currentGold: 100,
+                expansionPlotKey: "2,0",
+                expansionCost: 120));
     }
 
     [Fact]
@@ -481,7 +485,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Hover plot: click to plant Parsnip.",
-            GameBootstrap.BuildFarmPlotHoverStatusMessage(
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(
                 farmGrid.GetPlot(0, 0),
                 crops,
                 inventory,
@@ -501,7 +505,7 @@ public sealed class GameBootstrapIntegrationTests
         string actionDescription,
         string expectedMessage)
     {
-        Assert.Equal(expectedMessage, GameBootstrap.BuildInteractionHoverStatusMessage(interactionName, actionDescription));
+        Assert.Equal(expectedMessage, StatusMessageBuilder.BuildInteractionHoverStatusMessage(interactionName, actionDescription));
     }
 
     [Fact]
@@ -516,23 +520,23 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Hover request board: parsnip_crop 0/5. Need 5 more.",
-            GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
+            StatusMessageBuilder.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
 
         Assert.True(inventory.TryAdd("parsnip_crop", 3));
         Assert.Equal(
             "Hover request board: parsnip_crop 3/5. Need 2 more.",
-            GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
+            StatusMessageBuilder.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
 
         Assert.True(GameBootstrap.TryTransferItem(inventory, new InventoryState(24, 99), "parsnip_crop", 3));
         Assert.True(inventory.TryAdd("parsnip_crop", 5));
         Assert.Equal(
             "Hover request board: parsnip_crop 5/5 ready to turn in for 120g.",
-            GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
+            StatusMessageBuilder.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
 
         completedRequests.Add("ship_5_parsnips");
         Assert.Equal(
             "Hover request board: all requests completed.",
-            GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
+            StatusMessageBuilder.BuildRequestBoardHoverStatusMessage(requests, completedRequests, inventory));
     }
 
     [Fact]
@@ -546,7 +550,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Hover request board: Parsnip 0/5. Need 5 more.",
-            GameBootstrap.BuildRequestBoardHoverStatusMessage(requests, new HashSet<string>(), inventory, CreateItemCatalog()));
+            StatusMessageBuilder.BuildRequestBoardHoverStatusMessage(requests, new HashSet<string>(), inventory, CreateItemCatalog()));
     }
 
     [Fact]
@@ -562,25 +566,25 @@ public sealed class GameBootstrapIntegrationTests
         var wallet = new Wallet(200);
         Assert.Equal(
             "Shop selection: parsnip_seed. Ready to buy 1.",
-            GameBootstrap.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, inventory, wallet));
+            StatusMessageBuilder.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, inventory, wallet));
 
         Assert.True(inventory.TryAdd("parsnip_crop", 1));
         Assert.Equal(
             "Shop selection: parsnip_crop. Ready to sell 1.",
-            GameBootstrap.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 1, inventory, wallet));
+            StatusMessageBuilder.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 1, inventory, wallet));
 
         var ownedSeeds = new InventoryState(1, 1);
         Assert.True(ownedSeeds.TryAdd("parsnip_seed", 1));
         Assert.Equal(
             "Shop selection: parsnip_seed. Ready to sell 1. Cannot buy 1: inventory full.",
-            GameBootstrap.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, ownedSeeds, wallet));
+            StatusMessageBuilder.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, ownedSeeds, wallet));
 
         var poorWallet = new Wallet(5);
         var seedInventory = new InventoryState(12, 99);
         Assert.True(seedInventory.TryAdd("parsnip_seed", 1));
         Assert.Equal(
             "Shop selection: parsnip_seed. Ready to sell 1. Need 15g more to buy 1.",
-            GameBootstrap.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, seedInventory, poorWallet));
+            StatusMessageBuilder.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, seedInventory, poorWallet));
     }
 
     [Fact]
@@ -597,10 +601,10 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Shop selection: Parsnip Seeds. Ready to buy or sell 1.",
-            GameBootstrap.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, inventory, wallet, itemCatalog));
+            StatusMessageBuilder.BuildShopBrowseStatusMessage(offers, selectedOfferIndex: 0, inventory, wallet, itemCatalog));
         Assert.Equal(
             "Bought 1 Parsnip Seeds for 20g. Shop selection: Parsnip Seeds. Ready to buy or sell 1.",
-            GameBootstrap.BuildShopActionStatusMessage(
+            StatusMessageBuilder.BuildShopActionStatusMessage(
                 "Bought 1 Parsnip Seeds for 20g.",
                 offers,
                 selectedOfferIndex: 0,
@@ -609,7 +613,7 @@ public sealed class GameBootstrapIntegrationTests
                 itemCatalog));
         Assert.Equal(
             "Need 15g more to buy 1 Parsnip Seeds.",
-            GameBootstrap.BuildShopPurchaseStatusMessage(offers[0], inventory, new Wallet(5), changed: false, itemCatalog));
+            StatusMessageBuilder.BuildShopPurchaseStatusMessage(offers[0], inventory, new Wallet(5), changed: false, itemCatalog));
     }
 
     [Fact]
@@ -623,7 +627,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Storage selection: store parsnip_seed or take wood.",
-            GameBootstrap.BuildStorageBrowseStatusMessage(inventory, storage));
+            StatusMessageBuilder.BuildStorageBrowseStatusMessage(inventory, storage));
 
         var fullInventory = new InventoryState(1, 1);
         Assert.True(fullInventory.TryAdd("stone", 1));
@@ -631,7 +635,7 @@ public sealed class GameBootstrapIntegrationTests
         Assert.True(stockedStorage.TryAdd("wood", 1));
         Assert.Equal(
             "Storage selection: store stone. Cannot take wood: inventory is full.",
-            GameBootstrap.BuildStorageBrowseStatusMessage(fullInventory, stockedStorage));
+            StatusMessageBuilder.BuildStorageBrowseStatusMessage(fullInventory, stockedStorage));
 
         var blockedInventory = new InventoryState(1, 1);
         Assert.True(blockedInventory.TryAdd("stone", 1));
@@ -639,7 +643,7 @@ public sealed class GameBootstrapIntegrationTests
         Assert.True(blockedStorage.TryAdd("wood", 1));
         Assert.Equal(
             "Storage blocked: cannot store stone (storage full) or take wood (inventory full).",
-            GameBootstrap.BuildStorageBrowseStatusMessage(blockedInventory, blockedStorage));
+            StatusMessageBuilder.BuildStorageBrowseStatusMessage(blockedInventory, blockedStorage));
     }
 
     [Fact]
@@ -653,13 +657,13 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Storage selection: store Parsnip Seeds or take Wood.",
-            GameBootstrap.BuildStorageBrowseStatusMessage(inventory, storage, itemCatalog));
+            StatusMessageBuilder.BuildStorageBrowseStatusMessage(inventory, storage, itemCatalog));
         Assert.Equal(
             "Stored 1 Parsnip Seeds. Storage selection: store Parsnip Seeds or take Wood.",
-            GameBootstrap.BuildStorageActionStatusMessage("Stored 1 Parsnip Seeds.", inventory, storage, itemCatalog));
+            StatusMessageBuilder.BuildStorageActionStatusMessage("Stored 1 Parsnip Seeds.", inventory, storage, itemCatalog));
         Assert.Equal(
             "Cannot take Stone: inventory is full.",
-            GameBootstrap.BuildStorageTransferStatusMessage(
+            StatusMessageBuilder.BuildStorageTransferStatusMessage(
                 "stone",
                 changed: false,
                 intoStorage: false,
@@ -681,7 +685,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Bought 1 parsnip_seed for 20g. Shop selection: parsnip_seed. Ready to buy or sell 1.",
-            GameBootstrap.BuildShopActionStatusMessage(
+            StatusMessageBuilder.BuildShopActionStatusMessage(
                 "Bought 1 parsnip_seed for 20g.",
                 offers,
                 selectedOfferIndex: 0,
@@ -699,7 +703,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Stored 1 parsnip_seed. Storage selection: store parsnip_seed or take wood.",
-            GameBootstrap.BuildStorageActionStatusMessage(
+            StatusMessageBuilder.BuildStorageActionStatusMessage(
                 "Stored 1 parsnip_seed.",
             inventory,
             storage));
@@ -718,7 +722,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Completed request: delivered 5 Parsnip for 120g. Active request: Potato 0/3. Need 3 more.",
-            GameBootstrap.BuildRequestBoardActionStatusMessage(
+            StatusMessageBuilder.BuildRequestBoardActionStatusMessage(
                 "Completed request: delivered 5 Parsnip for 120g.",
                 requests,
                 completedRequests,
@@ -739,7 +743,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Active request: Parsnip 3/5. Need 2 more.",
-            GameBootstrap.BuildRequestBoardActionStatusMessage(
+            StatusMessageBuilder.BuildRequestBoardActionStatusMessage(
                 "Need 2 more Parsnip.",
                 requests,
                 completedRequests,
@@ -756,18 +760,18 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Bought 1 parsnip_seed for 20g.",
-            GameBootstrap.BuildShopPurchaseStatusMessage(offer, inventory, wallet, changed: true));
+            StatusMessageBuilder.BuildShopPurchaseStatusMessage(offer, inventory, wallet, changed: true));
 
         var poorWallet = new Wallet(5);
         Assert.Equal(
             "Need 15g more to buy 1 parsnip_seed.",
-            GameBootstrap.BuildShopPurchaseStatusMessage(offer, inventory, poorWallet, changed: false));
+            StatusMessageBuilder.BuildShopPurchaseStatusMessage(offer, inventory, poorWallet, changed: false));
 
         var fullInventory = new InventoryState(1, 1);
         Assert.True(fullInventory.TryAdd("wood", 1));
         Assert.Equal(
             "Cannot buy parsnip_seed: inventory full.",
-            GameBootstrap.BuildShopPurchaseStatusMessage(offer, fullInventory, wallet, changed: false));
+            StatusMessageBuilder.BuildShopPurchaseStatusMessage(offer, fullInventory, wallet, changed: false));
     }
 
     [Fact]
@@ -779,12 +783,12 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Sold 1 parsnip_crop for 35g.",
-            GameBootstrap.BuildShopSellStatusMessage(offer, stockedInventory, changed: true));
+            StatusMessageBuilder.BuildShopSellStatusMessage(offer, stockedInventory, changed: true));
 
         var emptyInventory = new InventoryState(12, 99);
         Assert.Equal(
             "Cannot sell parsnip_crop: none available.",
-            GameBootstrap.BuildShopSellStatusMessage(offer, emptyInventory, changed: false));
+            StatusMessageBuilder.BuildShopSellStatusMessage(offer, emptyInventory, changed: false));
     }
 
     [Fact]
@@ -796,7 +800,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Stored 1 parsnip_crop.",
-            GameBootstrap.BuildStorageTransferStatusMessage("parsnip_crop", changed: true, intoStorage: true, inventory, storage));
+            StatusMessageBuilder.BuildStorageTransferStatusMessage("parsnip_crop", changed: true, intoStorage: true, inventory, storage));
 
         var fullStorage = new InventoryState(1, 1);
         Assert.True(fullStorage.TryAdd("wood", 1));
@@ -804,7 +808,7 @@ public sealed class GameBootstrapIntegrationTests
         Assert.True(crowdedInventory.TryAdd("stone", 1));
         Assert.Equal(
             "Cannot store stone: storage is full.",
-            GameBootstrap.BuildStorageTransferStatusMessage("stone", changed: false, intoStorage: true, crowdedInventory, fullStorage));
+            StatusMessageBuilder.BuildStorageTransferStatusMessage("stone", changed: false, intoStorage: true, crowdedInventory, fullStorage));
 
         var fullInventory = new InventoryState(1, 1);
         Assert.True(fullInventory.TryAdd("wood", 1));
@@ -812,7 +816,7 @@ public sealed class GameBootstrapIntegrationTests
         Assert.True(stockedStorage.TryAdd("stone", 1));
         Assert.Equal(
             "Cannot take stone: inventory is full.",
-            GameBootstrap.BuildStorageTransferStatusMessage("stone", changed: false, intoStorage: false, stockedStorage, fullInventory));
+            StatusMessageBuilder.BuildStorageTransferStatusMessage("stone", changed: false, intoStorage: false, stockedStorage, fullInventory));
     }
 
     [Fact]
@@ -876,18 +880,18 @@ public sealed class GameBootstrapIntegrationTests
     {
         var expansion = new FarmExpansionService();
         var unlockState = new UnlockState(new HashSet<string> { "0,0", "1,0", "0,1", "1,1" });
+        var wallet = new Wallet(200);
 
         var changed = GameBootstrap.TryHandleLockedPlotInteraction(
             expansion,
             unlockState,
-            currentGold: 200,
+            wallet,
             x: 2,
             y: 0,
-            out var updatedGold,
             out var message);
 
         Assert.True(changed);
-        Assert.Equal(80, updatedGold);
+        Assert.Equal(80, wallet.Gold);
         Assert.Equal("Unlocked a new plot for 120g. Click again to till.", message);
         Assert.Contains("2,0", unlockState.UnlockedPlotKeys);
     }
@@ -897,18 +901,18 @@ public sealed class GameBootstrapIntegrationTests
     {
         var expansion = new FarmExpansionService();
         var unlockState = new UnlockState(new HashSet<string> { "0,0", "1,0", "0,1", "1,1" });
+        var wallet = new Wallet(100);
 
         var changed = GameBootstrap.TryHandleLockedPlotInteraction(
             expansion,
             unlockState,
-            currentGold: 100,
+            wallet,
             x: 2,
             y: 0,
-            out var updatedGold,
             out var message);
 
         Assert.False(changed);
-        Assert.Equal(100, updatedGold);
+        Assert.Equal(100, wallet.Gold);
         Assert.Equal("Need 120g to unlock this plot.", message);
         Assert.DoesNotContain("2,0", unlockState.UnlockedPlotKeys);
     }
@@ -922,7 +926,7 @@ public sealed class GameBootstrapIntegrationTests
         bool loadedExistingSave,
         string expectedMessage)
     {
-        Assert.Equal(expectedMessage, GameBootstrap.BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave));
+        Assert.Equal(expectedMessage, StatusMessageBuilder.BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave, null, null, null, null, null));
     }
 
     [Fact]
@@ -933,7 +937,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Save loaded. 1 crop is ready to harvest.",
-            GameBootstrap.BuildStartupFarmStatusMessage(saveFileExists: true, loadedExistingSave: true, farmGrid));
+            StatusMessageBuilder.BuildStartupFarmStatusMessage(saveFileExists: true, loadedExistingSave: true, farmGrid, null, null, null, null));
     }
 
     [Fact]
@@ -945,7 +949,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Save loaded. 2 planted crops still need water.",
-            GameBootstrap.BuildStartupFarmStatusMessage(saveFileExists: true, loadedExistingSave: true, farmGrid));
+            StatusMessageBuilder.BuildStartupFarmStatusMessage(saveFileExists: true, loadedExistingSave: true, farmGrid, null, null, null, null));
     }
 
     [Fact]
@@ -962,7 +966,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Save loaded. Request ready: Parsnip 5/5. Click board to turn in.",
-            GameBootstrap.BuildStartupFarmStatusMessage(
+            StatusMessageBuilder.BuildStartupFarmStatusMessage(
                 saveFileExists: true,
                 loadedExistingSave: true,
                 farmGrid,
@@ -985,7 +989,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "Save loaded. All requests completed.",
-            GameBootstrap.BuildStartupFarmStatusMessage(
+            StatusMessageBuilder.BuildStartupFarmStatusMessage(
                 saveFileExists: true,
                 loadedExistingSave: true,
                 farmGrid,
@@ -1003,7 +1007,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "A new day begins. 1 crop is ready to harvest.",
-            GameBootstrap.BuildDayStartFarmStatusMessage(farmGrid));
+            StatusMessageBuilder.BuildDayStartFarmStatusMessage(farmGrid));
     }
 
     [Fact]
@@ -1020,7 +1024,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "A new day begins. Request ready: Parsnip 5/5. Click board to turn in.",
-            GameBootstrap.BuildDayStartFarmStatusMessage(
+            StatusMessageBuilder.BuildDayStartFarmStatusMessage(
                 farmGrid,
                 requests,
                 completedRequests,
@@ -1035,7 +1039,7 @@ public sealed class GameBootstrapIntegrationTests
 
         Assert.Equal(
             "A new day begins. Click a plot to till, plant, water, or harvest.",
-            GameBootstrap.BuildDayStartFarmStatusMessage(farmGrid));
+            StatusMessageBuilder.BuildDayStartFarmStatusMessage(farmGrid));
     }
 
     [Theory]
@@ -1054,6 +1058,178 @@ public sealed class GameBootstrapIntegrationTests
             GameBootstrap.ShouldAutosaveAfterBootstrap(saveFileExists, loadedExistingSave, hasMeaningfulStateChanges));
     }
 
+    [Fact]
+    public void ProcessDayEnd_WhenSeasonChanges_WithersOutOfSeasonCrops()
+    {
+        var springCrop = new CropDefinition("parsnip", "Parsnip", Season.Spring, "parsnip_seed", "parsnip_crop", 20, 35, 4, new[] { 1, 1, 2 });
+        var summerCrop = new CropDefinition("melon", "Melon", Season.Summer, "melon_seed", "melon_crop", 80, 250, 12, new[] { 3, 4, 5 });
+        var crops = new Dictionary<string, CropDefinition> { ["parsnip"] = springCrop, ["melon"] = summerCrop };
+        var growth = new CropGrowthService(crops);
+        var clock = new DayClock(new GameDate(Season.Spring, 28), 6 * 60, 26 * 60);
+        var stamina = new StaminaState(maximum: 100, current: 100);
+        var farmGrid = new FarmGrid(2, 2);
+
+        farmGrid.SetPlot(PlotState.Tilled(0, 0).Plant("parsnip").Water());
+        farmGrid.SetPlot(PlotState.Tilled(1, 0).Plant("parsnip").Water());
+
+        var result = GameBootstrap.ProcessDayEnd(clock, stamina, growth, farmGrid, crops);
+
+        Assert.True(result.DayRolled);
+        Assert.True(result.SeasonChanged);
+        Assert.Equal(Season.Spring, result.PreviousSeason);
+        Assert.Equal(Season.Summer, result.CurrentSeason);
+        Assert.Equal(2, result.CropsWithered);
+        Assert.Null(farmGrid.GetPlot(0, 0).Crop);
+        Assert.Null(farmGrid.GetPlot(1, 0).Crop);
+    }
+
+    [Fact]
+    public void ProcessDayEnd_WhenSeasonChanges_PreservesSameSeasonCrops()
+    {
+        var summerCrop = new CropDefinition("melon", "Melon", Season.Summer, "melon_seed", "melon_crop", 80, 250, 12, new[] { 3, 4, 5 });
+        var crops = new Dictionary<string, CropDefinition> { ["melon"] = summerCrop };
+        var growth = new CropGrowthService(crops);
+        var clock = new DayClock(new GameDate(Season.Spring, 28), 6 * 60, 26 * 60);
+        var stamina = new StaminaState(maximum: 100, current: 100);
+        var farmGrid = new FarmGrid(2, 2);
+
+        farmGrid.SetPlot(PlotState.Tilled(0, 0).Plant("melon").Water());
+
+        var result = GameBootstrap.ProcessDayEnd(clock, stamina, growth, farmGrid, crops);
+
+        Assert.True(result.SeasonChanged);
+        Assert.NotNull(farmGrid.GetPlot(0, 0).Crop);
+        Assert.Equal("melon", farmGrid.GetPlot(0, 0).Crop!.CropId);
+        Assert.Equal(1, farmGrid.GetPlot(0, 0).Crop!.DaysGrown);
+        Assert.Equal(0, result.CropsWithered);
+    }
+
+    [Fact]
+    public void ProcessDayEnd_WithinSameSeason_DoesNotWitherCrops()
+    {
+        var springCrop = new CropDefinition("parsnip", "Parsnip", Season.Spring, "parsnip_seed", "parsnip_crop", 20, 35, 4, new[] { 1, 1, 2 });
+        var crops = new Dictionary<string, CropDefinition> { ["parsnip"] = springCrop };
+        var growth = new CropGrowthService(crops);
+        var clock = new DayClock(new GameDate(Season.Spring, 15), 6 * 60, 26 * 60);
+        var stamina = new StaminaState(maximum: 100, current: 100);
+        var farmGrid = new FarmGrid(2, 2);
+
+        farmGrid.SetPlot(PlotState.Tilled(0, 0).Plant("parsnip").Water());
+
+        var result = GameBootstrap.ProcessDayEnd(clock, stamina, growth, farmGrid, crops);
+
+        Assert.True(result.DayRolled);
+        Assert.False(result.SeasonChanged);
+        Assert.Equal(0, result.CropsWithered);
+        Assert.NotNull(farmGrid.GetPlot(0, 0).Crop);
+    }
+
+    [Fact]
+    public void BuildSeasonShopOffers_FiltersSeedsByCurrentSeason()
+    {
+        var springCrop = new CropDefinition("parsnip", "Parsnip", Season.Spring, "parsnip_seed", "parsnip_crop", 20, 35, 4, new[] { 1, 1, 2 });
+        var summerCrop = new CropDefinition("melon", "Melon", Season.Summer, "melon_seed", "melon_crop", 80, 250, 12, new[] { 3, 4, 5 });
+        var cropCatalog = new Dictionary<string, CropDefinition> { ["parsnip"] = springCrop, ["melon"] = summerCrop };
+
+        var allOffers = new[]
+        {
+            new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10),
+            new ShopOffer("melon_seed", BuyPrice: 80, SellPrice: 40),
+            new ShopOffer("parsnip_crop", BuyPrice: 0, SellPrice: 35),
+            new ShopOffer("melon_crop", BuyPrice: 0, SellPrice: 250)
+        };
+
+        var springOffers = GameBootstrap.BuildSeasonShopOffers(allOffers, cropCatalog, Season.Spring);
+        Assert.Contains(springOffers, o => o.ItemId == "parsnip_seed");
+        Assert.DoesNotContain(springOffers, o => o.ItemId == "melon_seed");
+        Assert.Contains(springOffers, o => o.ItemId == "parsnip_crop");
+        Assert.Contains(springOffers, o => o.ItemId == "melon_crop");
+
+        var summerOffers = GameBootstrap.BuildSeasonShopOffers(allOffers, cropCatalog, Season.Summer);
+        Assert.DoesNotContain(summerOffers, o => o.ItemId == "parsnip_seed");
+        Assert.Contains(summerOffers, o => o.ItemId == "melon_seed");
+        Assert.Contains(summerOffers, o => o.ItemId == "parsnip_crop");
+        Assert.Contains(summerOffers, o => o.ItemId == "melon_crop");
+    }
+
+    [Fact]
+    public void BuildDayStartFarmStatusMessage_WhenSeasonChanges_AnnouncesNewSeason()
+    {
+        var farmGrid = new FarmGrid(3, 3);
+
+        Assert.Equal(
+            "Summer has arrived! Click a plot to till, plant, water, or harvest.",
+            StatusMessageBuilder.BuildDayStartFarmStatusMessage(farmGrid, newSeason: Season.Summer));
+    }
+
+    [Fact]
+    public void BuildDayStartFarmStatusMessage_WhenSeasonChangesWithWitheredCrops_ReportsWitheredCount()
+    {
+        var farmGrid = new FarmGrid(3, 3);
+
+        Assert.Equal(
+            "Summer has arrived! 3 out-of-season crops have withered. Click a plot to till, plant, water, or harvest.",
+            StatusMessageBuilder.BuildDayStartFarmStatusMessage(farmGrid, newSeason: Season.Summer, cropsWithered: 3));
+
+        Assert.Equal(
+            "Autumn has arrived! 1 out-of-season crop has withered. Click a plot to till, plant, water, or harvest.",
+            StatusMessageBuilder.BuildDayStartFarmStatusMessage(farmGrid, newSeason: Season.Autumn, cropsWithered: 1));
+    }
+
+    [Fact]
+    public void TryHandleFarmPlotInteraction_WhenOnlyOutOfSeasonSeeds_ExplainsSeasonMismatch()
+    {
+        var crops = CreateCropCatalog();
+        var inventory = new InventoryState(12, 99);
+        inventory.TryAdd("parsnip_seed", 5);
+        var farmGrid = new FarmGrid(1, 1);
+
+        Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var tillMessage, currentSeason: Season.Summer));
+        Assert.Equal("Plot tilled. No Summer seeds available. Your seeds are for a different season.", tillMessage);
+
+        Assert.False(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var plantMessage, currentSeason: Season.Summer));
+        Assert.Equal("No Summer seeds available. Your seeds are for a different season.", plantMessage);
+    }
+
+    [Fact]
+    public void TryHandleFarmPlotInteraction_WhenInSeasonSeedsExist_PlantsNormally()
+    {
+        var crops = CreateCropCatalog();
+        var inventory = new InventoryState(12, 99);
+        inventory.TryAdd("parsnip_seed", 5);
+        var farmGrid = new FarmGrid(1, 1);
+
+        Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out _, currentSeason: Season.Spring));
+        Assert.True(GameBootstrap.TryHandleFarmPlotInteraction(farmGrid, inventory, crops, 0, 0, out var plantMessage, currentSeason: Season.Spring));
+        Assert.Equal("Planted Parsnip. Click again to water.", plantMessage);
+        Assert.Equal(4, inventory.GetQuantity("parsnip_seed"));
+    }
+
+    [Fact]
+    public void BuildFarmPlotHoverStatusMessage_WhenOnlyOutOfSeasonSeeds_ExplainsSeasonMismatch()
+    {
+        var crops = CreateCropCatalog();
+        var inventory = new InventoryState(12, 99);
+        inventory.TryAdd("parsnip_seed", 5);
+
+        Assert.Equal(
+            "Hover plot: no Summer seeds available.",
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(
+                PlotState.Tilled(0, 0), crops, inventory, currentGold: 200, currentSeason: Season.Summer));
+    }
+
+    [Fact]
+    public void FindAutoPlantCrop_IgnoresOutOfSeasonCrops()
+    {
+        var crops = CreateCropCatalog();
+        var inventory = new InventoryState(12, 99);
+        inventory.TryAdd("parsnip_seed", 5);
+
+        Assert.NotNull(GameBootstrap.FindAutoPlantCrop(crops, inventory, Season.Spring));
+        Assert.Null(GameBootstrap.FindAutoPlantCrop(crops, inventory, Season.Summer));
+        Assert.NotNull(GameBootstrap.FindAutoPlantCrop(crops, inventory, currentSeason: null));
+    }
+
 private static IReadOnlyDictionary<string, CropDefinition> CreateCropCatalog()
 {
     return new Dictionary<string, CropDefinition>
@@ -1061,7 +1237,7 @@ private static IReadOnlyDictionary<string, CropDefinition> CreateCropCatalog()
         ["parsnip"] = new(
                 "parsnip",
                 "Parsnip",
-                "Spring",
+                Season.Spring,
                 "parsnip_seed",
                 "parsnip_crop",
                 20,
@@ -1078,7 +1254,7 @@ private static IReadOnlyDictionary<string, CropDefinition> CreateMultiCropCatalo
         ["potato"] = new(
             "potato",
             "Potato",
-            "Spring",
+            Season.Spring,
             "potato_seed",
             "potato_crop",
             45,

@@ -4,10 +4,7 @@ namespace HarvestManor.Core.Content;
 
 public sealed class ContentCatalogLoader
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
+    private static readonly JsonSerializerOptions JsonOptions = JsonDefaults.ReadOptions;
 
     public IReadOnlyList<CropDefinition> LoadCropCatalog(string path)
     {

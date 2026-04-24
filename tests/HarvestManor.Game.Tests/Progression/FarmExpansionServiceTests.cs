@@ -1,3 +1,4 @@
+using HarvestManor.Core.Economy;
 using HarvestManor.Core.Farming;
 using HarvestManor.Core.Progression;
 using HarvestManor.World;
@@ -12,12 +13,13 @@ public sealed class FarmExpansionServiceTests
     {
         var unlocks = new UnlockState(new HashSet<string>());
         var expansion = new FarmExpansionService();
+        var wallet = new Wallet(200);
 
-        var success = expansion.TryUnlockPlot(unlocks, "4,2", requiredGold: 120, currentGold: 200, out var updatedGold);
+        var success = expansion.TryUnlockPlot(unlocks, "4,2", requiredGold: 120, wallet);
 
         Assert.True(success);
         Assert.Contains("4,2", unlocks.UnlockedPlotKeys);
-        Assert.Equal(80, updatedGold);
+        Assert.Equal(80, wallet.Gold);
     }
 
     [Fact]
@@ -25,11 +27,12 @@ public sealed class FarmExpansionServiceTests
     {
         var unlocks = new UnlockState(new HashSet<string> { "4,2" });
         var expansion = new FarmExpansionService();
+        var wallet = new Wallet(200);
 
-        var success = expansion.TryUnlockPlot(unlocks, "4,2", requiredGold: 120, currentGold: 200, out var updatedGold);
+        var success = expansion.TryUnlockPlot(unlocks, "4,2", requiredGold: 120, wallet);
 
         Assert.False(success);
-        Assert.Equal(200, updatedGold);
+        Assert.Equal(200, wallet.Gold);
         Assert.Single(unlocks.UnlockedPlotKeys);
     }
 

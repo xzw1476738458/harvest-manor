@@ -77,4 +77,24 @@ public sealed record PlotState(
 
         return this with { IsWateredToday = true };
     }
+
+    public PlotState Harvest()
+    {
+        if (IsLocked)
+        {
+            throw new InvalidOperationException("Cannot harvest a locked plot.");
+        }
+
+        if (!IsHarvestReady)
+        {
+            throw new InvalidOperationException("Cannot harvest a plot that is not ready.");
+        }
+
+        if (Crop is null)
+        {
+            throw new InvalidOperationException("Cannot harvest a plot with no crop.");
+        }
+
+        return this with { Crop = null, IsWateredToday = false, IsHarvestReady = false };
+    }
 }

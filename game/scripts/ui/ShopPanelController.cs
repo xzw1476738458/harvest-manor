@@ -101,16 +101,16 @@ public partial class ShopPanelController : Control
         var clampedIndex = Math.Clamp(selectedOfferIndex, 0, offers.Count - 1);
         var offer = offers[clampedIndex];
         var state = EvaluateOfferState(offer, inventory, wallet);
-        BodyLabel.Text = BuildBodyText(offers, selectedOfferIndex, inventory, wallet, itemCatalog);
+        BodyLabel.Text = BuildBodyText(offers, clampedIndex, state, itemCatalog);
 
         if (BuyButton is not null)
         {
-            BuyButton.Text = BuildBuyButtonText(offer, inventory, wallet);
+            BuyButton.Text = BuildBuyButtonText(offer, state, itemCatalog);
         }
 
         if (SellButton is not null)
         {
-            SellButton.Text = BuildSellButtonText(offer, inventory, wallet);
+            SellButton.Text = BuildSellButtonText(offer, state, itemCatalog);
         }
 
         SetButtonState(hasOffer: true, state.CanBuy, state.CanSell);
@@ -133,6 +133,23 @@ public partial class ShopPanelController : Control
         var clampedIndex = Math.Clamp(selectedOfferIndex, 0, offers.Count - 1);
         var offer = offers[clampedIndex];
         var state = EvaluateOfferState(offer, inventory, wallet);
+        return BuildBodyText(offers, clampedIndex, state, itemCatalog);
+    }
+
+    public static string BuildBodyText(
+        IReadOnlyList<ShopOffer> offers,
+        int clampedIndex,
+        OfferUiState state,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
+    {
+        ArgumentNullException.ThrowIfNull(offers);
+
+        if (offers.Count == 0)
+        {
+            return "No offers available.";
+        }
+
+        var offer = offers[clampedIndex];
         var displayName = ItemDisplayNameFormatter.Resolve(offer.ItemId, itemCatalog);
 
         return $"Offer {clampedIndex + 1}/{offers.Count}\n" +
@@ -191,6 +208,9 @@ public partial class ShopPanelController : Control
     }
 
     public static string BuildBuyButtonText(ShopOffer offer, InventoryState? inventory, Wallet? wallet)
+        => BuildBuyButtonText(offer, EvaluateOfferState(offer, inventory, wallet));
+
+    public static string BuildBuyButtonText(ShopOffer offer, OfferUiState state, IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(offer);
 
@@ -199,26 +219,23 @@ public partial class ShopPanelController : Control
             return "Not sold here";
         }
 
-        var state = EvaluateOfferState(offer, inventory, wallet);
         if (state.CanBuy)
         {
             return $"Buy 1 ({offer.BuyPrice}g)";
         }
 
-        if (inventory is not null && !inventory.CanAdd(offer.ItemId, 1))
+        if (state.Gold < offer.BuyPrice)
         {
-            return "Inventory full";
+            return $"Need {offer.BuyPrice - state.Gold}g more";
         }
 
-        if (wallet is not null && wallet.Gold < offer.BuyPrice)
-        {
-            return $"Need {offer.BuyPrice - wallet.Gold}g more";
-        }
-
-        return "Buy unavailable";
+        return "Inventory full";
     }
 
     public static string BuildSellButtonText(ShopOffer offer, InventoryState? inventory, Wallet? wallet)
+        => BuildSellButtonText(offer, EvaluateOfferState(offer, inventory, wallet));
+
+    public static string BuildSellButtonText(ShopOffer offer, OfferUiState state, IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(offer);
 
@@ -227,7 +244,6 @@ public partial class ShopPanelController : Control
             return "Cannot sell here";
         }
 
-        var state = EvaluateOfferState(offer, inventory, wallet);
         if (state.CanSell)
         {
             return $"Sell 1 ({offer.SellPrice}g)";

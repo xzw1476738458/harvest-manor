@@ -1,5 +1,4 @@
 using System.Linq;
-using Godot;
 using HarvestManor.Core.Content;
 using HarvestManor.Core.Economy;
 using HarvestManor.Core.Farming;
@@ -12,42 +11,77 @@ namespace HarvestManor.World;
 
 public partial class GameBootstrap
 {
-    public static bool ProcessDayEnd(
+    public readonly record struct DayEndResult(bool DayRolled, bool SeasonChanged, Season PreviousSeason, Season CurrentSeason, int CropsWithered);
+
+    public static DayEndResult ProcessDayEnd(
         DayClock clock,
         StaminaState stamina,
         CropGrowthService growth,
         FarmGrid farmGrid,
+        IReadOnlyDictionary<string, CropDefinition> cropCatalog,
         int minutesToAdvance = 20 * 60)
     {
         ArgumentNullException.ThrowIfNull(clock);
         ArgumentNullException.ThrowIfNull(stamina);
         ArgumentNullException.ThrowIfNull(growth);
         ArgumentNullException.ThrowIfNull(farmGrid);
+        ArgumentNullException.ThrowIfNull(cropCatalog);
 
+        var previousSeason = clock.Date.Season;
         var rolled = clock.AdvanceMinutes(minutesToAdvance);
         if (!rolled)
         {
-            return false;
+            return new DayEndResult(false, false, previousSeason, previousSeason, 0);
         }
+
+        var currentSeason = clock.Date.Season;
+        var seasonChanged = previousSeason != currentSeason;
+        var cropsWithered = 0;
 
         foreach (var plot in farmGrid.AllPlots.ToList())
         {
+            if (seasonChanged && plot.Crop is not null)
+            {
+                var cropSeason = cropCatalog.TryGetValue(plot.Crop.CropId, out var def) ? def.Season : previousSeason;
+                if (cropSeason != currentSeason)
+                {
+                    farmGrid.SetPlot(plot with { Crop = null, IsHarvestReady = false, IsWateredToday = false });
+                    cropsWithered++;
+                    continue;
+                }
+            }
+
             farmGrid.SetPlot(growth.AdvanceDay(plot));
         }
 
         stamina.RestoreFull();
-        return rolled;
+        return new DayEndResult(true, seasonChanged, previousSeason, currentSeason, cropsWithered);
     }
 
-    public static bool TryApplyShopOpenSideEffects(
-        InventoryState inventory,
-        Wallet wallet,
-        IReadOnlyList<ShopOffer> offers)
+    public static IReadOnlyList<ShopOffer> BuildSeasonShopOffers(
+        IReadOnlyList<ShopOffer> allOffers,
+        IReadOnlyDictionary<string, CropDefinition> cropCatalog,
+        Season currentSeason)
     {
-        ArgumentNullException.ThrowIfNull(inventory);
-        ArgumentNullException.ThrowIfNull(wallet);
-        ArgumentNullException.ThrowIfNull(offers);
-        return false;
+        ArgumentNullException.ThrowIfNull(allOffers);
+        ArgumentNullException.ThrowIfNull(cropCatalog);
+
+        var seasonSeedIds = new HashSet<string>(
+            cropCatalog.Values
+                .Where(c => c.Season == currentSeason)
+                .Select(c => c.SeedItemId),
+            StringComparer.Ordinal);
+
+        var seasonCropIds = new HashSet<string>(
+            cropCatalog.Values
+                .Select(c => c.HarvestItemId),
+            StringComparer.Ordinal);
+
+        return allOffers
+            .Where(offer =>
+                seasonSeedIds.Contains(offer.ItemId)
+                || seasonCropIds.Contains(offer.ItemId))
+            .ToList();
     }
 
     public static string GetLockedPlotHint(int x, int y)
@@ -60,257 +94,35 @@ public partial class GameBootstrap
     public static bool TryHandleLockedPlotInteraction(
         FarmExpansionService expansionService,
         UnlockState unlockState,
-        int currentGold,
+        Wallet wallet,
         int x,
         int y,
-        out int updatedGold,
         out string message)
     {
         ArgumentNullException.ThrowIfNull(expansionService);
         ArgumentNullException.ThrowIfNull(unlockState);
+        ArgumentNullException.ThrowIfNull(wallet);
 
         var plotKey = BuildPlotKey(x, y);
         if (plotKey != DemoExpansionPlotKey)
         {
-            updatedGold = currentGold;
             message = "Plot is locked.";
             return false;
         }
 
-        if (expansionService.TryUnlockPlot(unlockState, plotKey, DemoExpansionCost, currentGold, out updatedGold))
+        if (expansionService.TryUnlockPlot(unlockState, plotKey, DemoExpansionCost, wallet))
         {
             message = $"Unlocked a new plot for {DemoExpansionCost}g. Click again to till.";
             return true;
         }
 
-        message = currentGold < DemoExpansionCost
+        message = wallet.Gold < DemoExpansionCost
             ? $"Need {DemoExpansionCost}g to unlock this plot."
             : "Plot is locked.";
         return false;
     }
 
-    public static string BuildStorageBrowseStatusMessage(
-        InventoryState inventory,
-        InventoryState storage,
-        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
-    {
-        ArgumentNullException.ThrowIfNull(inventory);
-        ArgumentNullException.ThrowIfNull(storage);
-
-        var state = StoragePanelController.EvaluateTransferState(inventory, storage);
-        var storeDisplayName = state.StoreCandidateItemId is null
-            ? null
-            : ItemDisplayNameFormatter.Resolve(state.StoreCandidateItemId, itemCatalog);
-        var withdrawDisplayName = state.WithdrawCandidateItemId is null
-            ? null
-            : ItemDisplayNameFormatter.Resolve(state.WithdrawCandidateItemId, itemCatalog);
-
-        if (state.StoreCandidateItemId is null && state.WithdrawCandidateItemId is null)
-        {
-            return "Storage open. Nothing to move.";
-        }
-
-        if (state.CanStore && state.CanWithdraw &&
-            state.StoreCandidateItemId is not null &&
-            state.WithdrawCandidateItemId is not null)
-        {
-            return $"Storage selection: store {storeDisplayName} or take {withdrawDisplayName}.";
-        }
-
-        if (state.CanStore && state.StoreCandidateItemId is not null)
-        {
-            return state.WithdrawCandidateItemId is not null
-                ? $"Storage selection: store {storeDisplayName}. Cannot take {withdrawDisplayName}: inventory is full."
-                : $"Storage selection: store {storeDisplayName}.";
-        }
-
-        if (state.CanWithdraw && state.WithdrawCandidateItemId is not null)
-        {
-            return state.StoreCandidateItemId is not null
-                ? $"Storage selection: take {withdrawDisplayName}. Cannot store {storeDisplayName}: storage is full."
-                : $"Storage selection: take {withdrawDisplayName}.";
-        }
-
-        if (state.StoreCandidateItemId is not null && state.WithdrawCandidateItemId is not null)
-        {
-            return $"Storage blocked: cannot store {storeDisplayName} (storage full) or take {withdrawDisplayName} (inventory full).";
-        }
-
-        if (state.StoreCandidateItemId is not null)
-        {
-            return $"Storage blocked: cannot store {storeDisplayName} (storage full).";
-        }
-
-        if (state.WithdrawCandidateItemId is not null)
-        {
-            return $"Storage blocked: cannot take {withdrawDisplayName} (inventory full).";
-        }
-
-        return "Storage open. Nothing to move.";
-    }
-
-    public static string BuildShopActionStatusMessage(
-        string actionMessage,
-        IReadOnlyList<ShopOffer> offers,
-        int selectedOfferIndex,
-        InventoryState inventory,
-        Wallet wallet,
-        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(actionMessage);
-        return $"{actionMessage} {BuildShopBrowseStatusMessage(offers, selectedOfferIndex, inventory, wallet, itemCatalog)}";
-    }
-
-    public static string BuildStorageActionStatusMessage(
-        string actionMessage,
-        InventoryState inventory,
-        InventoryState storage,
-        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(actionMessage);
-        return $"{actionMessage} {BuildStorageBrowseStatusMessage(inventory, storage, itemCatalog)}";
-    }
-
-    public static string BuildRequestBoardActionStatusMessage(
-        string actionMessage,
-        IReadOnlyList<RequestDefinition> requests,
-        ISet<string> completedRequestIds,
-        InventoryState inventory,
-        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(actionMessage);
-        ArgumentNullException.ThrowIfNull(requests);
-        ArgumentNullException.ThrowIfNull(completedRequestIds);
-        ArgumentNullException.ThrowIfNull(inventory);
-
-        var currentStatus = BuildRequestBoardStatusText(requests, completedRequestIds, inventory, itemCatalog);
-        if (!actionMessage.StartsWith("Completed request", StringComparison.Ordinal))
-        {
-            return currentStatus;
-        }
-
-        return $"{actionMessage} {currentStatus}";
-    }
-
-    public static string BuildShopPurchaseStatusMessage(
-        ShopOffer offer,
-        InventoryState inventory,
-        Wallet wallet,
-        bool changed,
-        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
-    {
-        ArgumentNullException.ThrowIfNull(offer);
-        ArgumentNullException.ThrowIfNull(inventory);
-        ArgumentNullException.ThrowIfNull(wallet);
-
-        var itemDisplayName = ItemDisplayNameFormatter.Resolve(offer.ItemId, itemCatalog);
-
-        if (changed)
-        {
-            return $"Bought 1 {itemDisplayName} for {offer.BuyPrice}g.";
-        }
-
-        if (!inventory.CanAdd(offer.ItemId, 1))
-        {
-            return $"Cannot buy {itemDisplayName}: inventory full.";
-        }
-
-        var missingGold = Math.Max(0, offer.BuyPrice - wallet.Gold);
-        if (missingGold > 0)
-        {
-            return $"Need {missingGold}g more to buy 1 {itemDisplayName}.";
-        }
-
-        return $"Cannot buy {itemDisplayName}.";
-    }
-
-    public static string BuildShopSellStatusMessage(
-        ShopOffer offer,
-        InventoryState inventory,
-        bool changed,
-        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
-    {
-        ArgumentNullException.ThrowIfNull(offer);
-        ArgumentNullException.ThrowIfNull(inventory);
-
-        var itemDisplayName = ItemDisplayNameFormatter.Resolve(offer.ItemId, itemCatalog);
-
-        if (changed)
-        {
-            return $"Sold 1 {itemDisplayName} for {offer.SellPrice}g.";
-        }
-
-        return inventory.GetQuantity(offer.ItemId) > 0
-            ? $"Cannot sell {itemDisplayName}."
-            : $"Cannot sell {itemDisplayName}: none available.";
-    }
-
-    public static string BuildStorageTransferStatusMessage(
-        string itemId,
-        bool changed,
-        bool intoStorage,
-        InventoryState source,
-        InventoryState destination,
-        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(itemId);
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(destination);
-
-        var itemDisplayName = ItemDisplayNameFormatter.Resolve(itemId, itemCatalog);
-
-        if (changed)
-        {
-            return intoStorage
-                ? $"Stored 1 {itemDisplayName}."
-                : $"Took 1 {itemDisplayName} from storage.";
-        }
-
-        if (source.GetQuantity(itemId) <= 0)
-        {
-            return intoStorage
-                ? $"Cannot store {itemDisplayName}: none available."
-                : $"Cannot take {itemDisplayName}: none available.";
-        }
-
-        if (!destination.CanAdd(itemId, 1))
-        {
-            return intoStorage
-                ? $"Cannot store {itemDisplayName}: storage is full."
-                : $"Cannot take {itemDisplayName}: inventory is full.";
-        }
-
-        return intoStorage
-            ? $"Cannot store {itemDisplayName}."
-            : $"Cannot take {itemDisplayName}.";
-    }
-
-    public static string BuildRequestBoardStatusText(
-        IReadOnlyList<RequestDefinition> requests,
-        ISet<string> completedRequestIds,
-        InventoryState inventory,
-        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
-    {
-        ArgumentNullException.ThrowIfNull(requests);
-        ArgumentNullException.ThrowIfNull(completedRequestIds);
-        ArgumentNullException.ThrowIfNull(inventory);
-
-        var nextRequest = requests.FirstOrDefault(request => !completedRequestIds.Contains(request.Id));
-        if (nextRequest is null)
-        {
-            return "All requests completed.";
-        }
-
-        var currentQuantity = inventory.GetQuantity(nextRequest.RequiredItemId);
-        var itemDisplayName = ItemDisplayNameFormatter.Resolve(nextRequest.RequiredItemId, itemCatalog);
-        if (currentQuantity >= nextRequest.RequiredQuantity)
-        {
-            return $"Request ready: {itemDisplayName} {currentQuantity}/{nextRequest.RequiredQuantity}. Click board to turn in.";
-        }
-
-        var remainingQuantity = nextRequest.RequiredQuantity - currentQuantity;
-        return $"Active request: {itemDisplayName} {currentQuantity}/{nextRequest.RequiredQuantity}. Need {remainingQuantity} more.";
-    }
+    private const int FarmActionStaminaCost = 5;
 
     public static bool TryHandleFarmPlotInteraction(
         FarmGrid farmGrid,
@@ -318,7 +130,9 @@ public partial class GameBootstrap
         IReadOnlyDictionary<string, CropDefinition> crops,
         int x,
         int y,
-        out string message)
+        out string message,
+        StaminaState? stamina = null,
+        Season? currentSeason = null)
     {
         ArgumentNullException.ThrowIfNull(farmGrid);
         ArgumentNullException.ThrowIfNull(inventory);
@@ -331,23 +145,30 @@ public partial class GameBootstrap
             return false;
         }
 
+        if (stamina is not null && stamina.Current < FarmActionStaminaCost)
+        {
+            message = "Too tired. Rest to restore stamina.";
+            return false;
+        }
+
         if (!plot.IsTilled)
         {
             farmGrid.SetPlot(plot.Till());
-            var cropToPlant = FindAutoPlantCrop(crops, inventory);
+            stamina?.TrySpend(FarmActionStaminaCost);
+            var cropToPlant = FindAutoPlantCrop(crops, inventory, currentSeason);
             message = cropToPlant is null
-                ? "Plot tilled. No seeds available."
+                ? $"Plot tilled. {NoSeedsMessage(crops, inventory, currentSeason)}"
                 : $"Plot tilled. Click again to plant {cropToPlant.DisplayName}.";
             return true;
         }
 
         if (plot.Crop is null)
         {
-            var cropToPlant = FindAutoPlantCrop(crops, inventory);
+            var cropToPlant = FindAutoPlantCrop(crops, inventory, currentSeason);
 
             if (cropToPlant is null)
             {
-                message = "No seeds available.";
+                message = NoSeedsMessage(crops, inventory, currentSeason);
                 return false;
             }
 
@@ -358,6 +179,7 @@ public partial class GameBootstrap
             }
 
             farmGrid.SetPlot(plot.Plant(cropToPlant.Id));
+            stamina?.TrySpend(FarmActionStaminaCost);
             message = $"Planted {cropToPlant.DisplayName}. Click again to water.";
             return true;
         }
@@ -375,12 +197,8 @@ public partial class GameBootstrap
                 return false;
             }
 
-            farmGrid.SetPlot(plot with
-            {
-                Crop = null,
-                IsWateredToday = false,
-                IsHarvestReady = false
-            });
+            farmGrid.SetPlot(plot.Harvest());
+            stamina?.TrySpend(FarmActionStaminaCost);
 
             message = $"Harvested {cropDefinition.DisplayName}.";
             return true;
@@ -389,6 +207,7 @@ public partial class GameBootstrap
         if (!plot.IsWateredToday)
         {
             farmGrid.SetPlot(plot.Water());
+            stamina?.TrySpend(FarmActionStaminaCost);
             message = $"Watered {cropDefinition.DisplayName}.";
             return true;
         }
@@ -397,16 +216,41 @@ public partial class GameBootstrap
         return false;
     }
 
-    private static CropDefinition? FindAutoPlantCrop(
+    public static CropDefinition? FindAutoPlantCrop(
+        IReadOnlyDictionary<string, CropDefinition> crops,
+        InventoryState inventory,
+        Season? currentSeason = null)
+    {
+        ArgumentNullException.ThrowIfNull(crops);
+        ArgumentNullException.ThrowIfNull(inventory);
+
+        return crops.Values
+            .Where(crop => currentSeason is null || crop.Season == currentSeason.Value)
+            .OrderBy(static crop => crop.DisplayName, StringComparer.Ordinal)
+            .FirstOrDefault(crop => inventory.GetQuantity(crop.SeedItemId) > 0);
+    }
+
+    public static bool HasAnySeeds(
         IReadOnlyDictionary<string, CropDefinition> crops,
         InventoryState inventory)
     {
         ArgumentNullException.ThrowIfNull(crops);
         ArgumentNullException.ThrowIfNull(inventory);
 
-        return crops.Values
-            .OrderBy(static crop => crop.DisplayName, StringComparer.Ordinal)
-            .FirstOrDefault(crop => inventory.GetQuantity(crop.SeedItemId) > 0);
+        return crops.Values.Any(crop => inventory.GetQuantity(crop.SeedItemId) > 0);
+    }
+
+    internal static string NoSeedsMessage(
+        IReadOnlyDictionary<string, CropDefinition> crops,
+        InventoryState inventory,
+        Season? currentSeason)
+    {
+        if (currentSeason is not null && HasAnySeeds(crops, inventory))
+        {
+            return $"No {currentSeason.Value} seeds available. Your seeds are for a different season.";
+        }
+
+        return "No seeds available.";
     }
 
     public static bool TryTransferItem(InventoryState source, InventoryState destination, string itemId, int quantity)
@@ -448,24 +292,6 @@ public partial class GameBootstrap
         InventoryState inventory,
         ISet<string> completedRequestIds,
         Wallet wallet,
-        out string message)
-    {
-        return TryCompleteNextRequest(
-            requests,
-            requestBoardService,
-            inventory,
-            completedRequestIds,
-            wallet,
-            itemCatalog: null,
-            out message);
-    }
-
-    public static bool TryCompleteNextRequest(
-        IReadOnlyList<RequestDefinition> requests,
-        RequestBoardService requestBoardService,
-        InventoryState inventory,
-        ISet<string> completedRequestIds,
-        Wallet wallet,
         IReadOnlyDictionary<string, ItemDefinition>? itemCatalog,
         out string message)
     {
@@ -475,7 +301,7 @@ public partial class GameBootstrap
         ArgumentNullException.ThrowIfNull(completedRequestIds);
         ArgumentNullException.ThrowIfNull(wallet);
 
-        var nextRequest = requests.FirstOrDefault(request => !completedRequestIds.Contains(request.Id));
+        var nextRequest = RequestBoardService.FindNextPendingRequest(requests, completedRequestIds);
         if (nextRequest is null)
         {
             message = "All requests completed.";

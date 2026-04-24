@@ -51,16 +51,14 @@ public sealed class InventoryStateTests
     }
 
     [Fact]
-    public void TryAdd_ReturnsFalseWhenNotAllItemsFit()
+    public void TryAdd_ReturnsFalseAndDoesNotMutateWhenNotAllItemsFit()
     {
         var inventory = new InventoryState(slotCapacity: 1, maxStackSize: 10);
 
         var addedAll = inventory.TryAdd("wood", 11);
 
         Assert.False(addedAll);
-        var stack = Assert.Single(inventory.Slots);
-        Assert.Equal("wood", stack.ItemId);
-        Assert.Equal(10, stack.Quantity);
+        Assert.Empty(inventory.Slots);
     }
 
     [Fact]

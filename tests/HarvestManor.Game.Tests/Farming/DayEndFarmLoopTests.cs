@@ -14,7 +14,7 @@ public sealed class DayEndFarmLoopTests
         var crop = new CropDefinition(
             "parsnip",
             "Parsnip",
-            "Spring",
+            Season.Spring,
             "parsnip_seed",
             "parsnip_crop",
             20,
@@ -30,10 +30,12 @@ public sealed class DayEndFarmLoopTests
         Assert.True(stamina.TrySpend(40));
         farmGrid.SetPlot(PlotState.Tilled(0, 0).Plant(crop.Id).Water());
 
-        var rolled = GameBootstrap.ProcessDayEnd(clock, stamina, growth, farmGrid);
+        var crops = new Dictionary<string, CropDefinition> { [crop.Id] = crop };
+        var result = GameBootstrap.ProcessDayEnd(clock, stamina, growth, farmGrid, crops);
         var nextPlot = farmGrid.GetPlot(0, 0);
 
-        Assert.True(rolled);
+        Assert.True(result.DayRolled);
+        Assert.False(result.SeasonChanged);
         Assert.Equal(new GameDate(Season.Spring, 2), clock.Date);
         Assert.Equal(6 * 60, clock.CurrentMinuteOfDay);
         Assert.Equal(1, nextPlot.Crop!.DaysGrown);
@@ -47,7 +49,7 @@ public sealed class DayEndFarmLoopTests
         var crop = new CropDefinition(
             "parsnip",
             "Parsnip",
-            "Spring",
+            Season.Spring,
             "parsnip_seed",
             "parsnip_crop",
             20,
@@ -63,10 +65,11 @@ public sealed class DayEndFarmLoopTests
         Assert.True(stamina.TrySpend(40));
         farmGrid.SetPlot(PlotState.Tilled(0, 0).Plant(crop.Id).Water());
 
-        var rolled = GameBootstrap.ProcessDayEnd(clock, stamina, growth, farmGrid, minutesToAdvance: 10);
+        var crops = new Dictionary<string, CropDefinition> { [crop.Id] = crop };
+        var result = GameBootstrap.ProcessDayEnd(clock, stamina, growth, farmGrid, crops, minutesToAdvance: 10);
         var sameDayPlot = farmGrid.GetPlot(0, 0);
 
-        Assert.False(rolled);
+        Assert.False(result.DayRolled);
         Assert.Equal(new GameDate(Season.Spring, 1), clock.Date);
         Assert.Equal((6 * 60) + 10, clock.CurrentMinuteOfDay);
         Assert.Equal(0, sameDayPlot.Crop!.DaysGrown);

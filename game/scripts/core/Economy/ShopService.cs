@@ -17,8 +17,8 @@ public sealed class ShopService
         }
 
         var snapshot = inventory.CreateSnapshot();
-        var totalCost = offer.BuyPrice * quantity;
-        if (!wallet.TrySpend(totalCost))
+        var totalCostLong = (long)offer.BuyPrice * quantity;
+        if (totalCostLong > int.MaxValue || !wallet.TrySpend((int)totalCostLong))
         {
             return false;
         }
@@ -29,7 +29,7 @@ public sealed class ShopService
         }
 
         inventory.RestoreSnapshot(snapshot);
-        wallet.Earn(totalCost);
+        wallet.Earn((int)totalCostLong);
         return false;
     }
 
@@ -45,7 +45,8 @@ public sealed class ShopService
             return false;
         }
 
-        wallet.Earn(offer.SellPrice * quantity);
+        var totalRevenueLong = (long)offer.SellPrice * quantity;
+        wallet.Earn(totalRevenueLong > int.MaxValue ? int.MaxValue : (int)totalRevenueLong);
         return true;
     }
 }

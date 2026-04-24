@@ -1,0 +1,35 @@
+[
+  {
+    "id": "melon",
+    "displayName": "Melon",
+    "season": "Summer",
+    "seedItemId": "melon_seed",
+    "harvestItemId": "melon_crop",
+    "purchasePrice": 80,
+    "sellPrice": 250,
+    "totalGrowthDays": 12,
+    "growthStageDays": [3, 4, 5]
+  },
+  {
+    "id": "tomato",
+    "displayName": "Tomato",
+    "season": "Summer",
+    "seedItemId": "tomato_seed",
+    "harvestItemId": "tomato_crop",
+    "purchasePrice": 50,
+    "sellPrice": 60,
+    "totalGrowthDays": 11,
+    "growthStageDays": [3, 4, 4]
+  },
+  {
+    "id": "corn",
+    "displayName": "Corn",
+    "season": "Summer",
+    "seedItemId": "corn_seed",
+    "harvestItemId": "corn_crop",
+    "purchasePrice": 150,
+    "sellPrice": 175,
+    "totalGrowthDays": 14,
+    "growthStageDays": [4, 4, 6]
+  }
+]

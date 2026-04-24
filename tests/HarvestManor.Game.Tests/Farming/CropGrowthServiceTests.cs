@@ -1,5 +1,6 @@
 using HarvestManor.Core.Content;
 using HarvestManor.Core.Farming;
+using HarvestManor.Core.Time;
 using Xunit;
 
 namespace HarvestManor.Game.Tests.Farming;
@@ -12,7 +13,7 @@ public sealed class CropGrowthServiceTests
         var crop = new CropDefinition(
             "parsnip",
             "Parsnip",
-            "Spring",
+            Season.Spring,
             "parsnip_seed",
             "parsnip_crop",
             20,
@@ -36,7 +37,7 @@ public sealed class CropGrowthServiceTests
         var crop = new CropDefinition(
             "parsnip",
             "Parsnip",
-            "Spring",
+            Season.Spring,
             "parsnip_seed",
             "parsnip_crop",
             20,

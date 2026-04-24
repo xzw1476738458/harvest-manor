@@ -60,6 +60,11 @@ public sealed class InventoryState
             return false;
         }
 
+        if (!CanAdd(itemId, quantity))
+        {
+            return false;
+        }
+
         for (var index = 0; index < _slots.Count && quantity > 0; index++)
         {
             var stack = _slots[index];
@@ -81,7 +86,7 @@ public sealed class InventoryState
             quantity -= nextQuantity;
         }
 
-        return quantity == 0;
+        return true;
     }
 
     public bool TryRemove(string itemId, int quantity)
@@ -145,7 +150,7 @@ public sealed class InventoryState
         foreach (var stack in source)
         {
             ArgumentNullException.ThrowIfNull(stack);
-            clone.Add(stack with { });
+            clone.Add(stack);
         }
 
         return clone;

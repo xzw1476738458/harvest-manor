@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Godot;
+using HarvestManor.Core;
 using HarvestManor.Core.Content;
 using HarvestManor.Core.Economy;
 using HarvestManor.Core.Farming;
@@ -20,15 +21,16 @@ public partial class GameBootstrap : Node2D
     private const int DefaultMaxStackSize = 99;
     private const int DefaultFarmWidth = 6;
     private const int DefaultFarmHeight = 6;
+    private const int DefaultStartingGold = 200;
+    private const int DefaultMaximumStamina = 100;
+    private const int DayStartMinute = 6 * 60;
+    private const int DayEndMinute = 26 * 60;
     private const string DemoExpansionPlotKey = "2,0";
     private const int DemoExpansionCost = 120;
 
     private static readonly string[] DefaultUnlockedPlotKeys = { "0,0", "1,0", "0,1", "1,1" };
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
+    private static readonly JsonSerializerOptions JsonOptions = JsonDefaults.ReadOptions;
 
     private readonly ContentCatalogLoader _loader = new();
     private readonly RequestBoardService _requestBoardService = new();
@@ -53,6 +55,7 @@ public partial class GameBootstrap : Node2D
     private StoragePanelController? _storagePanel;
     private Label? _farmStatusLabel;
     private Label? _requestStatusLabel;
+    private IReadOnlyList<ShopOffer> _allShopOffers = Array.Empty<ShopOffer>();
     private IReadOnlyList<ShopOffer> _shopOffers = Array.Empty<ShopOffer>();
     private IReadOnlyList<RequestDefinition> _requests = Array.Empty<RequestDefinition>();
     private int _selectedShopOfferIndex;
@@ -68,31 +71,47 @@ public partial class GameBootstrap : Node2D
         InventoryState Storage,
         FarmGrid FarmGrid);
 
-    public enum PanelMode
+    private static readonly string[] CropCatalogPaths =
     {
-        None,
-        Shop,
-        Storage
-    }
-
-    public readonly record struct PanelVisibility(bool InventoryVisible, bool ShopVisible, bool StorageVisible);
+        "res://data/crops/spring.json",
+        "res://data/crops/summer.json",
+        "res://data/crops/autumn.json",
+        "res://data/crops/winter.json"
+    };
 
     public override void _Ready()
     {
         var savePath = GetSaveSlotPath();
         var saveFileExists = File.Exists(savePath);
-        var cropCatalogJson = Godot.FileAccess.GetFileAsString("res://data/crops/spring.json");
-        var itemCatalogJson = Godot.FileAccess.GetFileAsString("res://data/items/items.json");
-        var shopCatalogJson = Godot.FileAccess.GetFileAsString("res://data/shops/general-store.json");
-        var requestCatalogJson = Godot.FileAccess.GetFileAsString("res://data/requests/request-board.json");
+        var allCrops = new List<CropDefinition>();
+        IReadOnlyList<ItemDefinition> items;
+        try
+        {
+            foreach (var cropPath in CropCatalogPaths)
+            {
+                var json = Godot.FileAccess.GetFileAsString(cropPath);
+                allCrops.AddRange(_loader.ParseCropCatalogJson(json, cropPath));
+            }
 
-        var crops = _loader.ParseCropCatalogJson(cropCatalogJson, "res://data/crops/spring.json");
-        var items = _loader.ParseItemCatalogJson(itemCatalogJson, "res://data/items/items.json");
-        _shopOffers = DeserializeList<ShopOffer>(shopCatalogJson, "res://data/shops/general-store.json");
-        _requests = DeserializeList<RequestDefinition>(requestCatalogJson, "res://data/requests/request-board.json");
+            var itemCatalogJson = Godot.FileAccess.GetFileAsString("res://data/items/items.json");
+            var shopCatalogJson = Godot.FileAccess.GetFileAsString("res://data/shops/general-store.json");
+            var requestCatalogJson = Godot.FileAccess.GetFileAsString("res://data/requests/request-board.json");
+
+            items = _loader.ParseItemCatalogJson(itemCatalogJson, "res://data/items/items.json");
+            _allShopOffers = DeserializeList<ShopOffer>(shopCatalogJson, "res://data/shops/general-store.json");
+            _requests = DeserializeList<RequestDefinition>(requestCatalogJson, "res://data/requests/request-board.json");
+
+            foreach (var offer in _allShopOffers) { offer.Validate(); }
+            foreach (var request in _requests) { request.Validate(); }
+        }
+        catch (Exception ex)
+        {
+            GD.PushError($"Failed to load game data: {ex.Message}");
+            return;
+        }
 
         _cropCatalog.Clear();
-        foreach (var crop in crops)
+        foreach (var crop in allCrops)
         {
             _cropCatalog[crop.Id] = crop;
         }
@@ -140,12 +159,15 @@ public partial class GameBootstrap : Node2D
         RenderFarmPlots();
         RenderPanels();
 
-        GD.Print($"Loaded {crops.Count} crops and {items.Count} items, {_shopOffers.Count} shop offers, and {_requests.Count} requests.");
+        _shopOffers = BuildSeasonShopOffers(_allShopOffers, _cropCatalog, _clock.Date.Season);
+        _selectedShopOfferIndex = 0;
+
+        GD.Print($"Loaded {allCrops.Count} crops and {items.Count} items, {_shopOffers.Count} shop offers, and {_requests.Count} requests.");
         GD.Print($"Day {_clock.Date.Day} of {_clock.Date.Season}, stamina {_stamina.Current}/{_stamina.Maximum}");
 
         RefreshHud();
         RefreshRequestBoardStatus();
-        SetFarmStatus(BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave, _farmGrid, _requests, _completedRequestIds, _inventory, _itemCatalog));
+        SetFarmStatus(StatusMessageBuilder.BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave, _farmGrid, _requests, _completedRequestIds, _inventory, _itemCatalog));
 
         if (ShouldAutosaveAfterBootstrap(saveFileExists, loadedExistingSave, hasMeaningfulStateChanges: false))
         {

@@ -1,11 +1,13 @@
 using System.Linq;
+using System.Text.Json.Serialization;
+using HarvestManor.Core.Time;
 
 namespace HarvestManor.Core.Content;
 
 public sealed record CropDefinition(
     string Id,
     string DisplayName,
-    string Season,
+    [property: JsonConverter(typeof(JsonStringEnumConverter<Season>))] Season Season,
     string SeedItemId,
     string HarvestItemId,
     int PurchasePrice,
@@ -23,11 +25,6 @@ public sealed record CropDefinition(
         if (string.IsNullOrWhiteSpace(DisplayName))
         {
             throw new InvalidDataException($"Crop '{Id}' has an empty display name.");
-        }
-
-        if (string.IsNullOrWhiteSpace(Season))
-        {
-            throw new InvalidDataException($"Crop '{Id}' has an empty season.");
         }
 
         if (string.IsNullOrWhiteSpace(SeedItemId))

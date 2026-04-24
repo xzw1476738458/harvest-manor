@@ -1,17 +1,24 @@
+using HarvestManor.Core.Economy;
+
 namespace HarvestManor.Core.Progression;
 
 public sealed class FarmExpansionService
 {
-    public bool TryUnlockPlot(UnlockState unlocks, string plotKey, int requiredGold, int currentGold, out int updatedGold)
+    public bool TryUnlockPlot(UnlockState unlocks, string plotKey, int requiredGold, Wallet wallet)
     {
-        if (currentGold < requiredGold || unlocks.UnlockedPlotKeys.Contains(plotKey))
+        ArgumentNullException.ThrowIfNull(unlocks);
+        ArgumentNullException.ThrowIfNull(wallet);
+
+        if (unlocks.Contains(plotKey))
         {
-            updatedGold = currentGold;
             return false;
         }
 
-        unlocks.UnlockedPlotKeys.Add(plotKey);
-        updatedGold = currentGold - requiredGold;
-        return true;
+        if (!wallet.TrySpend(requiredGold))
+        {
+            return false;
+        }
+
+        return unlocks.TryUnlock(plotKey);
     }
 }

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "pumpkin",
+    "displayName": "Pumpkin",
+    "season": "Autumn",
+    "seedItemId": "pumpkin_seed",
+    "harvestItemId": "pumpkin_crop",
+    "purchasePrice": 100,
+    "sellPrice": 320,
+    "totalGrowthDays": 13,
+    "growthStageDays": [3, 5, 5]
+  },
+  {
+    "id": "yam",
+    "displayName": "Yam",
+    "season": "Autumn",
+    "seedItemId": "yam_seed",
+    "harvestItemId": "yam_crop",
+    "purchasePrice": 60,
+    "sellPrice": 160,
+    "totalGrowthDays": 10,
+    "growthStageDays": [3, 3, 4]
+  },
+  {
+    "id": "cranberry",
+    "displayName": "Cranberry",
+    "season": "Autumn",
+    "seedItemId": "cranberry_seed",
+    "harvestItemId": "cranberry_crop",
+    "purchasePrice": 240,
+    "sellPrice": 130,
+    "totalGrowthDays": 7,
+    "growthStageDays": [2, 2, 3]
+  }
+]

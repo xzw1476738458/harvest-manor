@@ -1,3 +1,10 @@
 [
-  { "id": "ship_5_parsnips", "requiredItemId": "parsnip_crop", "requiredQuantity": 5, "rewardGold": 120 }
+  { "id": "ship_5_parsnips", "requiredItemId": "parsnip_crop", "requiredQuantity": 5, "rewardGold": 120 },
+  { "id": "ship_3_potatoes", "requiredItemId": "potato_crop", "requiredQuantity": 3, "rewardGold": 200 },
+  { "id": "ship_2_melons", "requiredItemId": "melon_crop", "requiredQuantity": 2, "rewardGold": 400 },
+  { "id": "ship_5_tomatoes", "requiredItemId": "tomato_crop", "requiredQuantity": 5, "rewardGold": 250 },
+  { "id": "ship_3_pumpkins", "requiredItemId": "pumpkin_crop", "requiredQuantity": 3, "rewardGold": 800 },
+  { "id": "ship_4_yams", "requiredItemId": "yam_crop", "requiredQuantity": 4, "rewardGold": 500 },
+  { "id": "ship_5_winter_roots", "requiredItemId": "winter_root_crop", "requiredQuantity": 5, "rewardGold": 280 },
+  { "id": "ship_1_crystal_fruit", "requiredItemId": "crystal_fruit_crop", "requiredQuantity": 1, "rewardGold": 300 }
 ]

@@ -45,6 +45,40 @@ public sealed class ProjectConfigurationTests
     }
 
     [Fact]
+    public void ProjectGodot_ConfiguresWidescreenCanvasStretchForPresentation()
+    {
+        var projectContents = File.ReadAllText(FindFileInRepo("game", "project.godot"));
+
+        Assert.Equal(
+            "1280",
+            ExtractFirstMatch(
+                projectContents,
+                "window/size/viewport_width=(?<value>\\d+)",
+                "value"));
+
+        Assert.Equal(
+            "720",
+            ExtractFirstMatch(
+                projectContents,
+                "window/size/viewport_height=(?<value>\\d+)",
+                "value"));
+
+        Assert.Equal(
+            "canvas_items",
+            ExtractFirstMatch(
+                projectContents,
+                "window/stretch/mode=\"(?<value>[^\"]+)\"",
+                "value"));
+
+        Assert.Equal(
+            "keep",
+            ExtractFirstMatch(
+                projectContents,
+                "window/stretch/aspect=\"(?<value>[^\"]+)\"",
+                "value"));
+    }
+
+    [Fact]
     public void BuiltGameAssembly_ContainsGameBootstrapType()
     {
         var assemblyPath = FindFileInRepo(

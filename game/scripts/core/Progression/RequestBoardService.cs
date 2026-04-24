@@ -4,6 +4,16 @@ namespace HarvestManor.Core.Progression;
 
 public sealed class RequestBoardService
 {
+    public static RequestDefinition? FindNextPendingRequest(
+        IReadOnlyList<RequestDefinition> requests,
+        ISet<string> completedRequestIds)
+    {
+        ArgumentNullException.ThrowIfNull(requests);
+        ArgumentNullException.ThrowIfNull(completedRequestIds);
+
+        return requests.FirstOrDefault(request => !completedRequestIds.Contains(request.Id));
+    }
+
     public bool TryComplete(
         RequestDefinition request,
         InventoryState inventory,

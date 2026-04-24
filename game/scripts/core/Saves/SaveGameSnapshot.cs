@@ -8,8 +8,8 @@ public sealed record SaveGameSnapshot(
     int MinuteOfDay,
     int Gold,
     int Stamina,
-    List<ItemStack> Inventory,
-    List<ItemStack> Storage,
-    List<PlotSnapshot> Plots,
-    List<string> UnlockedPlotKeys,
-    List<string> CompletedRequests);
+    IReadOnlyList<ItemStack> Inventory,
+    IReadOnlyList<ItemStack> Storage,
+    IReadOnlyList<PlotSnapshot> Plots,
+    IReadOnlyList<string> UnlockedPlotKeys,
+    IReadOnlyList<string> CompletedRequests);

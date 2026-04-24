@@ -43,6 +43,10 @@ public sealed class FarmGrid
         _plots[(plot.X, plot.Y)] = plot;
     }
 
+    public int Width => _width;
+
+    public int Height => _height;
+
     public IReadOnlyCollection<PlotState> AllPlots => _plots.Values;
 
     private void EnsureInBounds(int x, int y)

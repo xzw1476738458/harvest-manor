@@ -1,6 +1,22 @@
 [
   { "itemId": "parsnip_seed", "buyPrice": 20, "sellPrice": 10 },
   { "itemId": "potato_seed", "buyPrice": 45, "sellPrice": 22 },
+  { "itemId": "melon_seed", "buyPrice": 80, "sellPrice": 40 },
+  { "itemId": "tomato_seed", "buyPrice": 50, "sellPrice": 25 },
+  { "itemId": "corn_seed", "buyPrice": 150, "sellPrice": 75 },
+  { "itemId": "pumpkin_seed", "buyPrice": 100, "sellPrice": 50 },
+  { "itemId": "yam_seed", "buyPrice": 60, "sellPrice": 30 },
+  { "itemId": "cranberry_seed", "buyPrice": 240, "sellPrice": 120 },
+  { "itemId": "winter_root_seed", "buyPrice": 30, "sellPrice": 15 },
+  { "itemId": "crystal_fruit_seed", "buyPrice": 200, "sellPrice": 100 },
   { "itemId": "parsnip_crop", "buyPrice": 0, "sellPrice": 35 },
-  { "itemId": "potato_crop", "buyPrice": 0, "sellPrice": 80 }
+  { "itemId": "potato_crop", "buyPrice": 0, "sellPrice": 80 },
+  { "itemId": "melon_crop", "buyPrice": 0, "sellPrice": 250 },
+  { "itemId": "tomato_crop", "buyPrice": 0, "sellPrice": 60 },
+  { "itemId": "corn_crop", "buyPrice": 0, "sellPrice": 175 },
+  { "itemId": "pumpkin_crop", "buyPrice": 0, "sellPrice": 320 },
+  { "itemId": "yam_crop", "buyPrice": 0, "sellPrice": 160 },
+  { "itemId": "cranberry_crop", "buyPrice": 0, "sellPrice": 130 },
+  { "itemId": "winter_root_crop", "buyPrice": 0, "sellPrice": 70 },
+  { "itemId": "crystal_fruit_crop", "buyPrice": 0, "sellPrice": 350 }
 ]

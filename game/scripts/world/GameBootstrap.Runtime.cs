@@ -29,7 +29,7 @@ public partial class GameBootstrap
             }
         }
 
-        _farmStatusLabel = farmScene.GetNodeOrNull<Label>("FarmStatusLabel");
+        _farmStatusLabel = farmScene.GetNodeOrNull<Label>("FarmStatusPanel/Margin/Content/FarmStatusLabel");
 
         var bed = farmScene.GetNodeOrNull<BedInteraction>("Bed");
         if (bed is null)
@@ -45,7 +45,7 @@ public partial class GameBootstrap
 
     private void WireTownScene(Node townScene)
     {
-        _requestStatusLabel = townScene.GetNodeOrNull<Label>("RequestStatusLabel");
+        _requestStatusLabel = townScene.GetNodeOrNull<Label>("RequestStatusPanel/Margin/Content/RequestStatusLabel");
 
         var shop = townScene.GetNodeOrNull<ShopInteraction>("Shop");
         if (shop is null)
@@ -117,26 +117,26 @@ public partial class GameBootstrap
 
         PreviewFarmStatus(
             BlocksWorldInteractions(_activePanelMode)
-                ? BuildBlockedWorldInteractionMessage(_activePanelMode)
-                : BuildFarmPlotHoverStatusMessage(_farmGrid.GetPlot(gridX, gridY), _cropCatalog, _inventory, _wallet?.Gold));
+                ? StatusMessageBuilder.BuildBlockedWorldInteractionMessage(_activePanelMode)
+                : StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(_farmGrid.GetPlot(gridX, gridY), _cropCatalog, _inventory, _wallet?.Gold, _clock?.Date.Season, DemoExpansionPlotKey, DemoExpansionCost));
     }
 
     private void OnWorldInteractionHovered(string interactionName, string actionDescription, PanelMode requestedMode = PanelMode.None)
     {
         PreviewFarmStatus(
             BlocksWorldInteractions(_activePanelMode)
-                ? BuildBlockedWorldInteractionMessage(_activePanelMode, requestedMode)
-                : BuildInteractionHoverStatusMessage(interactionName, actionDescription));
+                ? StatusMessageBuilder.BuildBlockedWorldInteractionMessage(_activePanelMode, requestedMode)
+                : StatusMessageBuilder.BuildInteractionHoverStatusMessage(interactionName, actionDescription));
     }
 
     private void OnRequestBoardHovered()
     {
         PreviewFarmStatus(
             BlocksWorldInteractions(_activePanelMode)
-                ? BuildBlockedWorldInteractionMessage(_activePanelMode)
+                ? StatusMessageBuilder.BuildBlockedWorldInteractionMessage(_activePanelMode)
                 : _inventory is null
-                    ? BuildInteractionHoverStatusMessage("request board", "turn in crops")
-                    : BuildRequestBoardHoverStatusMessage(_requests, _completedRequestIds, _inventory, _itemCatalog));
+                    ? StatusMessageBuilder.BuildInteractionHoverStatusMessage("request board", "turn in crops")
+                    : StatusMessageBuilder.BuildRequestBoardHoverStatusMessage(_requests, _completedRequestIds, _inventory, _itemCatalog));
     }
 
     private void OnWorldInteractionHoverEnded()
@@ -186,24 +186,25 @@ public partial class GameBootstrap
         }
 
         var plot = _farmGrid.GetPlot(gridX, gridY);
-        var updatedGold = _wallet.Gold;
         string message;
         bool changed;
 
         if (plot.IsLocked)
         {
-            changed = TryHandleLockedPlotInteraction(_expansionService, _unlockState, _wallet.Gold, gridX, gridY, out updatedGold, out message);
+            changed = TryHandleLockedPlotInteraction(_expansionService, _unlockState, _wallet, gridX, gridY, out message);
+            if (changed)
+            {
+                SyncFarmGridLocksFromUnlockState(_farmGrid, _unlockState);
+                RefreshHud();
+            }
         }
         else
         {
-            changed = TryHandleFarmPlotInteraction(_farmGrid, _inventory, _cropCatalog, gridX, gridY, out message);
-        }
-
-        if (plot.IsLocked && changed)
-        {
-            _wallet = new Wallet(updatedGold);
-            SyncFarmGridLocksFromUnlockState(_farmGrid, _unlockState);
-            RefreshHud();
+            changed = TryHandleFarmPlotInteraction(_farmGrid, _inventory, _cropCatalog, gridX, gridY, out message, _stamina, _clock?.Date.Season);
+            if (changed)
+            {
+                RefreshHud();
+            }
         }
 
         SetFarmStatus(message);
@@ -231,16 +232,12 @@ public partial class GameBootstrap
         }
 
         var nextMode = ResolvePanelModeAfterInteractionRequest(_activePanelMode, PanelMode.Shop);
-        if (nextMode == PanelMode.Shop)
-        {
-            _ = TryApplyShopOpenSideEffects(_inventory, _wallet, _shopOffers);
-        }
 
         RenderPanels();
         SetActivePanelMode(nextMode);
         if (nextMode == PanelMode.Shop)
         {
-            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
+            SetPanelContextFarmStatus(StatusMessageBuilder.BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
         }
     }
 
@@ -257,7 +254,7 @@ public partial class GameBootstrap
         SetActivePanelMode(nextMode);
         if (nextMode == PanelMode.Storage && _inventory is not null && _storage is not null)
         {
-            SetPanelContextFarmStatus(BuildStorageBrowseStatusMessage(_inventory, _storage, _itemCatalog));
+            SetPanelContextFarmStatus(StatusMessageBuilder.BuildStorageBrowseStatusMessage(_inventory, _storage, _itemCatalog));
         }
     }
 
@@ -276,7 +273,7 @@ public partial class GameBootstrap
 
         var changed = TryCompleteNextRequest(_requests, _requestBoardService, _inventory, _completedRequestIds, _wallet, _itemCatalog, out var message);
         RefreshRequestBoardStatus();
-        SetFarmStatus(BuildRequestBoardActionStatusMessage(message, _requests, _completedRequestIds, _inventory, _itemCatalog));
+        SetFarmStatus(StatusMessageBuilder.BuildRequestBoardActionStatusMessage(message, _requests, _completedRequestIds, _inventory, _itemCatalog));
         RenderPanels();
 
         if (changed)
@@ -300,8 +297,8 @@ public partial class GameBootstrap
             Autosave();
         }
 
-        var actionMessage = BuildShopPurchaseStatusMessage(offer, _inventory, _wallet, changed, _itemCatalog);
-        SetPanelContextFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
+        var actionMessage = StatusMessageBuilder.BuildShopPurchaseStatusMessage(offer, _inventory, _wallet, changed, _itemCatalog);
+        SetPanelContextFarmStatus(StatusMessageBuilder.BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -320,8 +317,8 @@ public partial class GameBootstrap
             Autosave();
         }
 
-        var actionMessage = BuildShopSellStatusMessage(offer, _inventory, changed, _itemCatalog);
-        SetPanelContextFarmStatus(BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
+        var actionMessage = StatusMessageBuilder.BuildShopSellStatusMessage(offer, _inventory, changed, _itemCatalog);
+        SetPanelContextFarmStatus(StatusMessageBuilder.BuildShopActionStatusMessage(actionMessage, _shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -337,7 +334,7 @@ public partial class GameBootstrap
         RenderPanels();
         if (_inventory is not null && _wallet is not null)
         {
-            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
+            SetPanelContextFarmStatus(StatusMessageBuilder.BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
         }
     }
 
@@ -352,7 +349,7 @@ public partial class GameBootstrap
         RenderPanels();
         if (_inventory is not null && _wallet is not null)
         {
-            SetPanelContextFarmStatus(BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
+            SetPanelContextFarmStatus(StatusMessageBuilder.BuildShopBrowseStatusMessage(_shopOffers, _selectedShopOfferIndex, _inventory, _wallet, _itemCatalog));
         }
     }
 
@@ -374,8 +371,8 @@ public partial class GameBootstrap
             Autosave();
         }
 
-        var actionMessage = BuildStorageTransferStatusMessage(itemId, changed, intoStorage: true, _inventory, _storage, _itemCatalog);
-        SetPanelContextFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage, _itemCatalog));
+        var actionMessage = StatusMessageBuilder.BuildStorageTransferStatusMessage(itemId, changed, intoStorage: true, _inventory, _storage, _itemCatalog);
+        SetPanelContextFarmStatus(StatusMessageBuilder.BuildStorageActionStatusMessage(actionMessage, _inventory, _storage, _itemCatalog));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -393,8 +390,8 @@ public partial class GameBootstrap
             Autosave();
         }
 
-        var actionMessage = BuildStorageTransferStatusMessage(itemId, changed, intoStorage: false, _storage, _inventory, _itemCatalog);
-        SetPanelContextFarmStatus(BuildStorageActionStatusMessage(actionMessage, _inventory, _storage, _itemCatalog));
+        var actionMessage = StatusMessageBuilder.BuildStorageTransferStatusMessage(itemId, changed, intoStorage: false, _storage, _inventory, _itemCatalog);
+        SetPanelContextFarmStatus(StatusMessageBuilder.BuildStorageActionStatusMessage(actionMessage, _inventory, _storage, _itemCatalog));
         RenderPanels();
         RefreshRequestBoardStatus();
     }
@@ -411,12 +408,11 @@ public partial class GameBootstrap
             return false;
         }
 
-        if (!_expansionService.TryUnlockPlot(_unlockState, plotKey, requiredGold, _wallet.Gold, out var updatedGold))
+        if (!_expansionService.TryUnlockPlot(_unlockState, plotKey, requiredGold, _wallet))
         {
             return false;
         }
 
-        _wallet = new Wallet(updatedGold);
         if (_farmGrid is not null)
         {
             SyncFarmGridLocksFromUnlockState(_farmGrid, _unlockState);
@@ -458,14 +454,26 @@ public partial class GameBootstrap
             return;
         }
 
-        var rolled = ProcessDayEnd(_clock, _stamina, _growth, _farmGrid);
-        if (rolled)
+        var result = ProcessDayEnd(_clock, _stamina, _growth, _farmGrid, _cropCatalog);
+        if (!result.DayRolled)
         {
-            RefreshHud();
-            RenderFarmPlots();
-            SetFarmStatus(BuildDayStartFarmStatusMessage(_farmGrid, _requests, _completedRequestIds, _inventory, _itemCatalog));
-            Autosave();
+            return;
         }
+
+        if (result.SeasonChanged)
+        {
+            _shopOffers = BuildSeasonShopOffers(_allShopOffers, _cropCatalog, result.CurrentSeason);
+            _selectedShopOfferIndex = 0;
+            RenderPanels();
+        }
+
+        RefreshHud();
+        RenderFarmPlots();
+        SetFarmStatus(StatusMessageBuilder.BuildDayStartFarmStatusMessage(
+            _farmGrid, _requests, _completedRequestIds, _inventory, _itemCatalog,
+            result.SeasonChanged ? result.CurrentSeason : null,
+            result.CropsWithered));
+        Autosave();
     }
 
     private void SetActivePanelMode(PanelMode mode)
@@ -476,7 +484,7 @@ public partial class GameBootstrap
 
         if (mode == PanelMode.None && previousMode != PanelMode.None)
         {
-            SetFarmStatus(BuildPanelCloseStatusMessage(previousMode, _latestPanelContextFarmStatusMessage));
+            SetFarmStatus(StatusMessageBuilder.BuildPanelCloseStatusMessage(previousMode, _latestPanelContextFarmStatusMessage));
             _latestPanelContextFarmStatusMessage = string.Empty;
             return;
         }
@@ -486,7 +494,7 @@ public partial class GameBootstrap
             _latestPanelContextFarmStatusMessage = string.Empty;
         }
 
-        var statusMessage = BuildPanelModeStatusMessage(previousMode, mode);
+        var statusMessage = StatusMessageBuilder.BuildPanelModeStatusMessage(previousMode, mode);
         if (!string.IsNullOrWhiteSpace(statusMessage))
         {
             SetFarmStatus(statusMessage);
@@ -568,7 +576,7 @@ public partial class GameBootstrap
             return;
         }
 
-        _requestStatusLabel.Text = BuildRequestBoardStatusText(_requests, _completedRequestIds, _inventory, _itemCatalog);
+        _requestStatusLabel.Text = StatusMessageBuilder.BuildRequestBoardStatusText(_requests, _completedRequestIds, _inventory, _itemCatalog);
     }
 
     private void SetFarmStatus(string message)
@@ -608,7 +616,7 @@ public partial class GameBootstrap
 
     private bool TryNotifyBlockedWorldInteraction(PanelMode requestedMode = PanelMode.None)
     {
-        var message = BuildBlockedWorldInteractionMessage(_activePanelMode, requestedMode);
+        var message = StatusMessageBuilder.BuildBlockedWorldInteractionMessage(_activePanelMode, requestedMode);
         if (string.IsNullOrWhiteSpace(message))
         {
             return false;

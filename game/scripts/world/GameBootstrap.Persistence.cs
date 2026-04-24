@@ -14,12 +14,17 @@ namespace HarvestManor.World;
 
 public partial class GameBootstrap
 {
-    internal static (int CropCount, int ItemCount) LoadCatalogCounts(string cropCatalogJson, string itemCatalogJson)
+    internal static (int CropCount, int ItemCount) LoadCatalogCounts(IReadOnlyList<string> cropCatalogJsons, string itemCatalogJson)
     {
         var loader = new ContentCatalogLoader();
-        var crops = loader.ParseCropCatalogJson(cropCatalogJson, "res://data/crops/spring.json");
+        var totalCrops = 0;
+        foreach (var json in cropCatalogJsons)
+        {
+            totalCrops += loader.ParseCropCatalogJson(json, "inline").Count;
+        }
+
         var items = loader.ParseItemCatalogJson(itemCatalogJson, "res://data/items/items.json");
-        return (crops.Count, items.Count);
+        return (totalCrops, items.Count);
     }
 
     public static bool ShouldAutosaveAfterBootstrap(bool saveFileExists, bool loadedExistingSave, bool hasMeaningfulStateChanges)
@@ -36,7 +41,7 @@ public partial class GameBootstrap
     public static bool IsPlotUnlocked(UnlockState unlockState, int x, int y)
     {
         ArgumentNullException.ThrowIfNull(unlockState);
-        return unlockState.UnlockedPlotKeys.Contains(BuildPlotKey(x, y));
+        return unlockState.Contains(BuildPlotKey(x, y));
     }
 
     public static void SyncFarmGridLocksFromUnlockState(FarmGrid farmGrid, UnlockState unlockState)
@@ -101,14 +106,10 @@ public partial class GameBootstrap
         ArgumentNullException.ThrowIfNull(unlockState);
         ArgumentNullException.ThrowIfNull(completedRequestIds);
 
-        unlockState.UnlockedPlotKeys.Clear();
         var restoredPlotKeys = snapshot.UnlockedPlotKeys.Count > 0
             ? snapshot.UnlockedPlotKeys
-            : DefaultUnlockedPlotKeys.ToList();
-        foreach (var plotKey in restoredPlotKeys.Distinct(StringComparer.Ordinal))
-        {
-            unlockState.UnlockedPlotKeys.Add(plotKey);
-        }
+            : DefaultUnlockedPlotKeys;
+        unlockState.Reset(restoredPlotKeys);
 
         completedRequestIds.Clear();
         foreach (var requestId in snapshot.CompletedRequests.Distinct(StringComparer.Ordinal))
@@ -130,7 +131,7 @@ public partial class GameBootstrap
 
         SyncFarmGridLocksFromUnlockState(farmGrid, unlockState);
 
-        var clock = new DayClock(snapshot.Date, 6 * 60, 26 * 60);
+        var clock = new DayClock(snapshot.Date, DayStartMinute, DayEndMinute);
         if (snapshot.MinuteOfDay > clock.CurrentMinuteOfDay)
         {
             clock.AdvanceMinutes(snapshot.MinuteOfDay - clock.CurrentMinuteOfDay);
@@ -138,7 +139,7 @@ public partial class GameBootstrap
 
         return new RuntimeState(
             clock,
-            new StaminaState(maximum: 100, current: snapshot.Stamina),
+            new StaminaState(maximum: DefaultMaximumStamina, current: snapshot.Stamina),
             new Wallet(snapshot.Gold),
             inventory,
             storage,
@@ -206,11 +207,7 @@ public partial class GameBootstrap
 
     private RuntimeState CreateDefaultRuntimeState()
     {
-        _unlockState.UnlockedPlotKeys.Clear();
-        foreach (var plotKey in DefaultUnlockedPlotKeys)
-        {
-            _unlockState.UnlockedPlotKeys.Add(plotKey);
-        }
+        _unlockState.Reset(DefaultUnlockedPlotKeys);
 
         _completedRequestIds.Clear();
 
@@ -224,9 +221,9 @@ public partial class GameBootstrap
         SyncFarmGridLocksFromUnlockState(farmGrid, _unlockState);
 
         return new RuntimeState(
-            new DayClock(new GameDate(Season.Spring, 1), 6 * 60, 26 * 60),
-            new StaminaState(maximum: 100, current: 100),
-            new Wallet(200),
+            new DayClock(new GameDate(Season.Spring, 1), DayStartMinute, DayEndMinute),
+            new StaminaState(maximum: DefaultMaximumStamina, current: DefaultMaximumStamina),
+            new Wallet(DefaultStartingGold),
             inventory,
             storage,
             farmGrid);

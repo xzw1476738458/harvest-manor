@@ -18,10 +18,10 @@ public partial class HudController : CanvasLayer
 
     public override void _Ready()
     {
-        DayLabel ??= GetNodeOrNull<Label>("Panel/Rows/DayLabel");
-        GoldLabel ??= GetNodeOrNull<Label>("Panel/Rows/GoldLabel");
-        StaminaLabel ??= GetNodeOrNull<Label>("Panel/Rows/StaminaLabel");
-        GrowthLabel ??= GetNodeOrNull<Label>("Panel/Rows/GrowthLabel");
+        DayLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/DayLabel");
+        GoldLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/GoldLabel");
+        StaminaLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/StaminaLabel");
+        GrowthLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/GrowthLabel");
     }
 
     public void SetDay(string text)

@@ -42,21 +42,4 @@ public sealed class RewardFlowTests
         Assert.False(shouldAutosave);
     }
 
-    [Fact]
-    public void TryApplyShopOpenSideEffects_DoesNotMutateWalletOrInventory()
-    {
-        var inventory = new InventoryState(12, 99);
-        Assert.True(inventory.TryAdd("parsnip_seed", 4));
-        var wallet = new Wallet(200);
-        var offers = new List<ShopOffer>
-        {
-            new("parsnip_seed", BuyPrice: 20, SellPrice: 10)
-        };
-
-        var changed = GameBootstrap.TryApplyShopOpenSideEffects(inventory, wallet, offers);
-
-        Assert.False(changed);
-        Assert.Equal(200, wallet.Gold);
-        Assert.Equal(4, inventory.GetQuantity("parsnip_seed"));
-    }
 }

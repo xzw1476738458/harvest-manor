@@ -12,7 +12,7 @@ public partial class InventoryPanelController : Control
 
     public override void _Ready()
     {
-        BodyLabel ??= GetNodeOrNull<RichTextLabel>("Panel/BodyLabel");
+        BodyLabel ??= GetNodeOrNull<RichTextLabel>("Panel/Rows/BodyLabel");
     }
 
     public void Render(InventoryState inventory, IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)

@@ -3,6 +3,26 @@
   { "id": "parsnip_crop", "displayName": "Parsnip", "category": "Crop", "maxStack": 99 },
   { "id": "potato_seed", "displayName": "Potato Seeds", "category": "Seed", "maxStack": 99 },
   { "id": "potato_crop", "displayName": "Potato", "category": "Crop", "maxStack": 99 },
+
+  { "id": "melon_seed", "displayName": "Melon Seeds", "category": "Seed", "maxStack": 99 },
+  { "id": "melon_crop", "displayName": "Melon", "category": "Crop", "maxStack": 99 },
+  { "id": "tomato_seed", "displayName": "Tomato Seeds", "category": "Seed", "maxStack": 99 },
+  { "id": "tomato_crop", "displayName": "Tomato", "category": "Crop", "maxStack": 99 },
+  { "id": "corn_seed", "displayName": "Corn Seeds", "category": "Seed", "maxStack": 99 },
+  { "id": "corn_crop", "displayName": "Corn", "category": "Crop", "maxStack": 99 },
+
+  { "id": "pumpkin_seed", "displayName": "Pumpkin Seeds", "category": "Seed", "maxStack": 99 },
+  { "id": "pumpkin_crop", "displayName": "Pumpkin", "category": "Crop", "maxStack": 99 },
+  { "id": "yam_seed", "displayName": "Yam Seeds", "category": "Seed", "maxStack": 99 },
+  { "id": "yam_crop", "displayName": "Yam", "category": "Crop", "maxStack": 99 },
+  { "id": "cranberry_seed", "displayName": "Cranberry Seeds", "category": "Seed", "maxStack": 99 },
+  { "id": "cranberry_crop", "displayName": "Cranberry", "category": "Crop", "maxStack": 99 },
+
+  { "id": "winter_root_seed", "displayName": "Winter Root Seeds", "category": "Seed", "maxStack": 99 },
+  { "id": "winter_root_crop", "displayName": "Winter Root", "category": "Crop", "maxStack": 99 },
+  { "id": "crystal_fruit_seed", "displayName": "Crystal Fruit Seeds", "category": "Seed", "maxStack": 99 },
+  { "id": "crystal_fruit_crop", "displayName": "Crystal Fruit", "category": "Crop", "maxStack": 99 },
+
   { "id": "wood", "displayName": "Wood", "category": "Material", "maxStack": 99 },
   { "id": "stone", "displayName": "Stone", "category": "Material", "maxStack": 99 }
 ]
