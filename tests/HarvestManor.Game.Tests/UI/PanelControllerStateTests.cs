@@ -17,8 +17,8 @@ public sealed class PanelControllerStateTests
 
         var bodyText = InventoryPanelController.BuildBodyText(inventory, CreateItemCatalog());
 
-        Assert.Contains("Parsnip Seeds x2", bodyText);
-        Assert.Contains("Wood x1", bodyText);
+        Assert.Contains("Parsnip Seeds [color=#c8a864]x2[/color]", bodyText);
+        Assert.Contains("Wood [color=#c8a864]x1[/color]", bodyText);
         Assert.DoesNotContain("parsnip_seed", bodyText);
     }
 
@@ -147,8 +147,8 @@ public sealed class PanelControllerStateTests
             wallet,
             CreateItemCatalog());
 
-        Assert.Contains("Item: Parsnip Seeds", bodyText);
-        Assert.DoesNotContain("Item: parsnip_seed", bodyText);
+        Assert.Contains("Item:[/b] Parsnip Seeds", bodyText);
+        Assert.DoesNotContain("parsnip_seed", bodyText);
     }
 
     [Fact]
@@ -209,8 +209,8 @@ public sealed class PanelControllerStateTests
         var itemCatalog = CreateItemCatalog();
         var bodyText = StoragePanelController.BuildBodyText(inventory, storage, itemCatalog);
 
-        Assert.Contains("Parsnip Seeds x2", bodyText);
-        Assert.Contains("Potato x1", bodyText);
+        Assert.Contains("Parsnip Seeds [color=#c8a864]x2[/color]", bodyText);
+        Assert.Contains("Potato [color=#c8a864]x1[/color]", bodyText);
         Assert.Equal("Store 1 Parsnip Seeds", StoragePanelController.BuildStoreButtonText(state, itemCatalog));
         Assert.Equal("Take 1 Potato", StoragePanelController.BuildWithdrawButtonText(state, itemCatalog));
         Assert.DoesNotContain("parsnip_seed", bodyText);

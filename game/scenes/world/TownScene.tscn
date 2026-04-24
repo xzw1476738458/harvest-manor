@@ -14,18 +14,18 @@ size = Vector2(170, 76)
 size = Vector2(216, 76)
 
 [sub_resource type="StyleBoxFlat" id="4"]
-bg_color = Color(0.141176, 0.109804, 0.109804, 0.9)
+bg_color = Color(0.10, 0.08, 0.06, 0.93)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.839216, 0.470588, 0.360784, 0.88)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-shadow_color = Color(0, 0, 0, 0.18)
-shadow_size = 8
+border_color = Color(0.46, 0.37, 0.26, 0.78)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0, 0, 0.28)
+shadow_size = 10
 
 [node name="TownScene" type="Node2D"]
 
@@ -96,14 +96,14 @@ theme_override_constants/separation = 4
 
 [node name="RequestHeading" type="Label" parent="RequestStatusPanel/Margin/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.968627, 0.858824, 0.756863, 1)
+theme_override_colors/font_color = Color(0.96, 0.93, 0.85, 1)
 theme_override_font_sizes/font_size = 16
 text = "Guild Board"
 
 [node name="RequestStatusLabel" type="Label" parent="RequestStatusPanel/Margin/Content"]
 layout_mode = 2
 autowrap_mode = 3
-theme_override_colors/font_color = Color(0.980392, 0.94902, 0.917647, 1)
+theme_override_colors/font_color = Color(0.96, 0.93, 0.85, 1)
 theme_override_font_sizes/font_size = 15
 text = "Active request: click board to turn in."
 

@@ -14,18 +14,18 @@ size = Vector2(102, 70)
 size = Vector2(22, 30)
 
 [sub_resource type="StyleBoxFlat" id="4"]
-bg_color = Color(0.14902, 0.113725, 0.0901961, 0.9)
+bg_color = Color(0.10, 0.08, 0.06, 0.93)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.709804, 0.584314, 0.419608, 0.88)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-shadow_color = Color(0, 0, 0, 0.18)
-shadow_size = 8
+border_color = Color(0.46, 0.37, 0.26, 0.78)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0, 0, 0.28)
+shadow_size = 10
 
 [node name="FarmScene" type="Node2D"]
 
@@ -101,14 +101,14 @@ theme_override_constants/separation = 4
 
 [node name="FarmStatusHeading" type="Label" parent="FarmStatusPanel/Margin/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.933333, 0.854902, 0.709804, 1)
+theme_override_colors/font_color = Color(0.96, 0.93, 0.85, 1)
 theme_override_font_sizes/font_size = 16
 text = "Field Notes"
 
 [node name="FarmStatusLabel" type="Label" parent="FarmStatusPanel/Margin/Content"]
 layout_mode = 2
 autowrap_mode = 3
-theme_override_colors/font_color = Color(0.976471, 0.94902, 0.905882, 1)
+theme_override_colors/font_color = Color(0.96, 0.93, 0.85, 1)
 theme_override_font_sizes/font_size = 15
 text = "Click a plot to till, plant, water, or harvest."
 

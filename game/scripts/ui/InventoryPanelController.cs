@@ -32,8 +32,8 @@ public partial class InventoryPanelController : Control
         ArgumentNullException.ThrowIfNull(inventory);
 
         var lines = inventory.Slots
-            .Select(slot => $"{ItemDisplayNameFormatter.Resolve(slot.ItemId, itemCatalog)} x{slot.Quantity}")
-            .DefaultIfEmpty("Inventory empty.");
+            .Select(slot => $"{ItemDisplayNameFormatter.Resolve(slot.ItemId, itemCatalog)} [color=#c8a864]x{slot.Quantity}[/color]")
+            .DefaultIfEmpty("[i]Inventory empty.[/i]");
 
         return string.Join("\n", lines);
     }

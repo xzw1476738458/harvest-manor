@@ -152,13 +152,12 @@ public partial class ShopPanelController : Control
         var offer = offers[clampedIndex];
         var displayName = ItemDisplayNameFormatter.Resolve(offer.ItemId, itemCatalog);
 
-        return $"Offer {clampedIndex + 1}/{offers.Count}\n" +
-               $"Item: {displayName}\n" +
-               $"Gold: {state.Gold}\n" +
-               $"Owned: {state.InventoryCount}\n" +
-               $"Buy: {offer.BuyPrice}g\n" +
-               $"Sell: {offer.SellPrice}g\n" +
-               $"Status: {state.StatusText}";
+        return $"[color=#c8a864]Offer {clampedIndex + 1}/{offers.Count}[/color]\n" +
+               $"[b]Item:[/b] {displayName}\n" +
+               $"[b]Gold:[/b] [color=#f0d264]{state.Gold}[/color]\n" +
+               $"[b]Owned:[/b] {state.InventoryCount}\n" +
+               $"[b]Buy:[/b] [color=#e8a840]{offer.BuyPrice}g[/color]   [b]Sell:[/b] [color=#88c870]{offer.SellPrice}g[/color]\n" +
+               $"[i]{state.StatusText}[/i]";
     }
 
     public static OfferUiState EvaluateOfferState(ShopOffer offer, InventoryState? inventory, Wallet? wallet)

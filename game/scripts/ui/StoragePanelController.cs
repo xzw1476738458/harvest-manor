@@ -191,18 +191,18 @@ public partial class StoragePanelController : Control
         TransferUiState state)
     {
         var inventoryLines = inventory.Slots
-            .Select(slot => $"{ItemDisplayNameFormatter.Resolve(slot.ItemId, itemCatalog)} x{slot.Quantity}")
-            .DefaultIfEmpty("Inventory empty.");
+            .Select(slot => $"{ItemDisplayNameFormatter.Resolve(slot.ItemId, itemCatalog)} [color=#c8a864]x{slot.Quantity}[/color]")
+            .DefaultIfEmpty("[i]Inventory empty.[/i]");
 
         var storageLines = storage.Slots
-            .Select(slot => $"{ItemDisplayNameFormatter.Resolve(slot.ItemId, itemCatalog)} x{slot.Quantity}")
-            .DefaultIfEmpty("Storage empty.");
+            .Select(slot => $"{ItemDisplayNameFormatter.Resolve(slot.ItemId, itemCatalog)} [color=#c8a864]x{slot.Quantity}[/color]")
+            .DefaultIfEmpty("[i]Storage empty.[/i]");
 
-        return "Inventory\n" +
+        return "[b][color=#c8a864]Inventory[/color][/b]\n" +
                string.Join("\n", inventoryLines) +
-               "\n\nStorage\n" +
+               "\n\n[b][color=#88a8c8]Storage[/color][/b]\n" +
                string.Join("\n", storageLines) +
-               $"\n\nStatus\n{BuildTransferStatusText(state.StoreCandidateItemId, state.WithdrawCandidateItemId, state.CanStore, state.CanWithdraw, itemCatalog)}";
+               $"\n\n[i]{BuildTransferStatusText(state.StoreCandidateItemId, state.WithdrawCandidateItemId, state.CanStore, state.CanWithdraw, itemCatalog)}[/i]";
     }
 
     private static string BuildTransferStatusText(
