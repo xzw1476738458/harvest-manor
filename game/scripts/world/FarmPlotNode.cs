@@ -18,24 +18,70 @@ public partial class FarmPlotNode : Area2D
     [Export]
     public Polygon2D? PlotVisual { get; set; }
 
+    [Export]
+    public Label? PromptLabel { get; set; }
+
     [Signal]
     public delegate void PlotInteractedEventHandler(int gridX, int gridY);
+
+    private bool _isPlayerInRange;
+    private bool _isMouseInside;
+
+    public bool IsPlayerInRange => _isPlayerInRange;
 
     public override void _Ready()
     {
         PlotLabel ??= GetNodeOrNull<Label>("PlotLabel");
         PlotVisual ??= GetNodeOrNull<Polygon2D>("PlotVisual");
+        PromptLabel ??= GetNodeOrNull<Label>("PromptLabel");
+
+        if (PromptLabel is not null)
+        {
+            PromptLabel.Visible = false;
+        }
+
         MouseEntered += OnMouseEntered;
         MouseExited += OnMouseExited;
-        ApplyHoverState(isHovered: false);
+        AreaEntered += OnAreaEntered;
+        AreaExited += OnAreaExited;
+        ApplyHoverState();
+    }
+
+    public void SetPlayerInRange(bool inRange)
+    {
+        if (_isPlayerInRange == inRange)
+        {
+            return;
+        }
+
+        _isPlayerInRange = inRange;
+        ApplyHoverState();
+    }
+
+    public void TryInteractFromKey()
+    {
+        if (!_isPlayerInRange)
+        {
+            return;
+        }
+
+        EmitSignal(SignalName.PlotInteracted, GridX, GridY);
     }
 
     public override void _InputEvent(Viewport viewport, InputEvent @event, int shapeIdx)
     {
-        if (@event is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
+        if (@event is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
         {
-            EmitSignal(SignalName.PlotInteracted, GridX, GridY);
+            return;
         }
+
+        if (!_isPlayerInRange)
+        {
+            return;
+        }
+
+        EmitSignal(SignalName.PlotInteracted, GridX, GridY);
+        viewport.SetInputAsHandled();
     }
 
     public void Render(HarvestManor.Core.Farming.PlotState plot, string? cropDisplayName, string? lockedHint = null)
@@ -108,23 +154,42 @@ public partial class FarmPlotNode : Area2D
         }
 
         return new PlotVisualState(
-            $"{displayName}\nClick: water",
+            $"{displayName}\nNeeds: water",
             new Color(0.64f, 0.50f, 0.29f, 0.95f),
             Colors.WhiteSmoke);
     }
 
+    private void OnAreaEntered(Area2D area)
+    {
+        if (area.IsInGroup("player_interactor"))
+        {
+            SetPlayerInRange(true);
+        }
+    }
+
+    private void OnAreaExited(Area2D area)
+    {
+        if (area.IsInGroup("player_interactor"))
+        {
+            SetPlayerInRange(false);
+        }
+    }
+
     private void OnMouseEntered()
     {
-        ApplyHoverState(isHovered: true);
+        _isMouseInside = true;
+        ApplyHoverState();
     }
 
     private void OnMouseExited()
     {
-        ApplyHoverState(isHovered: false);
+        _isMouseInside = false;
+        ApplyHoverState();
     }
 
-    private void ApplyHoverState(bool isHovered)
+    private void ApplyHoverState()
     {
-        Scale = InteractionHoverStyle.ResolveScale(isHovered);
+        var highlight = _isPlayerInRange || _isMouseInside;
+        Scale = InteractionHoverStyle.ResolveScale(highlight);
     }
 }

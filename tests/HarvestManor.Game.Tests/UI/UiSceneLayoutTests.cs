@@ -5,21 +5,21 @@ namespace HarvestManor.Game.Tests.UI;
 public sealed class UiSceneLayoutTests
 {
     [Fact]
-    public void HudScene_AddsHeaderAndHintLabels()
+    public void HudScene_AddsClockAndHintLabels()
     {
         var sceneContents = File.ReadAllText(FindScenePath("Hud.tscn"));
 
-        Assert.Contains("[node name=\"HeaderLabel\" type=\"Label\" parent=\"TopBar/Margin/Content/BrandColumn\"]", sceneContents);
-        Assert.Contains("[node name=\"HintLabel\" type=\"Label\" parent=\"TopBar/Margin/Content/BrandColumn\"]", sceneContents);
+        Assert.Contains("[node name=\"ClockLabel\" type=\"Label\" parent=\"TopBar/Margin/Content/StatColumn/ClockBadge\"]", sceneContents);
+        Assert.Contains("[node name=\"HintLabel\" type=\"Label\" parent=\"TopBar/Margin/Content/HintColumn\"]", sceneContents);
     }
 
     [Fact]
-    public void HudScene_SplitsBrandingAndStatsIntoSeparateColumns()
+    public void HudScene_SplitsStatsAndHintIntoSeparateColumns()
     {
         var sceneContents = File.ReadAllText(FindScenePath("Hud.tscn"));
 
-        Assert.Contains("[node name=\"BrandColumn\" type=\"VBoxContainer\" parent=\"TopBar/Margin/Content\"]", sceneContents);
-        Assert.Contains("[node name=\"StatColumn\" type=\"VBoxContainer\" parent=\"TopBar/Margin/Content\"]", sceneContents);
+        Assert.Contains("[node name=\"StatColumn\" type=\"HBoxContainer\" parent=\"TopBar/Margin/Content\"]", sceneContents);
+        Assert.Contains("[node name=\"HintColumn\" type=\"HBoxContainer\" parent=\"TopBar/Margin/Content\"]", sceneContents);
     }
 
     [Fact]

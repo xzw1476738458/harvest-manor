@@ -55,6 +55,30 @@ public partial class GameBootstrap : Node2D
     private StoragePanelController? _storagePanel;
     private Label? _farmStatusLabel;
     private Label? _requestStatusLabel;
+    private Control? _farmStatusPanel;
+    private Control? _requestStatusPanel;
+    private Godot.Timer? _farmStatusTimer;
+    private Godot.Timer? _requestStatusTimer;
+    private double _realTimeAccumulator;
+    private const float MinutesPerRealSecond = 6f;
+    private const double StatusVisibleSeconds = 5.0;
+    private Node2D? _activeScene;
+    private string _activeSceneType = string.Empty;
+    private CharacterBody2D? _player;
+    private const string FarmSceneType = "farm";
+    private const string TownSceneType = "town";
+    private const string CottageSceneType = "cottage";
+    private const string ShopInteriorSceneType = "shop_interior";
+    private const string BarnInteriorSceneType = "barn_interior";
+    private static readonly Vector2 FarmDefaultSpawn = new(640, 470);
+    private static readonly Vector2 FarmFromTownSpawn = new(1180, 470);
+    private static readonly Vector2 FarmFromCottageSpawn = new(1080, 480);
+    private static readonly Vector2 TownFromFarmSpawn = new(110, 470);
+    private static readonly Vector2 TownFromShopSpawn = new(1000, 470);
+    private static readonly Vector2 TownFromBarnSpawn = new(700, 510);
+    private static readonly Vector2 CottageEntrySpawn = new(640, 540);
+    private static readonly Vector2 ShopInteriorEntrySpawn = new(640, 540);
+    private static readonly Vector2 BarnInteriorEntrySpawn = new(640, 540);
     private IReadOnlyList<ShopOffer> _allShopOffers = Array.Empty<ShopOffer>();
     private IReadOnlyList<ShopOffer> _shopOffers = Array.Empty<ShopOffer>();
     private IReadOnlyList<RequestDefinition> _requests = Array.Empty<RequestDefinition>();
@@ -136,16 +160,22 @@ public partial class GameBootstrap : Node2D
         _storage = state.Storage;
         _farmGrid = state.FarmGrid;
 
-        var farmScene = GD.Load<PackedScene>("res://scenes/world/FarmScene.tscn").Instantiate<Node2D>();
-        AddChild(farmScene);
-        WireFarmScene(farmScene);
+        _player = GD.Load<PackedScene>("res://scenes/world/Player.tscn").Instantiate<CharacterBody2D>();
+        AddChild(_player);
+        _player.Position = FarmDefaultSpawn;
 
-        var townScene = GD.Load<PackedScene>("res://scenes/world/TownScene.tscn").Instantiate<Node2D>();
-        AddChild(townScene);
-        WireTownScene(townScene);
+        LoadScene(FarmSceneType, FarmDefaultSpawn);
 
         _hud = GD.Load<PackedScene>("res://scenes/ui/Hud.tscn").Instantiate<HudController>();
         AddChild(_hud);
+
+        _farmStatusTimer = new Godot.Timer { OneShot = true, WaitTime = StatusVisibleSeconds };
+        AddChild(_farmStatusTimer);
+        _farmStatusTimer.Timeout += HideFarmStatusPanel;
+
+        _requestStatusTimer = new Godot.Timer { OneShot = true, WaitTime = StatusVisibleSeconds };
+        AddChild(_requestStatusTimer);
+        _requestStatusTimer.Timeout += HideRequestStatusPanel;
 
         _inventoryPanel = GD.Load<PackedScene>("res://scenes/ui/InventoryPanel.tscn").Instantiate<InventoryPanelController>();
         _shopPanel = GD.Load<PackedScene>("res://scenes/ui/ShopPanel.tscn").Instantiate<ShopPanelController>();
@@ -168,6 +198,7 @@ public partial class GameBootstrap : Node2D
         RefreshHud();
         RefreshRequestBoardStatus();
         SetFarmStatus(StatusMessageBuilder.BuildStartupFarmStatusMessage(saveFileExists, loadedExistingSave, _farmGrid, _requests, _completedRequestIds, _inventory, _itemCatalog));
+        UpdateTimeOfDayVisuals();
 
         if (ShouldAutosaveAfterBootstrap(saveFileExists, loadedExistingSave, hasMeaningfulStateChanges: false))
         {

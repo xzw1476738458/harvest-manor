@@ -7,11 +7,9 @@ public partial class StorageInteraction : HoverableInteractionArea
     [Signal]
     public delegate void StorageRequestedEventHandler();
 
-    public override void _InputEvent(Viewport viewport, InputEvent @event, int shapeIdx)
+    public override void _Ready()
     {
-        if (@event is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
-        {
-            EmitSignal(SignalName.StorageRequested);
-        }
+        base._Ready();
+        InteractionTriggered += () => EmitSignal(SignalName.StorageRequested);
     }
 }

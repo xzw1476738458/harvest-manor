@@ -5,6 +5,9 @@ namespace HarvestManor.UI;
 public partial class HudController : CanvasLayer
 {
     [Export]
+    public Label? ClockLabel { get; set; }
+
+    [Export]
     public Label? DayLabel { get; set; }
 
     [Export]
@@ -16,12 +19,33 @@ public partial class HudController : CanvasLayer
     [Export]
     public Label? GrowthLabel { get; set; }
 
+    [Export]
+    public Control? TopBar { get; set; }
+
     public override void _Ready()
     {
-        DayLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/DayLabel");
-        GoldLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/GoldLabel");
-        StaminaLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/StaminaLabel");
-        GrowthLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/GrowthLabel");
+        ClockLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/ClockBadge/ClockLabel");
+        DayLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/DayBadge/DayLabel");
+        GoldLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/GoldBadge/GoldLabel");
+        StaminaLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/StaminaBadge/StaminaLabel");
+        GrowthLabel ??= GetNodeOrNull<Label>("TopBar/Margin/Content/StatColumn/GrowthBadge/GrowthLabel");
+        TopBar ??= GetNodeOrNull<Control>("TopBar");
+    }
+
+    public void SetClock(string text)
+    {
+        if (ClockLabel is not null)
+        {
+            ClockLabel.Text = text;
+        }
+    }
+
+    public void SetTopBarVisible(bool isVisible)
+    {
+        if (TopBar is not null)
+        {
+            TopBar.Visible = isVisible;
+        }
     }
 
     public void SetDay(string text)

@@ -1,0 +1,632 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/ShopInteraction.cs" id="1"]
+[ext_resource type="Script" path="res://scripts/world/SceneGate.cs" id="2"]
+
+[sub_resource type="RectangleShape2D" id="counter_shape"]
+size = Vector2(380, 110)
+
+[sub_resource type="RectangleShape2D" id="wall_h_full"]
+size = Vector2(1160, 16)
+
+[sub_resource type="RectangleShape2D" id="wall_h_left"]
+size = Vector2(540, 16)
+
+[sub_resource type="RectangleShape2D" id="wall_h_right"]
+size = Vector2(540, 16)
+
+[sub_resource type="RectangleShape2D" id="wall_v_full"]
+size = Vector2(16, 280)
+
+[sub_resource type="RectangleShape2D" id="gate_shape"]
+size = Vector2(60, 36)
+
+[sub_resource type="StyleBoxFlat" id="title_badge"]
+bg_color = Color(0.08, 0.06, 0.04, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.55, 0.45, 0.30, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 8
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="frame_border"]
+bg_color = Color(0.14, 0.11, 0.08, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.45, 0.35, 0.22, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="ShopInterior" type="Node2D"]
+
+[node name="RoomShadow" type="Polygon2D" parent="."]
+z_index = -9
+color = Color(0.05, 0.03, 0.02, 0.6)
+polygon = PackedVector2Array(32, 116, 1268, 116, 1268, 708, 32, 708)
+
+[node name="RoomFrame" type="Polygon2D" parent="."]
+z_index = -8
+color = Color(0.55, 0.40, 0.28, 1)
+polygon = PackedVector2Array(24, 104, 1256, 104, 1256, 696, 24, 696)
+
+[node name="WallBackdrop" type="Polygon2D" parent="."]
+z_index = -7
+color = Color(0.92, 0.84, 0.68, 1)
+polygon = PackedVector2Array(40, 120, 1240, 120, 1240, 320, 40, 320)
+
+[node name="WallStripe" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.78, 0.66, 0.46, 0.55)
+polygon = PackedVector2Array(40, 200, 1240, 200, 1240, 204, 40, 204)
+
+[node name="WallTrim" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.46, 0.32, 0.22, 1)
+polygon = PackedVector2Array(40, 312, 1240, 312, 1240, 320, 40, 320)
+
+[node name="FloorBackdrop" type="Polygon2D" parent="."]
+z_index = -7
+color = Color(0.74, 0.62, 0.46, 1)
+polygon = PackedVector2Array(40, 320, 1240, 320, 1240, 596, 40, 596)
+
+[node name="FloorPerspective" type="Polygon2D" parent="."]
+z_index = -7
+color = Color(0.62, 0.50, 0.36, 0.40)
+polygon = PackedVector2Array(40, 320, 1240, 320, 1240, 360, 40, 360)
+
+[node name="FloorTile1" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.58, 0.44, 0.30, 0.45)
+polygon = PackedVector2Array(40, 410, 1240, 410, 1240, 412, 40, 412)
+
+[node name="FloorTile2" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.58, 0.44, 0.30, 0.45)
+polygon = PackedVector2Array(40, 480, 1240, 480, 1240, 482, 40, 482)
+
+[node name="FloorTile3" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.58, 0.44, 0.30, 0.45)
+polygon = PackedVector2Array(40, 550, 1240, 550, 1240, 552, 40, 552)
+
+[node name="ShelfLeftBack" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.42, 0.30, 0.20, 1)
+polygon = PackedVector2Array(80, 130, 320, 130, 320, 310, 80, 310)
+
+[node name="ShelfLeftPlank1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.30, 0.20, 0.14, 1)
+polygon = PackedVector2Array(80, 178, 320, 178, 320, 182, 80, 182)
+
+[node name="ShelfLeftPlank2" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.30, 0.20, 0.14, 1)
+polygon = PackedVector2Array(80, 230, 320, 230, 320, 234, 80, 234)
+
+[node name="ShelfLeftPlank3" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.30, 0.20, 0.14, 1)
+polygon = PackedVector2Array(80, 282, 320, 282, 320, 286, 80, 286)
+
+[node name="ShelfLeftJar1" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.95, 0.65, 0.30, 1)
+polygon = PackedVector2Array(96, 144, 116, 144, 116, 178, 96, 178)
+
+[node name="ShelfLeftJar2" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.50, 0.78, 0.40, 1)
+polygon = PackedVector2Array(124, 144, 144, 144, 144, 178, 124, 178)
+
+[node name="ShelfLeftJar3" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.85, 0.30, 0.30, 1)
+polygon = PackedVector2Array(152, 144, 172, 144, 172, 178, 152, 178)
+
+[node name="ShelfLeftJar4" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.45, 0.65, 0.85, 1)
+polygon = PackedVector2Array(180, 144, 200, 144, 200, 178, 180, 178)
+
+[node name="ShelfLeftJar5" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.78, 0.62, 0.40, 1)
+polygon = PackedVector2Array(216, 144, 244, 144, 244, 178, 216, 178)
+
+[node name="ShelfLeftJar6" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.62, 0.40, 0.78, 1)
+polygon = PackedVector2Array(252, 148, 280, 148, 280, 178, 252, 178)
+
+[node name="ShelfLeftSeed1" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.95, 0.84, 0.40, 1)
+polygon = PackedVector2Array(96, 196, 134, 196, 134, 230, 96, 230)
+
+[node name="ShelfLeftSeed2" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.85, 0.42, 0.60, 1)
+polygon = PackedVector2Array(140, 196, 178, 196, 178, 230, 140, 230)
+
+[node name="ShelfLeftSeed3" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.40, 0.78, 0.60, 1)
+polygon = PackedVector2Array(184, 196, 222, 196, 222, 230, 184, 230)
+
+[node name="ShelfLeftSeedLabel1" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.96, 0.92, 0.80, 1)
+polygon = PackedVector2Array(102, 208, 128, 208, 128, 220, 102, 220)
+
+[node name="ShelfLeftSeedLabel2" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.96, 0.92, 0.80, 1)
+polygon = PackedVector2Array(146, 208, 172, 208, 172, 220, 146, 220)
+
+[node name="ShelfLeftBag1" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.78, 0.66, 0.42, 1)
+polygon = PackedVector2Array(96, 252, 128, 252, 132, 282, 92, 282)
+
+[node name="ShelfLeftBag2" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.66, 0.55, 0.36, 1)
+polygon = PackedVector2Array(140, 252, 172, 252, 176, 282, 136, 282)
+
+[node name="ShelfLeftSack" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.85, 0.78, 0.55, 1)
+polygon = PackedVector2Array(196, 256, 240, 256, 246, 282, 192, 282)
+
+[node name="ShelfRightBack" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.42, 0.30, 0.20, 1)
+polygon = PackedVector2Array(960, 130, 1200, 130, 1200, 310, 960, 310)
+
+[node name="ShelfRightPlank1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.30, 0.20, 0.14, 1)
+polygon = PackedVector2Array(960, 178, 1200, 178, 1200, 182, 960, 182)
+
+[node name="ShelfRightPlank2" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.30, 0.20, 0.14, 1)
+polygon = PackedVector2Array(960, 230, 1200, 230, 1200, 234, 960, 234)
+
+[node name="ShelfRightPlank3" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.30, 0.20, 0.14, 1)
+polygon = PackedVector2Array(960, 282, 1200, 282, 1200, 286, 960, 286)
+
+[node name="ShelfRightTool1" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.55, 0.40, 0.28, 1)
+polygon = PackedVector2Array(976, 144, 982, 144, 982, 178, 976, 178)
+
+[node name="ShelfRightTool1Head" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.66, 0.66, 0.70, 1)
+polygon = PackedVector2Array(972, 144, 988, 144, 988, 152, 972, 152)
+
+[node name="ShelfRightTool2" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.55, 0.40, 0.28, 1)
+polygon = PackedVector2Array(998, 144, 1004, 144, 1004, 178, 998, 178)
+
+[node name="ShelfRightTool2Head" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.55, 0.40, 0.28, 1)
+polygon = PackedVector2Array(992, 156, 1010, 156, 1004, 168, 996, 168)
+
+[node name="ShelfRightTool3" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.55, 0.40, 0.28, 1)
+polygon = PackedVector2Array(1020, 144, 1026, 144, 1026, 178, 1020, 178)
+
+[node name="ShelfRightTool3Head" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.66, 0.66, 0.70, 1)
+polygon = PackedVector2Array(1012, 142, 1034, 142, 1034, 156, 1024, 156, 1022, 152, 1012, 152)
+
+[node name="ShelfRightCrate1" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.66, 0.46, 0.30, 1)
+polygon = PackedVector2Array(1080, 192, 1130, 192, 1130, 230, 1080, 230)
+
+[node name="ShelfRightCrate1Plank" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(1080, 210, 1130, 210, 1130, 212, 1080, 212)
+
+[node name="ShelfRightCrate1Crop" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.95, 0.78, 0.42, 1)
+polygon = PackedVector2Array(1090, 196, 1108, 196, 1108, 208, 1090, 208)
+
+[node name="ShelfRightCrate2" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.66, 0.46, 0.30, 1)
+polygon = PackedVector2Array(1140, 192, 1190, 192, 1190, 230, 1140, 230)
+
+[node name="ShelfRightCrate2Plank" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(1140, 210, 1190, 210, 1190, 212, 1140, 212)
+
+[node name="ShelfRightCrate2Crop" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.85, 0.42, 0.32, 1)
+polygon = PackedVector2Array(1150, 196, 1168, 196, 1168, 208, 1150, 208)
+
+[node name="ShelfRightBoxes" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.78, 0.62, 0.40, 1)
+polygon = PackedVector2Array(976, 250, 1180, 250, 1180, 282, 976, 282)
+
+[node name="ShelfRightBoxLine1" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(1040, 250, 1042, 250, 1042, 282, 1040, 282)
+
+[node name="ShelfRightBoxLine2" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(1110, 250, 1112, 250, 1112, 282, 1110, 282)
+
+[node name="HangingSign1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.46, 0.32, 0.22, 1)
+polygon = PackedVector2Array(440, 130, 580, 130, 580, 158, 440, 158)
+
+[node name="HangingSign1Rope1" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.36, 0.24, 0.16, 1)
+polygon = PackedVector2Array(456, 122, 460, 122, 460, 130, 456, 130)
+
+[node name="HangingSign1Rope2" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.36, 0.24, 0.16, 1)
+polygon = PackedVector2Array(560, 122, 564, 122, 564, 130, 560, 130)
+
+[node name="HangingSign1Label" type="Label" parent="."]
+offset_left = 440.0
+offset_top = 132.0
+offset_right = 580.0
+offset_bottom = 156.0
+theme_override_colors/font_color = Color(0.96, 0.86, 0.50, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "GENERAL STORE"
+
+[node name="HangingSign2" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.46, 0.32, 0.22, 1)
+polygon = PackedVector2Array(640, 130, 760, 130, 760, 156, 640, 156)
+
+[node name="HangingSign2Rope1" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.36, 0.24, 0.16, 1)
+polygon = PackedVector2Array(656, 122, 660, 122, 660, 130, 656, 130)
+
+[node name="HangingSign2Rope2" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.36, 0.24, 0.16, 1)
+polygon = PackedVector2Array(740, 122, 744, 122, 744, 130, 740, 130)
+
+[node name="HangingSign2Label" type="Label" parent="."]
+offset_left = 640.0
+offset_top = 132.0
+offset_right = 760.0
+offset_bottom = 154.0
+theme_override_colors/font_color = Color(0.96, 0.86, 0.50, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "Open · Welcome"
+
+[node name="LampPole1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.32, 0.22, 0.16, 1)
+polygon = PackedVector2Array(458, 120, 462, 120, 462, 178, 458, 178)
+
+[node name="LampShade1" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.96, 0.78, 0.46, 1)
+polygon = PackedVector2Array(450, 178, 470, 178, 466, 196, 454, 196)
+
+[node name="LampGlow1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(1, 0.84, 0.50, 0.20)
+polygon = PackedVector2Array(420, 178, 500, 178, 510, 240, 410, 240)
+
+[node name="CounterShadow" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0, 0, 0, 0.30)
+polygon = PackedVector2Array(450, 482, 830, 482, 850, 490, 430, 490)
+
+[node name="CounterBack" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.62, 0.42, 0.26, 1)
+polygon = PackedVector2Array(440, 380, 840, 380, 840, 480, 440, 480)
+
+[node name="CounterTop" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.78, 0.58, 0.38, 1)
+polygon = PackedVector2Array(430, 372, 850, 372, 850, 392, 430, 392)
+
+[node name="CounterTopShine" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.96, 0.82, 0.55, 0.45)
+polygon = PackedVector2Array(430, 372, 850, 372, 850, 376, 430, 376)
+
+[node name="CounterPanel1" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(460, 396, 540, 396, 540, 472, 460, 472)
+
+[node name="CounterPanel2" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(560, 396, 720, 396, 720, 472, 560, 472)
+
+[node name="CounterPanel3" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(740, 396, 820, 396, 820, 472, 740, 472)
+
+[node name="ShopkeeperBody" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.55, 0.34, 0.42, 1)
+polygon = PackedVector2Array(580, 320, 700, 320, 712, 380, 568, 380)
+
+[node name="ShopkeeperBodyShade" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.42, 0.26, 0.32, 1)
+polygon = PackedVector2Array(580, 320, 620, 320, 624, 380, 568, 380)
+
+[node name="ShopkeeperApron" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.92, 0.86, 0.74, 1)
+polygon = PackedVector2Array(610, 340, 670, 340, 678, 380, 602, 380)
+
+[node name="ShopkeeperHead" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.95, 0.78, 0.62, 1)
+polygon = PackedVector2Array(620, 286, 660, 286, 664, 304, 660, 318, 620, 318, 616, 304)
+
+[node name="ShopkeeperHair" type="Polygon2D" parent="."]
+z_index = 1
+color = Color(0.40, 0.26, 0.18, 1)
+polygon = PackedVector2Array(614, 286, 666, 286, 668, 296, 614, 296)
+
+[node name="ShopkeeperHairBun" type="Polygon2D" parent="."]
+z_index = 1
+color = Color(0.40, 0.26, 0.18, 1)
+polygon = PackedVector2Array(660, 280, 676, 280, 676, 294, 660, 294)
+
+[node name="ShopkeeperEye1" type="Polygon2D" parent="."]
+z_index = 1
+color = Color(0.16, 0.10, 0.06, 1)
+polygon = PackedVector2Array(626, 304, 632, 304, 632, 308, 626, 308)
+
+[node name="ShopkeeperEye2" type="Polygon2D" parent="."]
+z_index = 1
+color = Color(0.16, 0.10, 0.06, 1)
+polygon = PackedVector2Array(648, 304, 654, 304, 654, 308, 648, 308)
+
+[node name="ShopkeeperSmile" type="Polygon2D" parent="."]
+z_index = 1
+color = Color(0.62, 0.30, 0.30, 1)
+polygon = PackedVector2Array(632, 314, 648, 314, 646, 318, 634, 318)
+
+[node name="RegisterBody" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.32, 0.22, 0.16, 1)
+polygon = PackedVector2Array(740, 340, 820, 340, 820, 376, 740, 376)
+
+[node name="RegisterTop" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.55, 0.40, 0.28, 1)
+polygon = PackedVector2Array(740, 332, 820, 332, 820, 340, 740, 340)
+
+[node name="RegisterScreen" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.30, 0.50, 0.42, 1)
+polygon = PackedVector2Array(750, 348, 810, 348, 810, 366, 750, 366)
+
+[node name="RegisterButton1" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.78, 0.42, 0.30, 1)
+polygon = PackedVector2Array(754, 370, 760, 370, 760, 374, 754, 374)
+
+[node name="RegisterButton2" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.40, 0.66, 0.40, 1)
+polygon = PackedVector2Array(770, 370, 776, 370, 776, 374, 770, 374)
+
+[node name="ScaleBase" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.62, 0.62, 0.66, 1)
+polygon = PackedVector2Array(456, 358, 504, 358, 504, 376, 456, 376)
+
+[node name="ScalePan" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.85, 0.85, 0.88, 1)
+polygon = PackedVector2Array(450, 350, 510, 350, 510, 358, 450, 358)
+
+[node name="ScaleArm" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.42, 0.42, 0.46, 1)
+polygon = PackedVector2Array(478, 326, 482, 326, 482, 350, 478, 350)
+
+[node name="WelcomeMatBack" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.46, 0.36, 0.26, 1)
+polygon = PackedVector2Array(580, 580, 700, 580, 700, 596, 580, 596)
+
+[node name="WelcomeMatStripe" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.92, 0.78, 0.50, 1)
+polygon = PackedVector2Array(580, 584, 700, 584, 700, 586, 580, 586)
+
+[node name="DoorFrame" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.36, 0.24, 0.16, 1)
+polygon = PackedVector2Array(594, 596, 686, 596, 686, 660, 594, 660)
+
+[node name="DoorPanel" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.55, 0.36, 0.22, 1)
+polygon = PackedVector2Array(602, 596, 678, 596, 678, 656, 602, 656)
+
+[node name="DoorPlank1" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.40, 0.26, 0.16, 1)
+polygon = PackedVector2Array(626, 600, 630, 600, 630, 654, 626, 654)
+
+[node name="DoorPlank2" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.40, 0.26, 0.16, 1)
+polygon = PackedVector2Array(650, 600, 654, 600, 654, 654, 650, 654)
+
+[node name="DoorKnob" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.92, 0.80, 0.40, 1)
+polygon = PackedVector2Array(666, 624, 672, 624, 672, 630, 666, 630)
+
+[node name="ExitArrow" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.94, 0.82, 0.50, 0.85)
+polygon = PackedVector2Array(636, 564, 644, 564, 644, 576, 654, 576, 640, 586, 626, 576, 636, 576)
+
+[node name="FrameBorder" type="Panel" parent="."]
+z_index = -1
+offset_left = 24.0
+offset_top = 104.0
+offset_right = 1256.0
+offset_bottom = 696.0
+theme_override_styles/panel = SubResource("frame_border")
+mouse_filter = 2
+
+[node name="WallTop" type="StaticBody2D" parent="."]
+position = Vector2(640, 320)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallTop"]
+shape = SubResource("wall_h_full")
+
+[node name="WallLeft" type="StaticBody2D" parent="."]
+position = Vector2(60, 460)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallLeft"]
+shape = SubResource("wall_v_full")
+
+[node name="WallRight" type="StaticBody2D" parent="."]
+position = Vector2(1220, 460)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallRight"]
+shape = SubResource("wall_v_full")
+
+[node name="WallBottomLeft" type="StaticBody2D" parent="."]
+position = Vector2(330, 596)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallBottomLeft"]
+shape = SubResource("wall_h_left")
+
+[node name="WallBottomRight" type="StaticBody2D" parent="."]
+position = Vector2(950, 596)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallBottomRight"]
+shape = SubResource("wall_h_right")
+
+[node name="ExitGate" type="Area2D" parent="."]
+position = Vector2(640, 600)
+script = ExtResource("2")
+TargetScene = "town"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitGate"]
+shape = SubResource("gate_shape")
+
+[node name="TitleBadge" type="PanelContainer" parent="."]
+offset_left = 44.0
+offset_top = 128.0
+offset_right = 360.0
+offset_bottom = 194.0
+theme_override_styles/panel = SubResource("title_badge")
+
+[node name="Rows" type="VBoxContainer" parent="TitleBadge"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Title" type="Label" parent="TitleBadge/Rows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.82, 0.50, 1)
+theme_override_font_sizes/font_size = 22
+text = "General Store"
+
+[node name="Subtitle" type="Label" parent="TitleBadge/Rows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.72, 0.60, 1)
+theme_override_font_sizes/font_size = 12
+text = "Approach the counter and press E to trade · South door to leave"
+
+[node name="ExitLabel" type="Label" parent="."]
+offset_left = 580.0
+offset_top = 614.0
+offset_right = 700.0
+offset_bottom = 634.0
+theme_override_colors/font_color = Color(0.96, 0.86, 0.50, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "↓ step out to village"
+
+[node name="Counter" type="Area2D" parent="."]
+position = Vector2(640, 426)
+script = ExtResource("1")
+PromptText = "[E] trade"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Counter"]
+shape = SubResource("counter_shape")
+
+[node name="HotspotVisual" type="Polygon2D" parent="Counter"]
+z_index = 0
+color = Color(1, 1, 1, 0)
+polygon = PackedVector2Array(-190, -54, 190, -54, 200, 54, -200, 54)
+
+[node name="CounterLabel" type="Label" parent="Counter"]
+position = Vector2(-44, -110)
+theme_override_colors/font_color = Color(0.96, 0.92, 0.80, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 13
+text = "Counter"
+
+[node name="PromptLabel" type="Label" parent="Counter"]
+position = Vector2(-30, 60)
+theme_override_colors/font_color = Color(1, 0.92, 0.55, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 13
+text = "[E] trade"

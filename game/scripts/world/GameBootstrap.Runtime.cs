@@ -11,6 +11,176 @@ namespace HarvestManor.World;
 
 public partial class GameBootstrap
 {
+    private void LoadScene(string sceneType, Vector2 spawnPosition)
+    {
+        if (_activeScene is not null)
+        {
+            UnwireActiveScene();
+            _activeScene.QueueFree();
+            _activeScene = null;
+        }
+
+        var scenePath = ResolveScenePath(sceneType);
+        var instance = GD.Load<PackedScene>(scenePath).Instantiate<Node2D>();
+        AddChild(instance);
+        MoveChild(instance, 0);
+        _activeScene = instance;
+        _activeSceneType = sceneType;
+
+        switch (sceneType)
+        {
+            case TownSceneType:
+                WireTownScene(instance);
+                break;
+            case CottageSceneType:
+                WireCottageScene(instance);
+                break;
+            case ShopInteriorSceneType:
+                WireShopInteriorScene(instance);
+                break;
+            case BarnInteriorSceneType:
+                WireBarnInteriorScene(instance);
+                break;
+            default:
+                WireFarmScene(instance);
+                RenderFarmPlots();
+                break;
+        }
+
+        WireSceneGates(instance);
+
+        if (_player is not null)
+        {
+            _player.Position = spawnPosition;
+            _player.Velocity = Vector2.Zero;
+        }
+    }
+
+    private static string ResolveScenePath(string sceneType) => sceneType switch
+    {
+        TownSceneType => "res://scenes/world/TownScene.tscn",
+        CottageSceneType => "res://scenes/world/CottageInterior.tscn",
+        ShopInteriorSceneType => "res://scenes/world/ShopInterior.tscn",
+        BarnInteriorSceneType => "res://scenes/world/BarnInterior.tscn",
+        _ => "res://scenes/world/FarmScene.tscn",
+    };
+
+    private void UnwireActiveScene()
+    {
+        if (_activeScene is null)
+        {
+            return;
+        }
+
+        _farmPlotNodes.Clear();
+        _farmStatusLabel = null;
+        _requestStatusLabel = null;
+        _farmStatusPanel = null;
+        _requestStatusPanel = null;
+        _farmStatusTimer?.Stop();
+        _requestStatusTimer?.Stop();
+    }
+
+    private void WireSceneGates(Node sceneRoot)
+    {
+        foreach (var child in sceneRoot.GetChildren())
+        {
+            if (child is SceneGate gate)
+            {
+                gate.GateEntered += OnGateEntered;
+            }
+        }
+    }
+
+    private void OnGateEntered(string targetScene)
+    {
+        if (string.Equals(_activeSceneType, targetScene, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var spawn = ResolveSpawnForTransition(_activeSceneType, targetScene);
+        CallDeferred(nameof(DeferredLoadScene), targetScene, spawn);
+    }
+
+    private static Vector2 ResolveSpawnForTransition(string sourceScene, string targetScene) =>
+        (targetScene, sourceScene) switch
+        {
+            (FarmSceneType, TownSceneType) => FarmFromTownSpawn,
+            (FarmSceneType, CottageSceneType) => FarmFromCottageSpawn,
+            (TownSceneType, ShopInteriorSceneType) => TownFromShopSpawn,
+            (TownSceneType, BarnInteriorSceneType) => TownFromBarnSpawn,
+            (TownSceneType, FarmSceneType) => TownFromFarmSpawn,
+            (CottageSceneType, _) => CottageEntrySpawn,
+            (ShopInteriorSceneType, _) => ShopInteriorEntrySpawn,
+            (BarnInteriorSceneType, _) => BarnInteriorEntrySpawn,
+            (FarmSceneType, _) => FarmDefaultSpawn,
+            _ => FarmDefaultSpawn,
+        };
+
+    private void DeferredLoadScene(string sceneType, Vector2 spawn)
+    {
+        LoadScene(sceneType, spawn);
+        switch (sceneType)
+        {
+            case FarmSceneType:
+                RefreshFarmStatusAfterSwitch();
+                break;
+            case TownSceneType:
+                RefreshRequestBoardStatus();
+                break;
+        }
+    }
+
+    private void WireCottageScene(Node cottageScene)
+    {
+        var bed = cottageScene.GetNodeOrNull<BedInteraction>("Bed");
+        if (bed is null)
+        {
+            GD.PushWarning("Cottage interior is missing a BedInteraction node named 'Bed'.");
+            return;
+        }
+
+        bed.DayEndRequested += OnDayEndRequested;
+    }
+
+    private void WireShopInteriorScene(Node shopScene)
+    {
+        var counter = shopScene.GetNodeOrNull<ShopInteraction>("Counter");
+        if (counter is null)
+        {
+            GD.PushWarning("Shop interior is missing a ShopInteraction node named 'Counter'.");
+            return;
+        }
+
+        counter.ShopRequested += OnShopRequested;
+    }
+
+    private void WireBarnInteriorScene(Node barnScene)
+    {
+        var chest = barnScene.GetNodeOrNull<StorageInteraction>("Chest");
+        if (chest is null)
+        {
+            GD.PushWarning("Barn interior is missing a StorageInteraction node named 'Chest'.");
+            return;
+        }
+
+        chest.StorageRequested += OnStorageRequested;
+    }
+
+    private void RefreshFarmStatusAfterSwitch()
+    {
+        if (_farmStatusLabel is null)
+        {
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_persistedFarmStatusMessage))
+        {
+            _farmStatusLabel.Text = _persistedFarmStatusMessage;
+        }
+    }
+
     private void WireFarmScene(Node farmScene)
     {
         _farmPlotNodes.Clear();
@@ -30,45 +200,47 @@ public partial class GameBootstrap
         }
 
         _farmStatusLabel = farmScene.GetNodeOrNull<Label>("FarmStatusPanel/Margin/Content/FarmStatusLabel");
+        _farmStatusPanel = farmScene.GetNodeOrNull<Control>("FarmStatusPanel");
 
-        var bed = farmScene.GetNodeOrNull<BedInteraction>("Bed");
-        if (bed is null)
+        var porchDoor = farmScene.GetNodeOrNull<EnterBuildingInteraction>("Bed");
+        if (porchDoor is null)
         {
-            GD.PushWarning("Farm scene is missing a BedInteraction node named 'Bed'.");
+            GD.PushWarning("Farm scene is missing an EnterBuildingInteraction node named 'Bed'.");
             return;
         }
 
-        bed.DayEndRequested += OnDayEndRequested;
-        bed.MouseEntered += () => OnWorldInteractionHovered("bed", "click to end day");
-        bed.MouseExited += OnWorldInteractionHoverEnded;
+        porchDoor.EnterBuildingRequested += OnGateEntered;
+        porchDoor.MouseEntered += () => OnWorldInteractionHovered("cottage", "step inside to rest");
+        porchDoor.MouseExited += OnWorldInteractionHoverEnded;
     }
 
     private void WireTownScene(Node townScene)
     {
         _requestStatusLabel = townScene.GetNodeOrNull<Label>("RequestStatusPanel/Margin/Content/RequestStatusLabel");
+        _requestStatusPanel = townScene.GetNodeOrNull<Control>("RequestStatusPanel");
 
-        var shop = townScene.GetNodeOrNull<ShopInteraction>("Shop");
-        if (shop is null)
+        var shopDoor = townScene.GetNodeOrNull<EnterBuildingInteraction>("Shop");
+        if (shopDoor is null)
         {
-            GD.PushWarning("Town scene is missing a ShopInteraction node named 'Shop'.");
+            GD.PushWarning("Town scene is missing an EnterBuildingInteraction node named 'Shop'.");
         }
         else
         {
-            shop.ShopRequested += OnShopRequested;
-            shop.MouseEntered += () => OnWorldInteractionHovered("shop", "buy or sell items", PanelMode.Shop);
-            shop.MouseExited += OnWorldInteractionHoverEnded;
+            shopDoor.EnterBuildingRequested += OnGateEntered;
+            shopDoor.MouseEntered += () => OnWorldInteractionHovered("general store", "step inside to trade");
+            shopDoor.MouseExited += OnWorldInteractionHoverEnded;
         }
 
-        var storage = townScene.GetNodeOrNull<StorageInteraction>("Storage");
-        if (storage is null)
+        var barnDoor = townScene.GetNodeOrNull<EnterBuildingInteraction>("Storage");
+        if (barnDoor is null)
         {
-            GD.PushWarning("Town scene is missing a StorageInteraction node named 'Storage'.");
+            GD.PushWarning("Town scene is missing an EnterBuildingInteraction node named 'Storage'.");
         }
         else
         {
-            storage.StorageRequested += OnStorageRequested;
-            storage.MouseEntered += () => OnWorldInteractionHovered("storage", "move items", PanelMode.Storage);
-            storage.MouseExited += OnWorldInteractionHoverEnded;
+            barnDoor.EnterBuildingRequested += OnGateEntered;
+            barnDoor.MouseEntered += () => OnWorldInteractionHovered("barn", "step inside to manage chest");
+            barnDoor.MouseExited += OnWorldInteractionHoverEnded;
         }
 
         var requestBoard = townScene.GetNodeOrNull<RequestBoardInteraction>("RequestBoard");
@@ -454,7 +626,14 @@ public partial class GameBootstrap
             return;
         }
 
-        var result = ProcessDayEnd(_clock, _stamina, _growth, _farmGrid, _cropCatalog);
+        if (!HarvestManor.Core.Time.TimeOfDayController.IsSleepAllowed(_clock.CurrentMinuteOfDay))
+        {
+            SetFarmStatus($"It's only {HarvestManor.Core.Time.TimeOfDayController.FormatClock(_clock.CurrentMinuteOfDay)}. Come back to bed after 18:00.");
+            return;
+        }
+
+        var minutesToAdvance = HarvestManor.Core.Time.TimeOfDayController.DayEndMinute - _clock.CurrentMinuteOfDay;
+        var result = ProcessDayEnd(_clock, _stamina, _growth, _farmGrid, _cropCatalog, minutesToAdvance);
         if (!result.DayRolled)
         {
             return;
@@ -473,6 +652,8 @@ public partial class GameBootstrap
             _farmGrid, _requests, _completedRequestIds, _inventory, _itemCatalog,
             result.SeasonChanged ? result.CurrentSeason : null,
             result.CropsWithered));
+        UpdateTimeOfDayVisuals();
+        _realTimeAccumulator = 0.0;
         Autosave();
     }
 
@@ -519,6 +700,8 @@ public partial class GameBootstrap
         {
             _storagePanel.Visible = visibility.StorageVisible;
         }
+
+        _hud?.SetTopBarVisible(_activePanelMode == PanelMode.None);
     }
 
     private void RenderFarmPlots()
@@ -557,10 +740,11 @@ public partial class GameBootstrap
             return;
         }
 
+        _hud.SetClock(HarvestManor.Core.Time.TimeOfDayController.FormatClock(_clock.CurrentMinuteOfDay));
         _hud.SetDay($"Day {_clock.Date.Day} ({_clock.Date.Season})");
         _hud.SetGold(_wallet.Gold);
         _hud.SetStamina(_stamina.Current, _stamina.Maximum);
-        _hud.SetGrowth($"Unlocked plots: {_unlockState.UnlockedPlotKeys.Count}");
+        _hud.SetGrowth($"Plots: {_unlockState.UnlockedPlotKeys.Count}");
     }
 
     private void RefreshRequestBoardStatus(string? overrideMessage = null)
@@ -573,10 +757,48 @@ public partial class GameBootstrap
         if (!string.IsNullOrWhiteSpace(overrideMessage))
         {
             _requestStatusLabel.Text = overrideMessage;
+            ShowRequestStatusPanel();
             return;
         }
 
         _requestStatusLabel.Text = StatusMessageBuilder.BuildRequestBoardStatusText(_requests, _completedRequestIds, _inventory, _itemCatalog);
+        ShowRequestStatusPanel();
+    }
+
+    private void ShowFarmStatusPanel()
+    {
+        if (_farmStatusPanel is null)
+        {
+            return;
+        }
+        _farmStatusPanel.Visible = true;
+        _farmStatusTimer?.Start();
+    }
+
+    private void HideFarmStatusPanel()
+    {
+        if (_farmStatusPanel is not null)
+        {
+            _farmStatusPanel.Visible = false;
+        }
+    }
+
+    private void ShowRequestStatusPanel()
+    {
+        if (_requestStatusPanel is null)
+        {
+            return;
+        }
+        _requestStatusPanel.Visible = true;
+        _requestStatusTimer?.Start();
+    }
+
+    private void HideRequestStatusPanel()
+    {
+        if (_requestStatusPanel is not null)
+        {
+            _requestStatusPanel.Visible = false;
+        }
     }
 
     private void SetFarmStatus(string message)
@@ -585,6 +807,10 @@ public partial class GameBootstrap
         if (_farmStatusLabel is not null)
         {
             _farmStatusLabel.Text = message;
+        }
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+            ShowFarmStatusPanel();
         }
     }
 
@@ -602,6 +828,7 @@ public partial class GameBootstrap
         }
 
         _farmStatusLabel.Text = message;
+        ShowFarmStatusPanel();
     }
 
     private void RestoreFarmStatus()
@@ -612,6 +839,7 @@ public partial class GameBootstrap
         }
 
         _farmStatusLabel.Text = _persistedFarmStatusMessage;
+        ShowFarmStatusPanel();
     }
 
     private bool TryNotifyBlockedWorldInteraction(PanelMode requestedMode = PanelMode.None)
