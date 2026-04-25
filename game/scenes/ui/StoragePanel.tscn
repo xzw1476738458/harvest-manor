@@ -21,6 +21,7 @@ content_margin_right = 28.0
 content_margin_bottom = 24.0
 
 [node name="StoragePanel" type="Control"]
+z_index = 50
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
