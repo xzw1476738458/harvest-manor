@@ -123,6 +123,18 @@ public partial class GameBootstrap
         {
             sky.Color = TimeOfDayController.GetSkyColor(minute);
         }
+
+        var skyGradientTop = scene.GetNodeOrNull<Polygon2D>("SkyGradientTop");
+        if (skyGradientTop is not null)
+        {
+            var dayStrength = 1f - Mathf.Clamp(TimeOfDayController.GetNightOverlayAlpha(minute) / 0.62f, 0f, 1f);
+            var skyColor = TimeOfDayController.GetSkyColor(minute);
+            skyGradientTop.Color = new Color(
+                Mathf.Min(1f, skyColor.R + 0.10f),
+                Mathf.Min(1f, skyColor.G + 0.08f),
+                Mathf.Min(1f, skyColor.B + 0.04f),
+                0.85f * dayStrength);
+        }
     }
 
     private static void UpdateCottageWindow(Node2D scene, int minute)
