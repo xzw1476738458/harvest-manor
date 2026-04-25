@@ -255,31 +255,6 @@ z_index = -4
 color = Color(0.78, 0.64, 0.46, 1)
 polygon = PackedVector2Array(1140, 462, 1162, 460, 1170, 472, 1162, 484, 1140, 484, 1130, 472)
 
-[node name="BannerStrip" type="Polygon2D" parent="."]
-z_index = -5
-color = Color(0.86, 0.34, 0.26, 0.95)
-polygon = PackedVector2Array(360, 122, 880, 122, 856, 160, 384, 160)
-
-[node name="BannerRope" type="Polygon2D" parent="."]
-z_index = -5
-color = Color(0.36, 0.24, 0.14, 0.95)
-polygon = PackedVector2Array(360, 120, 880, 120, 880, 124, 360, 124)
-
-[node name="BannerTassel1" type="Polygon2D" parent="."]
-z_index = -4
-color = Color(1, 0.84, 0.40, 0.95)
-polygon = PackedVector2Array(478, 160, 486, 160, 482, 174)
-
-[node name="BannerTassel2" type="Polygon2D" parent="."]
-z_index = -4
-color = Color(1, 0.84, 0.40, 0.95)
-polygon = PackedVector2Array(620, 160, 628, 160, 624, 174)
-
-[node name="BannerTassel3" type="Polygon2D" parent="."]
-z_index = -4
-color = Color(1, 0.84, 0.40, 0.95)
-polygon = PackedVector2Array(762, 160, 770, 160, 766, 174)
-
 [node name="LampPostBase" type="Polygon2D" parent="."]
 z_index = -4
 color = Color(0.22, 0.18, 0.14, 1)
