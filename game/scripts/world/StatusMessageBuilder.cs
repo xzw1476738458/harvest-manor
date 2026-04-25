@@ -157,23 +157,25 @@ public static class StatusMessageBuilder
         InventoryState? inventory = null,
         int? currentGold = null,
         Season? currentSeason = null,
-        string? expansionPlotKey = null,
-        int expansionCost = 0)
+        Func<int, int, int?>? lookupUnlockCost = null)
     {
         ArgumentNullException.ThrowIfNull(plot);
         ArgumentNullException.ThrowIfNull(crops);
 
         if (plot.IsLocked)
         {
-            var plotKey = GameBootstrap.BuildPlotKey(plot.X, plot.Y);
-            if (plotKey == expansionPlotKey && currentGold is not null && currentGold < expansionCost)
+            var unlockCost = lookupUnlockCost?.Invoke(plot.X, plot.Y);
+            if (unlockCost is null)
             {
-                return $"Hover plot: need {expansionCost}g to unlock.";
+                return "Hover plot: locked.";
             }
 
-            return plotKey == expansionPlotKey
-                ? $"Hover plot: unlock for {expansionCost}g."
-                : "Hover plot: locked.";
+            if (currentGold is not null && currentGold < unlockCost.Value)
+            {
+                return $"Hover plot: need {unlockCost.Value}g to unlock.";
+            }
+
+            return $"Hover plot: unlock for {unlockCost.Value}g.";
         }
 
         if (!plot.IsTilled)

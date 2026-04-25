@@ -290,7 +290,7 @@ public partial class GameBootstrap
         PreviewFarmStatus(
             BlocksWorldInteractions(_activePanelMode)
                 ? StatusMessageBuilder.BuildBlockedWorldInteractionMessage(_activePanelMode)
-                : StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(_farmGrid.GetPlot(gridX, gridY), _cropCatalog, _inventory, _wallet?.Gold, _clock?.Date.Season, DemoExpansionPlotKey, DemoExpansionCost));
+                : StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(_farmGrid.GetPlot(gridX, gridY), _cropCatalog, _inventory, _wallet?.Gold, _clock?.Date.Season, _expansionTiers.GetUnlockCost));
     }
 
     private void OnWorldInteractionHovered(string interactionName, string actionDescription, PanelMode requestedMode = PanelMode.None)
@@ -331,9 +331,9 @@ public partial class GameBootstrap
             return;
         }
 
-        if (CanTriggerDemoExpansionShortcut(_activePanelMode, keyEvent.Keycode))
+        if (CanTriggerQuickExpansionShortcut(_activePanelMode, keyEvent.Keycode))
         {
-            _ = TryPurchaseExpansion(DemoExpansionPlotKey, requiredGold: DemoExpansionCost);
+            _ = TryPurchaseCheapestLockedPlot();
             GetViewport().SetInputAsHandled();
             return;
         }
@@ -363,7 +363,7 @@ public partial class GameBootstrap
 
         if (plot.IsLocked)
         {
-            changed = TryHandleLockedPlotInteraction(_expansionService, _unlockState, _wallet, gridX, gridY, out message);
+            changed = TryHandleLockedPlotInteraction(_expansionService, _expansionTiers, _unlockState, _wallet, gridX, gridY, out message);
             if (changed)
             {
                 SyncFarmGridLocksFromUnlockState(_farmGrid, _unlockState);
@@ -596,6 +596,38 @@ public partial class GameBootstrap
         return true;
     }
 
+    private bool TryPurchaseCheapestLockedPlot()
+    {
+        if (_wallet is null)
+        {
+            return false;
+        }
+
+        foreach (var tier in _expansionTiers.EnumerateLockedTiers())
+        {
+            if (tier.UnlockCost > _wallet.Gold)
+            {
+                return false;
+            }
+
+            foreach (var plotKey in tier.PlotKeys)
+            {
+                if (_unlockState.Contains(plotKey))
+                {
+                    continue;
+                }
+
+                if (TryPurchaseExpansion(plotKey, tier.UnlockCost))
+                {
+                    SetFarmStatus($"Unlocked plot {plotKey} for {tier.UnlockCost}g.");
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private bool TryGetSelectedShopOffer(out ShopOffer? offer)
     {
         offer = null;
@@ -723,7 +755,7 @@ public partial class GameBootstrap
         foreach (var plotNode in _farmPlotNodes)
         {
             var plot = _farmGrid.GetPlot(plotNode.GridX, plotNode.GridY);
-            plotNode.Render(plot, ResolveCropDisplayName(plot), GetLockedPlotHint(plot.X, plot.Y));
+            plotNode.Render(plot, ResolveCropDisplayName(plot), GetLockedPlotHint(plot.X, plot.Y, _expansionTiers));
         }
     }
 

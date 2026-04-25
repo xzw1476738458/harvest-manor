@@ -25,19 +25,19 @@ public partial class GameBootstrap : Node2D
     private const int DefaultMaximumStamina = 100;
     private const int DayStartMinute = 6 * 60;
     private const int DayEndMinute = 26 * 60;
-    private const string DemoExpansionPlotKey = "2,0";
-    private const int DemoExpansionCost = 120;
 
-    private static readonly string[] DefaultUnlockedPlotKeys = { "0,0", "1,0", "0,1", "1,1" };
+    private static readonly ExpansionTierService DefaultExpansionTiers = ExpansionTierService.CreateDefault();
+    private static readonly IReadOnlyList<string> DefaultUnlockedPlotKeys = DefaultExpansionTiers.DefaultUnlockedPlotKeys.ToList();
 
     private static readonly JsonSerializerOptions JsonOptions = JsonDefaults.ReadOptions;
 
     private readonly ContentCatalogLoader _loader = new();
     private readonly RequestBoardService _requestBoardService = new();
     private readonly FarmExpansionService _expansionService = new();
+    private readonly ExpansionTierService _expansionTiers = ExpansionTierService.CreateDefault();
     private readonly ShopService _shopService = new();
     private readonly HashSet<string> _completedRequestIds = new();
-    private readonly UnlockState _unlockState = new(new HashSet<string>(DefaultUnlockedPlotKeys));
+    private readonly UnlockState _unlockState = new(new HashSet<string>(ExpansionTierService.CreateDefault().DefaultUnlockedPlotKeys));
     private readonly Dictionary<string, CropDefinition> _cropCatalog = new(StringComparer.Ordinal);
     private readonly Dictionary<string, ItemDefinition> _itemCatalog = new(StringComparer.Ordinal);
     private readonly List<FarmPlotNode> _farmPlotNodes = new();

@@ -84,15 +84,19 @@ public partial class GameBootstrap
             .ToList();
     }
 
-    public static string GetLockedPlotHint(int x, int y)
+    public static string GetLockedPlotHint(int x, int y, ExpansionTierService tiers)
     {
-        return BuildPlotKey(x, y) == DemoExpansionPlotKey
-            ? $"Click: unlock ({DemoExpansionCost}g)"
-            : "Locked";
+        ArgumentNullException.ThrowIfNull(tiers);
+
+        var cost = tiers.GetUnlockCost(x, y);
+        return cost is null
+            ? "Locked"
+            : $"Click: unlock ({cost.Value}g)";
     }
 
     public static bool TryHandleLockedPlotInteraction(
         FarmExpansionService expansionService,
+        ExpansionTierService tiers,
         UnlockState unlockState,
         Wallet wallet,
         int x,
@@ -100,24 +104,27 @@ public partial class GameBootstrap
         out string message)
     {
         ArgumentNullException.ThrowIfNull(expansionService);
+        ArgumentNullException.ThrowIfNull(tiers);
         ArgumentNullException.ThrowIfNull(unlockState);
         ArgumentNullException.ThrowIfNull(wallet);
 
         var plotKey = BuildPlotKey(x, y);
-        if (plotKey != DemoExpansionPlotKey)
+        var cost = tiers.GetUnlockCost(x, y);
+        if (cost is null)
         {
             message = "Plot is locked.";
             return false;
         }
 
-        if (expansionService.TryUnlockPlot(unlockState, plotKey, DemoExpansionCost, wallet))
+        var requiredCost = cost.Value;
+        if (expansionService.TryUnlockPlot(unlockState, plotKey, requiredCost, wallet))
         {
-            message = $"Unlocked a new plot for {DemoExpansionCost}g. Click again to till.";
+            message = $"Unlocked a new plot for {requiredCost}g. Click again to till.";
             return true;
         }
 
-        message = wallet.Gold < DemoExpansionCost
-            ? $"Need {DemoExpansionCost}g to unlock this plot."
+        message = wallet.Gold < requiredCost
+            ? $"Need {requiredCost}g to unlock this plot."
             : "Plot is locked.";
         return false;
     }

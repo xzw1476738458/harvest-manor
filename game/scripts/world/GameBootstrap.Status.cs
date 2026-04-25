@@ -40,7 +40,7 @@ public partial class GameBootstrap
             : requestedMode;
     }
 
-    public static bool CanTriggerDemoExpansionShortcut(PanelMode currentMode, Key keycode)
+    public static bool CanTriggerQuickExpansionShortcut(PanelMode currentMode, Key keycode)
     {
         return keycode == Key.F7 && !BlocksWorldInteractions(currentMode);
     }

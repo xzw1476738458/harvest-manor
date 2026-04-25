@@ -347,12 +347,12 @@ public sealed class GameBootstrapIntegrationTests
     [InlineData(PanelMode.Shop, Key.F7, false)]
     [InlineData(PanelMode.Storage, Key.F7, false)]
     [InlineData(PanelMode.Shop, Key.Escape, false)]
-    public void CanTriggerDemoExpansionShortcut_OnlyWorksWithoutAnOpenPanel(
+    public void CanTriggerQuickExpansionShortcut_OnlyWorksWithoutAnOpenPanel(
         PanelMode currentMode,
         Key keycode,
         bool canTriggerShortcut)
     {
-        Assert.Equal(canTriggerShortcut, GameBootstrap.CanTriggerDemoExpansionShortcut(currentMode, keycode));
+        Assert.Equal(canTriggerShortcut, GameBootstrap.CanTriggerQuickExpansionShortcut(currentMode, keycode));
     }
 
     [Theory]
@@ -412,9 +412,10 @@ public sealed class GameBootstrapIntegrationTests
     {
         var crops = CreateCropCatalog();
 
+        Func<int, int, int?> lookup = (x, y) => x == 2 && y == 0 ? 120 : null;
         Assert.Equal(
             "Hover plot: unlock for 120g.",
-            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(new PlotState(2, 0, false, true, false, false, null), crops, expansionPlotKey: "2,0", expansionCost: 120));
+            StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(new PlotState(2, 0, false, true, false, false, null), crops, lookupUnlockCost: lookup));
         Assert.Equal(
             "Hover plot: click to till.",
             StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(PlotState.Wild(0, 0), crops));
@@ -462,6 +463,7 @@ public sealed class GameBootstrapIntegrationTests
                 fullInventory,
                 currentGold: 200));
 
+        Func<int, int, int?> lookup = (x, y) => x == 2 && y == 0 ? 120 : null;
         Assert.Equal(
             "Hover plot: need 120g to unlock.",
             StatusMessageBuilder.BuildFarmPlotHoverStatusMessage(
@@ -469,8 +471,7 @@ public sealed class GameBootstrapIntegrationTests
                 crops,
                 emptyInventory,
                 currentGold: 100,
-                expansionPlotKey: "2,0",
-                expansionCost: 120));
+                lookupUnlockCost: lookup));
     }
 
     [Fact]
@@ -868,43 +869,68 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Equal("Completed request: delivered 5 Parsnip for 120g.", message);
     }
 
-    [Fact]
-    public void GetLockedPlotHint_ReturnsUnlockPromptForDemoExpansionPlot()
+    [Theory]
+    [InlineData(2, 0, "Click: unlock (120g)")]
+    [InlineData(2, 2, "Click: unlock (120g)")]
+    [InlineData(3, 3, "Click: unlock (280g)")]
+    [InlineData(4, 4, "Click: unlock (600g)")]
+    [InlineData(5, 5, "Click: unlock (1200g)")]
+    public void GetLockedPlotHint_ReturnsTierAwareUnlockPrompt(int x, int y, string expectedHint)
     {
-        Assert.Equal("Click: unlock (120g)", GameBootstrap.GetLockedPlotHint(2, 0));
-        Assert.Equal("Locked", GameBootstrap.GetLockedPlotHint(4, 4));
+        var tiers = ExpansionTierService.CreateDefault();
+        Assert.Equal(expectedHint, GameBootstrap.GetLockedPlotHint(x, y, tiers));
     }
 
     [Fact]
-    public void TryHandleLockedPlotInteraction_UnlocksDemoPlotAndSpendsGold()
+    public void GetLockedPlotHint_FallsBackToGenericLockedTextForOutOfTierPlots()
+    {
+        var tiers = ExpansionTierService.CreateDefault();
+        Assert.Equal("Locked", GameBootstrap.GetLockedPlotHint(9, 9, tiers));
+    }
+
+    [Theory]
+    [InlineData(2, 0, 200, true, 80, "Unlocked a new plot for 120g. Click again to till.")]
+    [InlineData(3, 3, 400, true, 120, "Unlocked a new plot for 280g. Click again to till.")]
+    [InlineData(4, 4, 700, true, 100, "Unlocked a new plot for 600g. Click again to till.")]
+    public void TryHandleLockedPlotInteraction_UnlocksAcrossEveryTier(
+        int x,
+        int y,
+        int startingGold,
+        bool expectedChanged,
+        int expectedRemainingGold,
+        string expectedMessage)
     {
         var expansion = new FarmExpansionService();
-        var unlockState = new UnlockState(new HashSet<string> { "0,0", "1,0", "0,1", "1,1" });
-        var wallet = new Wallet(200);
+        var tiers = ExpansionTierService.CreateDefault();
+        var unlockState = new UnlockState(new HashSet<string>(tiers.DefaultUnlockedPlotKeys));
+        var wallet = new Wallet(startingGold);
 
         var changed = GameBootstrap.TryHandleLockedPlotInteraction(
             expansion,
+            tiers,
             unlockState,
             wallet,
-            x: 2,
-            y: 0,
+            x,
+            y,
             out var message);
 
-        Assert.True(changed);
-        Assert.Equal(80, wallet.Gold);
-        Assert.Equal("Unlocked a new plot for 120g. Click again to till.", message);
-        Assert.Contains("2,0", unlockState.UnlockedPlotKeys);
+        Assert.Equal(expectedChanged, changed);
+        Assert.Equal(expectedRemainingGold, wallet.Gold);
+        Assert.Equal(expectedMessage, message);
+        Assert.Contains($"{x},{y}", unlockState.UnlockedPlotKeys);
     }
 
     [Fact]
     public void TryHandleLockedPlotInteraction_ReturnsCostMessageWhenGoldIsInsufficient()
     {
         var expansion = new FarmExpansionService();
-        var unlockState = new UnlockState(new HashSet<string> { "0,0", "1,0", "0,1", "1,1" });
+        var tiers = ExpansionTierService.CreateDefault();
+        var unlockState = new UnlockState(new HashSet<string>(tiers.DefaultUnlockedPlotKeys));
         var wallet = new Wallet(100);
 
         var changed = GameBootstrap.TryHandleLockedPlotInteraction(
             expansion,
+            tiers,
             unlockState,
             wallet,
             x: 2,
@@ -915,6 +941,28 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Equal(100, wallet.Gold);
         Assert.Equal("Need 120g to unlock this plot.", message);
         Assert.DoesNotContain("2,0", unlockState.UnlockedPlotKeys);
+    }
+
+    [Fact]
+    public void TryHandleLockedPlotInteraction_ReturnsLockedMessageForPlotsOutsideAnyTier()
+    {
+        var expansion = new FarmExpansionService();
+        var tiers = ExpansionTierService.CreateDefault();
+        var unlockState = new UnlockState(new HashSet<string>(tiers.DefaultUnlockedPlotKeys));
+        var wallet = new Wallet(2000);
+
+        var changed = GameBootstrap.TryHandleLockedPlotInteraction(
+            expansion,
+            tiers,
+            unlockState,
+            wallet,
+            x: 9,
+            y: 9,
+            out var message);
+
+        Assert.False(changed);
+        Assert.Equal(2000, wallet.Gold);
+        Assert.Equal("Plot is locked.", message);
     }
 
     [Theory]

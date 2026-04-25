@@ -6,16 +6,20 @@ namespace HarvestManor.Game.Tests.World;
 public sealed class FarmSceneLayoutTests
 {
     [Fact]
-    public void FarmScene_ExposesDefaultUnlockedPlotsAndExpansionDemoPlot()
+    public void FarmScene_ExposesEveryPlotInTheSixBySixGrid()
     {
         var sceneContents = File.ReadAllText(FindFarmScenePath());
         var plotCoordinates = ParsePlotCoordinates(sceneContents);
 
-        Assert.Contains((0, 0), plotCoordinates);
-        Assert.Contains((1, 0), plotCoordinates);
-        Assert.Contains((0, 1), plotCoordinates);
-        Assert.Contains((1, 1), plotCoordinates);
-        Assert.Contains((2, 0), plotCoordinates);
+        for (var y = 0; y < 6; y++)
+        {
+            for (var x = 0; x < 6; x++)
+            {
+                Assert.Contains((x, y), plotCoordinates);
+            }
+        }
+
+        Assert.Equal(36, plotCoordinates.Count);
     }
 
     [Fact]
@@ -54,6 +58,17 @@ public sealed class FarmSceneLayoutTests
         Assert.True(maxY >= 700, $"Expected farm scene framing to reach at least y=700, but max polygon y was {maxY}.");
     }
 
+    [Fact]
+    public void FarmScene_BackdropExtendsToCoverTheFullSixRowGrid()
+    {
+        var sceneContents = File.ReadAllText(FindFarmScenePath());
+        var deepestPlotY = ExtractMaxPlotPositionY(sceneContents);
+        var (_, maxBackdropY) = ExtractMaxPolygonCoordinate(sceneContents);
+
+        Assert.True(deepestPlotY >= 880, $"Expected at least one plot to be positioned below y=880 to prove the grid covers six rows, but deepest was {deepestPlotY}.");
+        Assert.True(maxBackdropY >= deepestPlotY + 30, $"Expected backdrop polygons to extend below the deepest plot ({deepestPlotY}), but reached only y={maxBackdropY}.");
+    }
+
     private static string FindFarmScenePath()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -83,6 +98,23 @@ public sealed class FarmSceneLayoutTests
                 X: int.Parse(match.Groups["x"].Value),
                 Y: int.Parse(match.Groups["y"].Value)))
             .ToHashSet();
+    }
+
+    private static float ExtractMaxPlotPositionY(string sceneContents)
+    {
+        var matches = Regex.Matches(
+            sceneContents,
+            @"\[node name=""Plot\d+"" type=""Area2D"" parent=""\.""\]\r?\nposition = Vector2\((?<x>-?\d+(?:\.\d+)?), (?<y>-?\d+(?:\.\d+)?)\)",
+            RegexOptions.CultureInvariant);
+
+        var maxY = 0f;
+        foreach (Match match in matches)
+        {
+            var y = float.Parse(match.Groups["y"].Value, System.Globalization.CultureInfo.InvariantCulture);
+            maxY = Math.Max(maxY, y);
+        }
+
+        return maxY;
     }
 
     private static (float MaxX, float MaxY) ExtractMaxPolygonCoordinate(string sceneContents)

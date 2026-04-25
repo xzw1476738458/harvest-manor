@@ -1,4 +1,4 @@
-# Task Plan: Mainline Presentation And Smoke Pass
+# Task Plan: Real Farm Expansion System
 
 ## Planning File Rules
 
@@ -9,65 +9,99 @@
 
 ## Goal
 
-Continue `Harvest Manor` on `main`, focusing on manual smoke coverage and the first real scene/UI beautification pass now that milestone-1 work has been merged and the bootstrap orchestration has been split by responsibility.
+Replace the current single-plot demo expansion with a real, data-driven farm expansion system so the "land expansion as the strongest visible growth signal" pillar from the design spec actually holds up over multiple in-game days. This is the first step of the **Manor Growth** phase that follows milestone 1.
 
 ## Current Phase
 
-Phase 4
+Phase 5 (in progress)
+
+## Scope Guard
+
+This task is intentionally narrow. It only delivers the systems needed for real land expansion:
+
+- Camera follow on the player so a larger farm is reachable
+- Full 6x6 grid (36 plots) physically present in `FarmScene.tscn`
+- Tiered, data-driven expansion costs replacing the hard-coded `DemoExpansionPlotKey` / `DemoExpansionCost`
+- Test and integration coverage matching the new behavior
+
+This task explicitly does **not** include:
+
+- Facility / building system
+- Storage or inventory capacity upgrades
+- NPCs or dialogue
+- Gathering area / wood / stone production
+- Crop multi-stage visuals
+- Tool/equipment system
+- Audio
+- Main menu / multi-slot saves
+- Art assets
+
+These are queued behind this task and will be picked up in their own focused passes after this lands.
 
 ## Phases
 
-### Phase 1: Planning Reset After Merge
-- [x] Archive the stale root planning files that still referenced the deleted milestone worktree
-- [x] Write a long-term workflow document under `docs/`
-- [x] Recreate root planning files for the current `main` branch task
+### Phase 1: Planning Reset
+- [x] Archive previous mainline-presentation planning files
+- [x] Create new root planning files for the expansion task
 - **Status:** complete
 
-### Phase 2: Verify The Mainline Experience
-- [x] Run a manual smoke pass against the current playable slice
-- [x] Record any UX, layout, or readability issues that only show up in interactive play
-- [x] Decide the highest-value follow-up polish target from the smoke pass
+### Phase 2: Failing Test Coverage First
+- [x] Add `PlayerSceneLayoutTests` asserting `Player.tscn` exposes a `Camera2D` child with smoothing
+- [x] Update `FarmSceneLayoutTests` to assert all 36 `FarmPlotNode` instances cover `(0..5, 0..5)`
+- [x] Add `FarmScene_BackdropExtendsToCoverTheFullSixRowGrid` asserting field reaches the deepest plot row
+- [x] Add `ExpansionTierServiceTests` describing the four-tier ring pricing (120 / 280 / 600 / 1200) plus the free 2x2 starter
+- [x] Update `GameBootstrapIntegrationTests` for tier-aware `GetLockedPlotHint`, `TryHandleLockedPlotInteraction`, and the new `lookupUnlockCost` callback in `BuildFarmPlotHoverStatusMessage`
+- [x] Confirm the new tests fail before implementation
 - **Status:** complete
 
-### Phase 3: First Beautification Pass
-- [x] Reframe the main window so the composition uses a deliberate widescreen layout
-- [x] Separate HUD, farm status, and request status into dedicated visual regions
-- [x] Keep automated layout and behavior coverage aligned with the new presentation structure
+### Phase 3: Implement Tiered Expansion Logic
+- [x] Introduce `ExpansionTierService` (rule layer, no Godot deps) returning unlock cost by `(x, y)` and plot key with explicit `TierConfiguration` records
+- [x] Replace `DemoExpansionPlotKey` / `DemoExpansionCost` usage in `GameBootstrap.*.cs` with tier service calls; add a `TryPurchaseCheapestLockedPlot` shortcut for F7 quick-unlock
+- [x] Update `StatusMessageBuilder.BuildFarmPlotHoverStatusMessage` to take a `Func<int, int, int?> lookupUnlockCost` callback
+- [x] Rename `CanTriggerDemoExpansionShortcut` to `CanTriggerQuickExpansionShortcut`
 - **Status:** complete
 
-### Phase 4: Visual Review And Follow-Up
-- [ ] Review the new live layout in a normal game window
-- [ ] Record any remaining high-impact presentation gaps after the wider composition pass
-- [ ] Decide whether the next step is another art/UI pass or a return to gameplay/system work
+### Phase 4: Wire Godot Presentation
+- [x] Add `Camera2D` to `Player.tscn` with `position_smoothing_enabled = true`
+- [x] Extend `FarmScene.tscn` field/frame/fence/walls vertically from y=696 to y=996 to fit the new grid
+- [x] Add the missing 31 `FarmPlotNode` instances at deterministic positions (`x = 280 + col*140`, `y = 470 + row*88`)
+- [x] Extend right-bottom collision wall so the field stays bounded after the grid drops below the original gate row
+- **Status:** complete
+
+### Phase 5: Verification
+- [x] Run full `dotnet test` suite (246/246 passed)
+- [x] Run `dotnet build game/HarvestManor.csproj` (0 errors, 0 warnings)
+- [x] Run Godot headless smoke launch (loaded crops/items/offers/requests, no errors or warnings)
+- [ ] Update `findings.md` and `progress.md` with summary notes
+- [ ] Update `docs/testing/milestone-1-smoke-checklist.md` to describe the new multi-tier expansion behavior
 - **Status:** in_progress
 
 ## Key Questions
 
-1. Which issues only show up in manual play and not in the automated suite?
-2. Which visual improvements most increase clarity without introducing asset-pipeline overhead?
-3. How far should the current polish pass go before starting the next gameplay/system milestone?
-4. After the first beautification pass, which remaining visual rough edges still feel prototype-grade in live play?
+1. What unlock tier shape best balances "fast first reinvestment" with "long-tail goldsink"?
+2. Should the camera follow be locked to scene bounds or free-roaming?
+3. Should the new plots use the same `Polygon2D` styling, or take this chance to differentiate ring boundaries visually?
+4. How do we keep existing save files compatible after the unlock system changes?
 
 ## Decisions Made
 
 | Decision | Rationale |
 |----------|-----------|
-| `main` is now the active source of truth | Milestone-1 work has already been merged; the old feature branch/worktree no longer exists |
-| Root planning files were reset instead of extended | The old files had become inaccurate and no longer described the current working context |
-| The workflow rule is stored both here and in `docs/project-workflow.md` | New sessions should encounter the rule quickly, while `docs/` keeps the durable version |
-| The current active task is framed as mainline smoke + presentation polish | That matches the repo state after merge and the most recent verified work on scene readability |
-| First beautification work should prioritize layout composition over repair polish | The smoke feedback showed the real problem was framing, spacing, and information hierarchy rather than isolated missing details |
-| The presentation target is now a 1280x720 widescreen composition with a top HUD, a left farm card, and a right town card | This uses the screen intentionally and separates the most important information zones before deeper art work starts |
+| Pick "real expansion" as the next milestone over polish/NPCs/facilities | The single-plot demo is the most broken design promise; expansion infrastructure is also a prerequisite for facilities and richer farm growth |
+| Add a dedicated `ExpansionTierService` instead of expanding `FarmExpansionService` | Keeps the existing service focused on enforcement (gold + state) and isolates pricing rules in a unit-testable place |
+| Keep camera follow simple (smoothing + scene-bound limits) | Smallest viable scope; we can revisit follow-cone, deadzone, or scripted shots later |
+| Default unlock tiers: 4 free / 8 @ 120g / 12 @ 350g / 12 @ 800g | Free ring matches today's defaults; tier 2 matches today's demo cost; later tiers create meaningful late-day goldsinks |
+| Existing saves stay compatible by treating unknown locked plots as ring-priced | No save migration needed; unlock state continues to be a set of plot keys |
 
 ## Errors Encountered
 
 | Error | Attempt | Resolution |
 |-------|---------|------------|
-| Previous root planning files referenced a deleted worktree and branch | 1 | Archived the old files and regenerated a fresh root set for `main` |
+| (none yet) | | |
 
 ## Notes
 
-- Archived prior planning context to `docs/archive/planning/2026-04-10-milestone-1-foundation-context/`
-- Latest verified commits before this planning reset: `778c94d feat: improve scene readability and ui atmosphere`, `5d2e95e refactor: split game bootstrap by responsibility`
-- Current repo state should stay rooted in `D:\game project\harvest-manor` on branch `main`
-- Current uncommitted work is the first beautification pass plus its new layout coverage
+- Archived prior planning context to `docs/archive/planning/2026-04-25-mainline-presentation-and-smoke-pass/`
+- Latest verified commit before this task: `caaa857 fix(scene): make moon and stars actually visible at night`
+- Working branch: `main`
+- Working directory: `D:\game project\harvest-manor`
