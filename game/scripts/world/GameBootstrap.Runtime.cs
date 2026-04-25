@@ -199,8 +199,8 @@ public partial class GameBootstrap
             }
         }
 
-        _farmStatusLabel = farmScene.GetNodeOrNull<Label>("FarmStatusPanel/Margin/Content/FarmStatusLabel");
-        _farmStatusPanel = farmScene.GetNodeOrNull<Control>("FarmStatusPanel");
+        _farmStatusLabel = farmScene.GetNodeOrNull<Label>("SceneOverlay/FarmStatusPanel/Margin/Content/FarmStatusLabel");
+        _farmStatusPanel = farmScene.GetNodeOrNull<Control>("SceneOverlay/FarmStatusPanel");
 
         var porchDoor = farmScene.GetNodeOrNull<EnterBuildingInteraction>("Bed");
         if (porchDoor is null)

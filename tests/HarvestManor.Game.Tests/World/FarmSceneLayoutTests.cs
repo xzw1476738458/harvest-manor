@@ -52,8 +52,9 @@ public sealed class FarmSceneLayoutTests
         var sceneContents = File.ReadAllText(FindFarmScenePath());
         var (maxX, maxY) = ExtractMaxPolygonCoordinate(sceneContents);
 
-        Assert.Contains("[node name=\"FarmStatusPanel\" type=\"PanelContainer\" parent=\".\"]", sceneContents);
-        Assert.Contains("[node name=\"FarmStatusLabel\" type=\"Label\" parent=\"FarmStatusPanel/Margin/Content\"]", sceneContents);
+        Assert.Contains("[node name=\"SceneOverlay\" type=\"CanvasLayer\" parent=\".\"]", sceneContents);
+        Assert.Contains("[node name=\"FarmStatusPanel\" type=\"PanelContainer\" parent=\"SceneOverlay\"]", sceneContents);
+        Assert.Contains("[node name=\"FarmStatusLabel\" type=\"Label\" parent=\"SceneOverlay/FarmStatusPanel/Margin/Content\"]", sceneContents);
         Assert.True(maxX >= 820, $"Expected farm scene framing to reach at least x=820, but max polygon x was {maxX}.");
         Assert.True(maxY >= 700, $"Expected farm scene framing to reach at least y=700, but max polygon y was {maxY}.");
     }
