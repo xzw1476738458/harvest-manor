@@ -105,14 +105,14 @@ polygon = PackedVector2Array(0, -28, 14, -24, 24, -14, 28, 0, 24, 14, 14, 24, 0,
 
 [node name="MoonGlow" type="Polygon2D" parent="."]
 position = Vector2(180, 180)
-z_index = -7
-color = Color(0.86, 0.92, 1, 0)
+z_index = 11
+color = Color(0.86, 0.92, 1, 0.55)
 polygon = PackedVector2Array(0, -48, 22, -42, 40, -28, 48, -8, 46, 14, 36, 32, 20, 46, 0, 50, -20, 46, -36, 32, -46, 14, -48, -8, -40, -28, -22, -42)
 
 [node name="Moon" type="Polygon2D" parent="."]
 position = Vector2(180, 180)
-z_index = -6
-color = Color(0.94, 0.94, 0.88, 0)
+z_index = 12
+color = Color(0.96, 0.96, 0.90, 1)
 polygon = PackedVector2Array(0, -26, 12, -22, 22, -12, 26, 0, 22, 12, 12, 22, 0, 26, -12, 22, -22, 12, -26, 0, -22, -12, -12, -22)
 
 [node name="MoonCrater1" type="Polygon2D" parent="Moon"]
@@ -127,7 +127,7 @@ polygon = PackedVector2Array(8, 4, 14, 2, 16, 8, 12, 12, 6, 10)
 
 [node name="Stars" type="Node2D" parent="."]
 modulate = Color(1, 1, 1, 0)
-z_index = -6
+z_index = 11
 
 [node name="Star1" type="Polygon2D" parent="Stars"]
 color = Color(1, 1, 0.86, 1)
@@ -160,6 +160,38 @@ polygon = PackedVector2Array(1020, 138, 1024, 134, 1028, 138, 1024, 142)
 [node name="Star8" type="Polygon2D" parent="Stars"]
 color = Color(1, 1, 0.86, 1)
 polygon = PackedVector2Array(1140, 178, 1143, 174, 1146, 178, 1143, 182)
+
+[node name="Star9" type="Polygon2D" parent="Stars"]
+color = Color(0.86, 0.92, 1, 0.85)
+polygon = PackedVector2Array(200, 222, 203, 218, 206, 222, 203, 226)
+
+[node name="Star10" type="Polygon2D" parent="Stars"]
+color = Color(1, 0.94, 0.78, 0.95)
+polygon = PackedVector2Array(360, 246, 364, 240, 368, 246, 364, 252)
+
+[node name="Star11" type="Polygon2D" parent="Stars"]
+color = Color(0.86, 0.92, 1, 0.85)
+polygon = PackedVector2Array(640, 196, 643, 192, 646, 196, 643, 200)
+
+[node name="Star12" type="Polygon2D" parent="Stars"]
+color = Color(1, 1, 0.86, 1)
+polygon = PackedVector2Array(800, 222, 804, 218, 808, 222, 804, 226)
+
+[node name="Star13" type="Polygon2D" parent="Stars"]
+color = Color(0.86, 0.92, 1, 0.85)
+polygon = PackedVector2Array(960, 200, 963, 196, 966, 200, 963, 204)
+
+[node name="Star14" type="Polygon2D" parent="Stars"]
+color = Color(1, 0.94, 0.78, 0.95)
+polygon = PackedVector2Array(1080, 240, 1084, 234, 1088, 240, 1084, 246)
+
+[node name="StarBig1" type="Polygon2D" parent="Stars"]
+color = Color(1, 1, 0.92, 1)
+polygon = PackedVector2Array(380, 168, 384, 162, 388, 168, 384, 174)
+
+[node name="StarBig2" type="Polygon2D" parent="Stars"]
+color = Color(1, 1, 0.92, 1)
+polygon = PackedVector2Array(820, 152, 824, 146, 828, 152, 824, 158)
 
 [node name="NightOverlay" type="Polygon2D" parent="."]
 z_index = 10
