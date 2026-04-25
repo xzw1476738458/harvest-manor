@@ -702,6 +702,15 @@ public partial class GameBootstrap
         }
 
         _hud?.SetTopBarVisible(_activePanelMode == PanelMode.None);
+
+        var movementEnabled = !BlocksWorldInteractions(_activePanelMode);
+        foreach (var node in GetTree().GetNodesInGroup(PlayerController.PlayerGroup))
+        {
+            if (node is PlayerController player)
+            {
+                player.MovementEnabled = movementEnabled;
+            }
+        }
     }
 
     private void RenderFarmPlots()

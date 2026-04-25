@@ -11,11 +11,15 @@ public partial class PlayerController : CharacterBody2D
     private static readonly StringName MoveDownAction = "move_down";
     private static readonly StringName InteractAction = "interact";
 
+    public const string PlayerGroup = "player";
+
     [Export]
     public float MoveSpeed { get; set; } = 160.0f;
 
     [Export]
     public Area2D? Interactor { get; set; }
+
+    public bool MovementEnabled { get; set; } = true;
 
     public override void _Ready()
     {
@@ -24,10 +28,22 @@ public partial class PlayerController : CharacterBody2D
         {
             Interactor.AddToGroup("player_interactor");
         }
+
+        if (!IsInGroup(PlayerGroup))
+        {
+            AddToGroup(PlayerGroup);
+        }
     }
 
     public override void _PhysicsProcess(double delta)
     {
+        if (!MovementEnabled)
+        {
+            Velocity = Vector2.Zero;
+            MoveAndSlide();
+            return;
+        }
+
         var direction = Input.GetVector(MoveLeftAction, MoveRightAction, MoveUpAction, MoveDownAction);
         Velocity = direction * MoveSpeed;
         MoveAndSlide();
@@ -35,6 +51,11 @@ public partial class PlayerController : CharacterBody2D
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        if (!MovementEnabled)
+        {
+            return;
+        }
+
         if (!@event.IsActionPressed(InteractAction) || Interactor is null)
         {
             return;

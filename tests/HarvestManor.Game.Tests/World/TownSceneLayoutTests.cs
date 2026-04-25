@@ -21,9 +21,9 @@ public sealed class TownSceneLayoutTests
         var sceneContents = File.ReadAllText(FindTownScenePath());
 
         Assert.Contains("[node name=\"SkyBackdrop\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
-        Assert.Contains("[node name=\"TownBackdrop\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
+        Assert.Contains("[node name=\"DirtBase\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
+        Assert.Contains("[node name=\"GrassMain\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
         Assert.Contains("[node name=\"ServicePath\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
-        Assert.Contains("[node name=\"BannerStrip\" type=\"Polygon2D\" parent=\".\"]", sceneContents);
     }
 
     [Fact]
