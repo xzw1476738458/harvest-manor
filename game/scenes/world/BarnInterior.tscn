@@ -388,6 +388,472 @@ z_index = -3
 color = Color(0.94, 0.82, 0.50, 0.85)
 polygon = PackedVector2Array(636, 564, 644, 564, 644, 576, 654, 576, 640, 586, 626, 576, 636, 576)
 
+[node name="WindowFrame" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.30, 0.20, 0.14, 1)
+polygon = PackedVector2Array(736, 138, 884, 138, 884, 222, 736, 222)
+
+[node name="WindowGlass" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.62, 0.78, 0.92, 0.88)
+polygon = PackedVector2Array(744, 146, 876, 146, 876, 214, 744, 214)
+
+[node name="WindowSky" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.78, 0.88, 0.96, 0.95)
+polygon = PackedVector2Array(744, 146, 876, 146, 876, 174, 744, 174)
+
+[node name="WindowSun" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(1, 0.95, 0.65, 0.95)
+polygon = PackedVector2Array(800, 156, 820, 156, 826, 168, 820, 178, 800, 178, 794, 168)
+
+[node name="WindowHill" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.46, 0.62, 0.36, 1)
+polygon = PackedVector2Array(744, 184, 776, 178, 808, 184, 838, 178, 876, 184, 876, 214, 744, 214)
+
+[node name="WindowMullionV" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.30, 0.20, 0.14, 1)
+polygon = PackedVector2Array(806, 146, 814, 146, 814, 214, 806, 214)
+
+[node name="WindowMullionH" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.30, 0.20, 0.14, 1)
+polygon = PackedVector2Array(744, 176, 876, 176, 876, 184, 744, 184)
+
+[node name="WindowSill" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.46, 0.30, 0.20, 1)
+polygon = PackedVector2Array(728, 222, 892, 222, 892, 232, 728, 232)
+
+[node name="WindowSunRay1" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(1, 0.95, 0.65, 0.18)
+polygon = PackedVector2Array(770, 232, 830, 232, 940, 596, 880, 596)
+
+[node name="WindowSunRay2" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(1, 0.95, 0.65, 0.12)
+polygon = PackedVector2Array(740, 232, 860, 232, 980, 596, 840, 596)
+
+[node name="ToolBoardBack" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.36, 0.24, 0.16, 1)
+polygon = PackedVector2Array(76, 138, 226, 138, 226, 296, 76, 296)
+
+[node name="ToolBoardPlank1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.42, 0.28, 0.18, 1)
+polygon = PackedVector2Array(82, 144, 220, 144, 220, 188, 82, 188)
+
+[node name="ToolBoardPlank2" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.42, 0.28, 0.18, 1)
+polygon = PackedVector2Array(82, 192, 220, 192, 220, 240, 82, 240)
+
+[node name="ToolBoardPlank3" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.42, 0.28, 0.18, 1)
+polygon = PackedVector2Array(82, 244, 220, 244, 220, 290, 82, 290)
+
+[node name="ToolHook1" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.22, 0.20, 0.18, 1)
+polygon = PackedVector2Array(108, 152, 112, 152, 112, 158, 108, 158)
+
+[node name="ToolHook2" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.22, 0.20, 0.18, 1)
+polygon = PackedVector2Array(154, 152, 158, 152, 158, 158, 154, 158)
+
+[node name="ToolHook3" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.22, 0.20, 0.18, 1)
+polygon = PackedVector2Array(196, 152, 200, 152, 200, 158, 196, 158)
+
+[node name="ToolHammerHandle" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.55, 0.36, 0.22, 1)
+polygon = PackedVector2Array(108, 158, 112, 158, 112, 184, 108, 184)
+
+[node name="ToolHammerHead" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.40, 0.40, 0.42, 1)
+polygon = PackedVector2Array(98, 178, 122, 178, 122, 188, 98, 188)
+
+[node name="ToolSawHandle" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.55, 0.36, 0.22, 1)
+polygon = PackedVector2Array(146, 158, 162, 158, 162, 168, 146, 168)
+
+[node name="ToolSawBlade" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.66, 0.66, 0.70, 1)
+polygon = PackedVector2Array(146, 168, 200, 168, 200, 178, 146, 178)
+
+[node name="ToolWrenchHandle" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.40, 0.40, 0.42, 1)
+polygon = PackedVector2Array(196, 158, 200, 158, 200, 184, 196, 184)
+
+[node name="ToolWrenchHead" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.50, 0.54, 1)
+polygon = PackedVector2Array(192, 178, 204, 178, 204, 188, 192, 188)
+
+[node name="ToolScytheHandle" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.55, 0.36, 0.22, 1)
+polygon = PackedVector2Array(96, 200, 100, 200, 100, 286, 96, 286)
+
+[node name="ToolScytheBlade" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.66, 0.66, 0.70, 1)
+polygon = PackedVector2Array(100, 200, 142, 200, 142, 206, 100, 210)
+
+[node name="ToolRakeHandle" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.55, 0.36, 0.22, 1)
+polygon = PackedVector2Array(168, 200, 172, 200, 172, 286, 168, 286)
+
+[node name="ToolRakeHead" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.40, 0.40, 0.42, 1)
+polygon = PackedVector2Array(160, 280, 180, 280, 180, 290, 160, 290)
+
+[node name="ToolRakeTooth1" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.40, 0.40, 0.42, 1)
+polygon = PackedVector2Array(162, 290, 164, 290, 164, 296, 162, 296)
+
+[node name="ToolRakeTooth2" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.40, 0.40, 0.42, 1)
+polygon = PackedVector2Array(170, 290, 172, 290, 172, 296, 170, 296)
+
+[node name="ToolRakeTooth3" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.40, 0.40, 0.42, 1)
+polygon = PackedVector2Array(178, 290, 180, 290, 180, 296, 178, 296)
+
+[node name="HorseshoeBack" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.42, 0.28, 0.18, 1)
+polygon = PackedVector2Array(976, 142, 1058, 142, 1058, 220, 976, 220)
+
+[node name="HorseshoeMetal1" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.46, 0.46, 0.50, 1)
+polygon = PackedVector2Array(998, 158, 1004, 158, 1004, 198, 998, 198)
+
+[node name="HorseshoeMetal2" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.46, 0.46, 0.50, 1)
+polygon = PackedVector2Array(1030, 158, 1036, 158, 1036, 198, 1030, 198)
+
+[node name="HorseshoeMetal3" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.46, 0.46, 0.50, 1)
+polygon = PackedVector2Array(998, 158, 1036, 158, 1036, 164, 998, 164)
+
+[node name="HorseshoePlate" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.94, 0.86, 0.62, 1)
+polygon = PackedVector2Array(986, 200, 1048, 200, 1048, 218, 986, 218)
+
+[node name="ShelfPlank" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.42, 0.28, 0.18, 1)
+polygon = PackedVector2Array(440, 268, 840, 268, 840, 276, 440, 276)
+
+[node name="ShelfBracketLeft" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.30, 0.20, 0.14, 1)
+polygon = PackedVector2Array(444, 276, 452, 276, 446, 286, 444, 286)
+
+[node name="ShelfBracketRight" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.30, 0.20, 0.14, 1)
+polygon = PackedVector2Array(828, 276, 836, 276, 832, 286, 830, 286)
+
+[node name="JarA" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.74, 0.86, 0.92, 0.88)
+polygon = PackedVector2Array(460, 248, 478, 248, 478, 268, 460, 268)
+
+[node name="JarALid" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(458, 244, 480, 244, 480, 250, 458, 250)
+
+[node name="JarB" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.96, 0.62, 0.30, 0.92)
+polygon = PackedVector2Array(498, 248, 516, 248, 516, 268, 498, 268)
+
+[node name="JarBLid" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(496, 244, 518, 244, 518, 250, 496, 250)
+
+[node name="JarC" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.74, 0.42, 0.62, 0.92)
+polygon = PackedVector2Array(536, 248, 554, 248, 554, 268, 536, 268)
+
+[node name="JarCLid" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(534, 244, 556, 244, 556, 250, 534, 250)
+
+[node name="JarD" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.94, 0.86, 0.40, 0.92)
+polygon = PackedVector2Array(740, 248, 758, 248, 758, 268, 740, 268)
+
+[node name="JarDLid" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(738, 244, 760, 244, 760, 250, 738, 250)
+
+[node name="JarE" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.46, 0.62, 0.36, 0.92)
+polygon = PackedVector2Array(778, 248, 796, 248, 796, 268, 778, 268)
+
+[node name="JarELid" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.50, 0.34, 0.22, 1)
+polygon = PackedVector2Array(776, 244, 798, 244, 798, 250, 776, 250)
+
+[node name="ProduceCrateBack" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.46, 0.30, 0.18, 1)
+polygon = PackedVector2Array(740, 510, 814, 510, 814, 564, 740, 564)
+
+[node name="ProduceCrateFront" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.62, 0.42, 0.26, 1)
+polygon = PackedVector2Array(740, 524, 814, 524, 814, 564, 740, 564)
+
+[node name="ProduceCrateBoard1" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.40, 0.26, 0.16, 1)
+polygon = PackedVector2Array(744, 530, 810, 530, 810, 532, 744, 532)
+
+[node name="ProduceCrateBoard2" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.40, 0.26, 0.16, 1)
+polygon = PackedVector2Array(744, 548, 810, 548, 810, 550, 744, 550)
+
+[node name="CarrotBody1" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.94, 0.55, 0.20, 1)
+polygon = PackedVector2Array(750, 510, 760, 510, 758, 524, 752, 524)
+
+[node name="CarrotTop1" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.46, 0.62, 0.36, 1)
+polygon = PackedVector2Array(750, 502, 754, 510, 760, 502)
+
+[node name="CarrotBody2" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.94, 0.55, 0.20, 1)
+polygon = PackedVector2Array(770, 510, 780, 510, 778, 524, 772, 524)
+
+[node name="CarrotTop2" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.46, 0.62, 0.36, 1)
+polygon = PackedVector2Array(770, 504, 774, 510, 780, 504)
+
+[node name="ApplePile" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.92, 0.32, 0.28, 1)
+polygon = PackedVector2Array(792, 510, 808, 510, 810, 524, 790, 524)
+
+[node name="ApplePileShine" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(1, 0.78, 0.58, 0.7)
+polygon = PackedVector2Array(796, 512, 800, 512, 800, 516, 796, 516)
+
+[node name="WorkbenchTop" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.46, 0.30, 0.20, 1)
+polygon = PackedVector2Array(420, 412, 528, 412, 528, 422, 420, 422)
+
+[node name="WorkbenchLegLeft" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.36, 0.24, 0.16, 1)
+polygon = PackedVector2Array(424, 422, 432, 422, 432, 480, 424, 480)
+
+[node name="WorkbenchLegRight" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.36, 0.24, 0.16, 1)
+polygon = PackedVector2Array(516, 422, 524, 422, 524, 480, 516, 480)
+
+[node name="WorkbenchShelf" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.40, 0.26, 0.16, 1)
+polygon = PackedVector2Array(424, 446, 524, 446, 524, 452, 424, 452)
+
+[node name="WorkbenchHammer" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.55, 0.36, 0.22, 1)
+polygon = PackedVector2Array(440, 408, 444, 408, 444, 412, 440, 412)
+
+[node name="WorkbenchHammerHead" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.40, 0.40, 0.42, 1)
+polygon = PackedVector2Array(434, 402, 450, 402, 450, 408, 434, 408)
+
+[node name="WorkbenchNailJar" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.74, 0.82, 0.88, 0.9)
+polygon = PackedVector2Array(488, 400, 504, 400, 504, 412, 488, 412)
+
+[node name="WorkbenchNails" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.40, 0.40, 0.42, 1)
+polygon = PackedVector2Array(490, 404, 502, 404, 502, 410, 490, 410)
+
+[node name="StallFenceLeft" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.46, 0.30, 0.20, 1)
+polygon = PackedVector2Array(960, 460, 968, 460, 968, 590, 960, 590)
+
+[node name="StallFenceMid" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.46, 0.30, 0.20, 1)
+polygon = PackedVector2Array(996, 460, 1004, 460, 1004, 590, 996, 590)
+
+[node name="StallFenceRail1" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.46, 0.30, 0.20, 1)
+polygon = PackedVector2Array(960, 480, 1004, 480, 1004, 484, 960, 484)
+
+[node name="StallFenceRail2" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.46, 0.30, 0.20, 1)
+polygon = PackedVector2Array(960, 510, 1004, 510, 1004, 514, 960, 514)
+
+[node name="StallHay" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.96, 0.86, 0.50, 1)
+polygon = PackedVector2Array(966, 540, 1000, 540, 1000, 590, 966, 590)
+
+[node name="ChickenBody" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.96, 0.92, 0.86, 1)
+polygon = PackedVector2Array(972, 530, 996, 530, 996, 558, 972, 558)
+
+[node name="ChickenHead" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.96, 0.92, 0.86, 1)
+polygon = PackedVector2Array(990, 520, 1002, 520, 1002, 534, 990, 534)
+
+[node name="ChickenComb" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.92, 0.32, 0.28, 1)
+polygon = PackedVector2Array(992, 514, 996, 514, 1000, 520, 990, 520)
+
+[node name="ChickenBeak" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.96, 0.74, 0.32, 1)
+polygon = PackedVector2Array(1002, 526, 1006, 526, 1006, 530, 1002, 530)
+
+[node name="ChickenEye" type="Polygon2D" parent="."]
+z_index = 0
+color = Color(0.10, 0.08, 0.06, 1)
+polygon = PackedVector2Array(996, 524, 998, 524, 998, 526, 996, 526)
+
+[node name="ChickenWing" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.86, 0.82, 0.74, 1)
+polygon = PackedVector2Array(976, 536, 990, 536, 990, 552, 976, 552)
+
+[node name="ChickenLegLeft" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.96, 0.74, 0.32, 1)
+polygon = PackedVector2Array(978, 558, 980, 558, 980, 568, 978, 568)
+
+[node name="ChickenLegRight" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.96, 0.74, 0.32, 1)
+polygon = PackedVector2Array(988, 558, 990, 558, 990, 568, 988, 568)
+
+[node name="ChickenEgg1" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.98, 0.94, 0.86, 1)
+polygon = PackedVector2Array(972, 580, 982, 580, 982, 588, 972, 588)
+
+[node name="ChickenEgg2" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.98, 0.94, 0.86, 1)
+polygon = PackedVector2Array(986, 582, 996, 582, 996, 590, 986, 590)
+
+[node name="StallSign" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.94, 0.86, 0.62, 1)
+polygon = PackedVector2Array(956, 444, 1010, 444, 1010, 458, 956, 458)
+
+[node name="StallSignFrame" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.46, 0.30, 0.20, 1)
+polygon = PackedVector2Array(956, 444, 1010, 444, 1010, 446, 956, 446)
+
+[node name="CobwebTopLeft1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.86, 0.86, 0.86, 0.45)
+polygon = PackedVector2Array(40, 120, 110, 120, 40, 190)
+
+[node name="CobwebTopLeft2" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.86, 0.86, 0.86, 0.32)
+polygon = PackedVector2Array(40, 120, 80, 120, 40, 160)
+
+[node name="CobwebTopRight1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.86, 0.86, 0.86, 0.45)
+polygon = PackedVector2Array(1170, 120, 1240, 120, 1240, 190)
+
+[node name="CobwebTopRight2" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.86, 0.86, 0.86, 0.32)
+polygon = PackedVector2Array(1200, 120, 1240, 120, 1240, 160)
+
+[node name="HayScatter1" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.92, 0.78, 0.40, 0.55)
+polygon = PackedVector2Array(420, 580, 460, 578, 462, 590, 422, 592)
+
+[node name="HayScatter2" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.92, 0.78, 0.40, 0.55)
+polygon = PackedVector2Array(820, 580, 870, 578, 872, 590, 824, 592)
+
+[node name="HayStrand1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.96, 0.86, 0.50, 0.85)
+polygon = PackedVector2Array(440, 588, 446, 580, 452, 588)
+
+[node name="HayStrand2" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.96, 0.86, 0.50, 0.85)
+polygon = PackedVector2Array(840, 588, 846, 580, 852, 588)
+
+[node name="StallSignLabel" type="Label" parent="."]
+offset_left = 956.0
+offset_top = 442.0
+offset_right = 1010.0
+offset_bottom = 460.0
+theme_override_colors/font_color = Color(0.36, 0.22, 0.12, 1)
+theme_override_font_sizes/font_size = 9
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "Henrietta"
+
 [node name="FrameBorder" type="Panel" parent="."]
 z_index = -1
 offset_left = 24.0
