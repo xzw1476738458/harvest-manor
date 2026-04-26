@@ -295,17 +295,37 @@ polygon = PackedVector2Array(960, 408, 966, 406, 970, 412, 964, 414)
 [node name="GrassMain" type="Polygon2D" parent="."]
 z_index = -6
 color = Color(0.46, 0.64, 0.36, 1)
-polygon = PackedVector2Array(40, 510, 1240, 510, 1240, 596, 40, 596)
+polygon = PackedVector2Array(40, 510, 1240, 510, 1240, 696, 40, 696)
 
 [node name="GrassHighlight" type="Polygon2D" parent="."]
 z_index = -5
 color = Color(0.56, 0.74, 0.42, 0.55)
 polygon = PackedVector2Array(40, 510, 1240, 510, 1240, 532, 40, 532)
 
+[node name="GrassMidBand" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.40, 0.58, 0.32, 0.40)
+polygon = PackedVector2Array(40, 600, 1240, 600, 1240, 612, 40, 612)
+
 [node name="GrassShade" type="Polygon2D" parent="."]
 z_index = -5
 color = Color(0.32, 0.50, 0.28, 0.45)
-polygon = PackedVector2Array(40, 580, 1240, 580, 1240, 596, 40, 596)
+polygon = PackedVector2Array(40, 678, 1240, 678, 1240, 696, 40, 696)
+
+[node name="GardenPatch1" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.42, 0.58, 0.32, 0.55)
+polygon = PackedVector2Array(220, 620, 380, 614, 390, 660, 230, 666)
+
+[node name="GardenPatch2" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.42, 0.58, 0.32, 0.55)
+polygon = PackedVector2Array(700, 638, 880, 632, 890, 670, 712, 676)
+
+[node name="GardenPatch3" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.42, 0.58, 0.32, 0.45)
+polygon = PackedVector2Array(1020, 614, 1180, 610, 1188, 648, 1030, 652)
 
 [node name="GrassTuft1" type="Polygon2D" parent="."]
 z_index = -4
@@ -331,6 +351,71 @@ polygon = PackedVector2Array(880, 564, 886, 554, 892, 564)
 z_index = -4
 color = Color(0.34, 0.54, 0.30, 1)
 polygon = PackedVector2Array(1040, 572, 1046, 562, 1052, 572)
+
+[node name="GrassTuftBottom1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.34, 0.54, 0.30, 1)
+polygon = PackedVector2Array(140, 644, 146, 632, 152, 644)
+
+[node name="GrassTuftBottom2" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.34, 0.54, 0.30, 1)
+polygon = PackedVector2Array(280, 624, 286, 614, 292, 624)
+
+[node name="GrassTuftBottom3" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.34, 0.54, 0.30, 1)
+polygon = PackedVector2Array(460, 658, 466, 646, 472, 658)
+
+[node name="GrassTuftBottom4" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.34, 0.54, 0.30, 1)
+polygon = PackedVector2Array(620, 614, 626, 604, 632, 614)
+
+[node name="GrassTuftBottom5" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.34, 0.54, 0.30, 1)
+polygon = PackedVector2Array(780, 644, 786, 634, 792, 644)
+
+[node name="GrassTuftBottom6" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.34, 0.54, 0.30, 1)
+polygon = PackedVector2Array(960, 624, 966, 614, 972, 624)
+
+[node name="GrassTuftBottom7" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.34, 0.54, 0.30, 1)
+polygon = PackedVector2Array(1100, 660, 1106, 648, 1112, 660)
+
+[node name="WildFlower1" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.95, 0.85, 0.42, 1)
+polygon = PackedVector2Array(310, 636, 314, 632, 318, 636, 314, 640)
+
+[node name="WildFlower2" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.86, 0.40, 0.74, 1)
+polygon = PackedVector2Array(530, 656, 534, 652, 538, 656, 534, 660)
+
+[node name="WildFlower3" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.60, 0.80, 0.95, 1)
+polygon = PackedVector2Array(810, 626, 814, 622, 818, 626, 814, 630)
+
+[node name="WildFlower4" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.95, 0.45, 0.55, 1)
+polygon = PackedVector2Array(1060, 638, 1064, 634, 1068, 638, 1064, 642)
+
+[node name="PathStone1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.74, 0.66, 0.50, 0.85)
+polygon = PackedVector2Array(420, 644, 436, 642, 440, 654, 424, 656)
+
+[node name="PathStone2" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.74, 0.66, 0.50, 0.85)
+polygon = PackedVector2Array(880, 656, 896, 654, 900, 666, 884, 668)
 
 [node name="ServicePath" type="Polygon2D" parent="."]
 z_index = -5
