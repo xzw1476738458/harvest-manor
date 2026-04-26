@@ -216,8 +216,8 @@ public partial class GameBootstrap
 
     private void WireTownScene(Node townScene)
     {
-        _requestStatusLabel = townScene.GetNodeOrNull<Label>("RequestStatusPanel/Margin/Content/RequestStatusLabel");
-        _requestStatusPanel = townScene.GetNodeOrNull<Control>("RequestStatusPanel");
+        _requestStatusLabel = townScene.GetNodeOrNull<Label>("SceneOverlay/RequestStatusPanel/Margin/Content/RequestStatusLabel");
+        _requestStatusPanel = townScene.GetNodeOrNull<Control>("SceneOverlay/RequestStatusPanel");
 
         var shopDoor = townScene.GetNodeOrNull<EnterBuildingInteraction>("Shop");
         if (shopDoor is null)

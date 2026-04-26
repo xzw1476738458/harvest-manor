@@ -32,8 +32,9 @@ public sealed class TownSceneLayoutTests
         var sceneContents = File.ReadAllText(FindTownScenePath());
         var (maxX, maxY) = ExtractMaxPolygonCoordinate(sceneContents);
 
-        Assert.Contains("[node name=\"RequestStatusPanel\" type=\"PanelContainer\" parent=\".\"]", sceneContents);
-        Assert.Contains("[node name=\"RequestStatusLabel\" type=\"Label\" parent=\"RequestStatusPanel/Margin/Content\"]", sceneContents);
+        Assert.Contains("[node name=\"SceneOverlay\" type=\"CanvasLayer\" parent=\".\"]", sceneContents);
+        Assert.Contains("[node name=\"RequestStatusPanel\" type=\"PanelContainer\" parent=\"SceneOverlay\"]", sceneContents);
+        Assert.Contains("[node name=\"RequestStatusLabel\" type=\"Label\" parent=\"SceneOverlay/RequestStatusPanel/Margin/Content\"]", sceneContents);
         Assert.True(maxX >= 1250, $"Expected town scene framing to reach at least x=1250, but max polygon x was {maxX}.");
         Assert.True(maxY >= 700, $"Expected town scene framing to reach at least y=700, but max polygon y was {maxY}.");
     }

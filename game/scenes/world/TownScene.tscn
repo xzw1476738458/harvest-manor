@@ -75,6 +75,9 @@ corner_radius_bottom_left = 14
 
 [node name="TownScene" type="Node2D"]
 
+[node name="SceneOverlay" type="CanvasLayer" parent="."]
+layer = 4
+
 [node name="TownShadow" type="Polygon2D" parent="."]
 z_index = -9
 color = Color(0.05, 0.03, 0.02, 0.6)
@@ -901,57 +904,55 @@ TargetScene = "farm"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GateWest"]
 shape = SubResource("gate_shape")
 
-[node name="TitleBadge" type="PanelContainer" parent="."]
-z_index = 50
-offset_left = 904.0
-offset_top = 128.0
-offset_right = 1240.0
-offset_bottom = 194.0
+[node name="TitleBadge" type="PanelContainer" parent="SceneOverlay"]
+offset_left = 924.0
+offset_top = 58.0
+offset_right = 1256.0
+offset_bottom = 124.0
 theme_override_styles/panel = SubResource("title_badge")
 
-[node name="Rows" type="VBoxContainer" parent="TitleBadge"]
+[node name="Rows" type="VBoxContainer" parent="SceneOverlay/TitleBadge"]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="Title" type="Label" parent="TitleBadge/Rows"]
+[node name="Title" type="Label" parent="SceneOverlay/TitleBadge/Rows"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.94, 0.82, 0.50, 1)
 theme_override_font_sizes/font_size = 22
 text = "Village Row"
 
-[node name="Subtitle" type="Label" parent="TitleBadge/Rows"]
+[node name="Subtitle" type="Label" parent="SceneOverlay/TitleBadge/Rows"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.72, 0.60, 1)
 theme_override_font_sizes/font_size = 12
 text = "Walk west to return to Farm · Approach + E to interact"
 
-[node name="RequestStatusPanel" type="PanelContainer" parent="."]
+[node name="RequestStatusPanel" type="PanelContainer" parent="SceneOverlay"]
 visible = false
-z_index = 50
-offset_left = 44.0
-offset_top = 612.0
-offset_right = 1240.0
-offset_bottom = 680.0
+offset_left = 24.0
+offset_top = 632.0
+offset_right = 1256.0
+offset_bottom = 700.0
 theme_override_styles/panel = SubResource("status_panel")
 
-[node name="Margin" type="MarginContainer" parent="RequestStatusPanel"]
+[node name="Margin" type="MarginContainer" parent="SceneOverlay/RequestStatusPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 10
 
-[node name="Content" type="VBoxContainer" parent="RequestStatusPanel/Margin"]
+[node name="Content" type="VBoxContainer" parent="SceneOverlay/RequestStatusPanel/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="RequestHeading" type="Label" parent="RequestStatusPanel/Margin/Content"]
+[node name="RequestHeading" type="Label" parent="SceneOverlay/RequestStatusPanel/Margin/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.94, 0.82, 0.50, 1)
 theme_override_font_sizes/font_size = 14
 text = "Guild Board"
 
-[node name="RequestStatusLabel" type="Label" parent="RequestStatusPanel/Margin/Content"]
+[node name="RequestStatusLabel" type="Label" parent="SceneOverlay/RequestStatusPanel/Margin/Content"]
 layout_mode = 2
 autowrap_mode = 3
 theme_override_colors/font_color = Color(0.94, 0.90, 0.82, 1)
