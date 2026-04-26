@@ -89,6 +89,24 @@ public sealed class ExpansionTierService
 
     public IReadOnlyList<Tier> EnumerateLockedTiers() => _lockedTiers;
 
+    public Tier? GetActiveTier(UnlockState unlockState)
+    {
+        ArgumentNullException.ThrowIfNull(unlockState);
+
+        foreach (var tier in _lockedTiers)
+        {
+            foreach (var key in tier.PlotKeys)
+            {
+                if (!unlockState.Contains(key))
+                {
+                    return tier;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public int? GetUnlockCost(int x, int y)
     {
         if (x < 0 || y < 0 || x >= _gridWidth || y >= _gridHeight)

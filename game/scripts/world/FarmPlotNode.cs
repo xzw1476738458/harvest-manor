@@ -84,11 +84,15 @@ public partial class FarmPlotNode : Area2D
         viewport.SetInputAsHandled();
     }
 
-    public void Render(HarvestManor.Core.Farming.PlotState plot, string? cropDisplayName, string? lockedHint = null)
+    public void Render(
+        HarvestManor.Core.Farming.PlotState plot,
+        string? cropDisplayName,
+        string? lockedHint = null,
+        bool isInActiveTier = true)
     {
         ArgumentNullException.ThrowIfNull(plot);
 
-        var visualState = ResolveVisualState(plot, cropDisplayName, lockedHint);
+        var visualState = ResolveVisualState(plot, cropDisplayName, lockedHint, isInActiveTier);
 
         if (PlotLabel is not null)
         {
@@ -107,7 +111,8 @@ public partial class FarmPlotNode : Area2D
     public static PlotVisualState ResolveVisualState(
         HarvestManor.Core.Farming.PlotState plot,
         string? cropDisplayName,
-        string? lockedHint = null)
+        string? lockedHint = null,
+        bool isInActiveTier = true)
     {
         ArgumentNullException.ThrowIfNull(plot);
 
@@ -115,6 +120,14 @@ public partial class FarmPlotNode : Area2D
 
         if (plot.IsLocked)
         {
+            if (!isInActiveTier)
+            {
+                return new PlotVisualState(
+                    string.Empty,
+                    new Color(0.32f, 0.30f, 0.28f, 0.95f),
+                    Colors.WhiteSmoke);
+            }
+
             return new PlotVisualState(
                 $"New Plot\n{lockedHint ?? "Locked"}",
                 new Color(0.45f, 0.42f, 0.40f, 0.95f),

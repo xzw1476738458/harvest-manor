@@ -45,4 +45,40 @@ public sealed class FarmPlotNodeTests
         Assert.Equal(new Color(0.34f, 0.56f, 0.72f, 0.95f), watered.FillColor);
         Assert.Equal(new Color(0.54f, 0.74f, 0.34f, 0.95f), harvestReady.FillColor);
     }
+
+    [Fact]
+    public void ResolveVisualState_HidesHintAndDarkensFillForLockedPlotsOutsideTheActiveTier()
+    {
+        var distantLocked = FarmPlotNode.ResolveVisualState(
+            new PlotState(5, 5, false, true, false, false, null),
+            cropDisplayName: null,
+            lockedHint: "Click: unlock (1200g)",
+            isInActiveTier: false);
+
+        var activeLocked = FarmPlotNode.ResolveVisualState(
+            new PlotState(2, 0, false, true, false, false, null),
+            cropDisplayName: null,
+            lockedHint: "Click: unlock (120g)",
+            isInActiveTier: true);
+
+        Assert.Equal(string.Empty, distantLocked.LabelText);
+        Assert.NotEqual(activeLocked.FillColor, distantLocked.FillColor);
+        Assert.True(
+            distantLocked.FillColor.R < activeLocked.FillColor.R
+                && distantLocked.FillColor.G < activeLocked.FillColor.G
+                && distantLocked.FillColor.B < activeLocked.FillColor.B,
+            "Distant locked plots should render with a darker fill than the active tier.");
+    }
+
+    [Fact]
+    public void ResolveVisualState_LockedDefaultsToActiveTierAppearanceForBackwardsCompatibility()
+    {
+        var implicitlyActive = FarmPlotNode.ResolveVisualState(
+            new PlotState(2, 0, false, true, false, false, null),
+            cropDisplayName: null,
+            lockedHint: "Click: unlock (120g)");
+
+        Assert.Equal("New Plot\nClick: unlock (120g)", implicitlyActive.LabelText);
+        Assert.Equal(new Color(0.45f, 0.42f, 0.40f, 0.95f), implicitlyActive.FillColor);
+    }
 }

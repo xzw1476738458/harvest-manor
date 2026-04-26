@@ -76,4 +76,67 @@ public sealed class ExpansionTierServiceTests
 
         Assert.Equal(new[] { 120, 280, 600, 1200 }, costsInOrder);
     }
+
+    [Fact]
+    public void GetActiveTier_ReturnsRingOneForAFreshSave()
+    {
+        var service = ExpansionTierService.CreateDefault();
+        var unlockState = new UnlockState(new HashSet<string>(service.DefaultUnlockedPlotKeys));
+
+        var tier = service.GetActiveTier(unlockState);
+
+        Assert.NotNull(tier);
+        Assert.Equal(120, tier!.UnlockCost);
+        Assert.Contains("2,0", tier.PlotKeys);
+        Assert.Contains("0,2", tier.PlotKeys);
+        Assert.Contains("2,2", tier.PlotKeys);
+    }
+
+    [Fact]
+    public void GetActiveTier_AdvancesToTheNextRingWhenAllOfTheCurrentRingIsUnlocked()
+    {
+        var service = ExpansionTierService.CreateDefault();
+        var keys = new HashSet<string>(service.DefaultUnlockedPlotKeys);
+        var firstLockedRing = service.EnumerateLockedTiers()[0];
+        foreach (var key in firstLockedRing.PlotKeys)
+        {
+            keys.Add(key);
+        }
+        var unlockState = new UnlockState(keys);
+
+        var tier = service.GetActiveTier(unlockState);
+
+        Assert.NotNull(tier);
+        Assert.Equal(280, tier!.UnlockCost);
+    }
+
+    [Fact]
+    public void GetActiveTier_StaysOnTheCurrentRingWhenSomePlotsAreStillLockedThere()
+    {
+        var service = ExpansionTierService.CreateDefault();
+        var keys = new HashSet<string>(service.DefaultUnlockedPlotKeys) { "2,0" };
+        var unlockState = new UnlockState(keys);
+
+        var tier = service.GetActiveTier(unlockState);
+
+        Assert.NotNull(tier);
+        Assert.Equal(120, tier!.UnlockCost);
+    }
+
+    [Fact]
+    public void GetActiveTier_ReturnsNullWhenEverythingIsUnlocked()
+    {
+        var service = ExpansionTierService.CreateDefault();
+        var keys = new HashSet<string>(service.DefaultUnlockedPlotKeys);
+        foreach (var tier in service.EnumerateLockedTiers())
+        {
+            foreach (var key in tier.PlotKeys)
+            {
+                keys.Add(key);
+            }
+        }
+        var unlockState = new UnlockState(keys);
+
+        Assert.Null(service.GetActiveTier(unlockState));
+    }
 }

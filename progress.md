@@ -57,6 +57,24 @@
 - Remaining work:
   - Update `docs/testing/milestone-1-smoke-checklist.md` to describe the multi-tier expansion behavior
 
+## Session: 2026-04-26 (UX follow-up)
+
+### Phase 6: Pin scene UI to viewport
+- **Status:** complete
+- Actions taken:
+  - Wrapped `TitleBadge` and `FarmStatusPanel` inside a new `SceneOverlay` `CanvasLayer` (layer = 4) in `game/scenes/world/FarmScene.tscn` so neither follows the camera
+  - Re-anchored the title to `(24, 58)..(332, 124)` and the field-notes panel to `(24, 632)..(1256, 700)` against the 1280x720 viewport
+  - Updated `GameBootstrap.OnFarmSceneReady` lookup paths to `SceneOverlay/FarmStatusPanel/...`
+  - Adjusted `FarmSceneLayoutTests.FarmScene_UsesDedicatedStatusPanelAndWideSceneFrame` to assert the new parent path
+
+### Phase 7: Tiered locked-plot visibility
+- **Status:** complete
+- Actions taken:
+  - Added `ExpansionTierService.GetActiveTier(UnlockState)` returning the lowest-cost ring that still has at least one locked key, plus 4 new tests
+  - Added `ResolveVisualState`/`Render` overload parameter `bool isInActiveTier = true` on `FarmPlotNode` so locked plots outside the next ring render with empty label and a darker fill
+  - Updated `GameBootstrap.RenderFarmPlots` to compute the active tier's plot keys once per render and forward `isInActiveTier` per plot
+  - Added 2 `FarmPlotNodeTests` covering the new visual branch and the backwards-compatible default
+
 ## Test Results
 
 | Check | Result |
@@ -65,7 +83,9 @@
 | Archived planning directory created | PASS |
 | Root planning files rewritten | PASS |
 | Failing tests confirmed before implementation | PASS (32 failures) |
-| `dotnet test` after implementation | PASS (246/246) |
+| `dotnet test` after Phase 3-4 implementation | PASS (246/246) |
+| `dotnet test` after Phase 6 (CanvasLayer) | PASS (246/246) |
+| `dotnet test` after Phase 7 (active-tier visibility) | PASS (252/252) |
 | `dotnet build game/HarvestManor.csproj` | PASS (0 errors / 0 warnings) |
 | Godot headless smoke launch | PASS (no errors, save restored) |
 

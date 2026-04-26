@@ -752,10 +752,21 @@ public partial class GameBootstrap
             return;
         }
 
+        var activeTier = _expansionTiers.GetActiveTier(_unlockState);
+        var activeTierKeys = activeTier is null
+            ? null
+            : new HashSet<string>(activeTier.PlotKeys, StringComparer.Ordinal);
+
         foreach (var plotNode in _farmPlotNodes)
         {
             var plot = _farmGrid.GetPlot(plotNode.GridX, plotNode.GridY);
-            plotNode.Render(plot, ResolveCropDisplayName(plot), GetLockedPlotHint(plot.X, plot.Y, _expansionTiers));
+            var plotKey = BuildPlotKey(plot.X, plot.Y);
+            var isInActiveTier = activeTierKeys is not null && activeTierKeys.Contains(plotKey);
+            plotNode.Render(
+                plot,
+                ResolveCropDisplayName(plot),
+                isInActiveTier ? GetLockedPlotHint(plot.X, plot.Y, _expansionTiers) : null,
+                isInActiveTier);
         }
     }
 
