@@ -13,7 +13,7 @@ Deliver milestone 1's still-missing world structure: a **Light Gathering Area** 
 
 ## Current Phase
 
-Phase 1 (planning)
+Phase 5 (verification complete)
 
 ## Scope Guard
 
@@ -47,31 +47,37 @@ These are queued behind this task.
 - **Status:** complete
 
 ### Phase 2: Failing Test Coverage First
-- [ ] Add `GatheringNodeStateTests` covering harvest -> harvested -> reset cycle and the produced item id
-- [ ] Add `GatheringServiceTests` covering "harvest one node", "cannot harvest twice", and "DayEndReset restores all nodes"
-- [ ] Add `GatheringSceneLayoutTests` asserting `GatheringScene.tscn` exposes the expected resource node count and an `ExitGate` to town/farm
-- [ ] Add `SaveStateTests` cases verifying the harvested set round-trips
-- [ ] Confirm new tests fail before implementation
+- [x] Add `GatheringStateTests` covering harvest -> harvested -> reset cycle and the produced item id
+- [x] Add `GatheringServiceTests` covering "harvest one node", "cannot harvest twice", "InventoryFull", "UnknownNode", and "DayEndReset restores all nodes"
+- [x] Add `GatheringSceneLayoutTests` asserting `GatheringScene.tscn` exposes the expected resource node count and an `ExitGate` to town
+- [x] Extend `SaveGameStoreTests` to round-trip the harvested set and accept legacy payloads with no field
+- [x] Confirm new tests fail before implementation
+- **Status:** complete
 
 ### Phase 3: Implement Core Gathering Logic
-- [ ] Add `GatheringNode` record (Id, ItemId, IsHarvested) and `GatheringService` (harvest + reset) under `game/scripts/core/Gathering/`
-- [ ] Extend `SaveState` with `HarvestedGatheringNodeIds`
-- [ ] Wire `GatheringService.ResetForNewDay` into the existing day-end pipeline
-- [ ] Surface "+1 wood" / "+1 stone" status messages in `StatusMessageBuilder`
+- [x] Add `GatheringNodeDefinition` record, `GatheringState`, `GatheringHarvestResult`, and `GatheringService` under `game/scripts/core/Gathering/`
+- [x] Extend `SaveGameSnapshot` and `SaveGameStore` with `HarvestedGatheringNodeIds` (legacy-compatible)
+- [x] Hold a live `_gatheringService` on `GameBootstrap`; rehydrate from the snapshot on load
+- [x] Surface gathering outcomes through `StatusMessageBuilder.BuildGatheringStatusMessage`
+- **Status:** complete
 
 ### Phase 4: Wire Godot Presentation
-- [ ] Author `scenes/world/GatheringScene.tscn` with backdrop, walls, and a handful of `ResourceNode` instances (Polygon2D-styled trees and rocks)
-- [ ] Add `ResourceNode.cs` (subclass of `HoverableInteractionArea`) that emits a typed signal when clicked
-- [ ] Add a new scene gate from `TownScene.tscn` (or `FarmScene.tscn`, TBD in Phase 4) to `GatheringScene`
-- [ ] Register `GatheringSceneType` in `GameBootstrap` scene-switch tables
-- [ ] Add a small wood/stone shop offer to `data/shop/shop_offers.json` (sell-only by default)
+- [x] Author `scenes/world/GatheringScene.tscn` with sky/forest backdrop, walls, four trees and three rocks
+- [x] Add `ResourceNode.cs` (subclass of `HoverableInteractionArea`) plus `ResourceVisualTheme` for wood/stone polygons
+- [x] Add `GateNorth` to `TownScene.tscn` (split `WallTop` into `WallTopLeft` + `WallTopRight`) targeting `gathering`
+- [x] Register `GatheringSceneType` and town<->gathering spawn pairs in `GameBootstrap`; route `LoadScene` through `WireGatheringScene` + `RenderGatheringNodes`
+- [x] Wire `OnResourceNodeInteracted` into `GatheringService.TryHarvest` (refresh HUD, panels, autosave) and reset every node in `EndDay`
+- [x] Make `BuildSeasonShopOffers` keep `Material`-category items visible across all seasons
+- [x] Add wood (4g) and stone (6g) sell offers to `data/shops/general-store.json`
+- **Status:** complete
 
 ### Phase 5: Verification
-- [ ] Run full `dotnet test` suite
-- [ ] Run `dotnet build game/HarvestManor.csproj`
-- [ ] Run Godot headless smoke launch
-- [ ] Manual smoke pass: walk to gathering area, harvest, verify inventory + day reset + sell flow
-- [ ] Update smoke checklist with the new zone
+- [x] Run full `dotnet test` suite (321/321 passing)
+- [x] Run `dotnet build game/HarvestManor.csproj` (0 errors / 0 warnings)
+- [x] Run Godot headless smoke launch (15 shop offers + save restored without warnings)
+- [x] Update `docs/testing/milestone-1-smoke-checklist.md` with the gathering area + Tab inventory items
+- [ ] Manual smoke pass through the new loop (waiting on user playtest)
+- **Status:** core verification complete; manual smoke deferred to user
 
 ## Key Questions
 

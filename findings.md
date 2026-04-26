@@ -42,7 +42,13 @@
 
 ## Implementation Notes (post-pass)
 
-(filled in during Phases 3-5)
+- `GatheringService.TryHarvest` is the only mutator: it short-circuits with typed outcomes (`UnknownNode`, `AlreadyHarvested`, `InventoryFull`) before touching state, so the inventory and harvested set never desync if any guard trips
+- `DefaultGatheringNodes` lives on `GameBootstrap` (4 trees + 3 rocks) so the .tscn names and the service are the single source of truth - any extra node added to the scene must also be appended to that list, otherwise clicks return `UnknownNode`
+- `BuildSeasonShopOffers` now accepts an optional `IReadOnlyDictionary<string, ItemDefinition>` and treats every entry whose `Category` equals `Material` (case-insensitive) as always-available - the design hook for future materials
+- Godot's default `ui_focus_next` / `ui_focus_prev` were cleared in `project.godot` so `Tab` reaches `_UnhandledInput` reliably for the inventory toggle (and, by extension, future hotkeys we want to layer on top)
+- `ShouldSilenceHoverPreview` only mutes hover hints in `PanelMode.Inventory`; `Shop` and `Storage` keep their click-driven blocked-interaction copy because that copy still helps when the player accidentally hovers another door
+- `ResourceVisualTheme` uses single-polygon silhouettes (a stylized pine and a chunky boulder) so we can postpone real art without leaving the gathering area looking like a placeholder; the theme is keyed by `ItemId`, so adding new resources only requires a new visual entry
+- Save migrations stay free: `SaveGameStore.Deserialize` defaults `HarvestedGatheringNodeIds` to an empty list, so legacy saves load identically to fresh starts
 
 ## Open Questions / Follow-Ups
 
@@ -54,6 +60,6 @@
 
 - Current branch: `main`
 - Current task: Light Gathering Area (milestone 1's last missing world zone)
-- Latest verified commit: `ad2bd31 fix(ui): silence world hover hints while the inventory panel is open`
-- Verification snapshot: 296/296 tests passing, 0 build warnings, Godot headless smoke launch clean
-- Working directory before commit: planning files refreshed for the gathering task; no source code touched yet
+- Latest verified commit: `29341dc feat(gathering): wire the Whispering Woods scene into the world`
+- Verification snapshot: 321/321 tests passing, 0 build warnings, Godot headless smoke launch clean (15 shop offers including wood/stone)
+- Working directory before this update: gathering area shipped end-to-end; planning + smoke checklist refreshed; awaiting user playtest before archiving

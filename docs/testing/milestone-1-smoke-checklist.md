@@ -15,3 +15,10 @@
 - [ ] Open the shop, use the panel buttons to buy or sell one unit, and confirm gold/inventory update.
 - [ ] Open storage, use the panel buttons to store and withdraw one unit, and confirm inventory/storage update.
 - [ ] Click the request board and confirm the active-request label updates with either the remaining requirement or a completion reward.
+- [ ] Press `Tab` anywhere outdoors and confirm the inventory panel opens; press it (or `Esc`) again to close.
+- [ ] With the inventory panel open, hover a locked plot and confirm the field-notes panel does not change (hover preview is silenced).
+- [ ] From town, walk through `GateNorth` and confirm `Whispering Woods` loads with four trees and three rocks visible.
+- [ ] Click a tree and confirm `Gathered +1 wood.` appears, the wood count rises in the inventory panel, and the tree visibly dims to `Returns tomorrow`.
+- [ ] Click an already-harvested tree and confirm `Wood already gathered today.` appears with no inventory change.
+- [ ] Walk back to town through the gathering scene `ExitGate`, then sleep until morning and verify every harvested node respawns next day.
+- [ ] Open the shop with wood in your inventory and confirm `Wood` is listed for 4g and `Stone` for 6g across every season.
