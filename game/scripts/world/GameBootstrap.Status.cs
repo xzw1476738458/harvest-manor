@@ -21,6 +21,18 @@ public partial class GameBootstrap
         return mode != PanelMode.None;
     }
 
+    /// <summary>
+    /// When the inventory panel is open the player is reading their own ledger,
+    /// so hovering the world should not steal focus from the panel by rewriting
+    /// the field-notes label. Other panels (shop/storage) still surface
+    /// "Close the X panel..." hover hints because the player typically interacts
+    /// with their UI buttons rather than the world while those panels are up.
+    /// </summary>
+    public static bool ShouldSilenceHoverPreview(PanelMode mode)
+    {
+        return mode == PanelMode.Inventory;
+    }
+
     public static PanelMode ResolvePanelModeAfterUnhandledKey(PanelMode currentMode, Key keycode)
     {
         if (keycode == Key.Escape && currentMode != PanelMode.None)

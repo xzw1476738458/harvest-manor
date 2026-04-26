@@ -315,7 +315,7 @@ public partial class GameBootstrap
 
     private void OnFarmPlotHovered(int gridX, int gridY)
     {
-        if (_farmGrid is null)
+        if (_farmGrid is null || ShouldSilenceHoverPreview(_activePanelMode))
         {
             return;
         }
@@ -328,6 +328,11 @@ public partial class GameBootstrap
 
     private void OnWorldInteractionHovered(string interactionName, string actionDescription, PanelMode requestedMode = PanelMode.None)
     {
+        if (ShouldSilenceHoverPreview(_activePanelMode))
+        {
+            return;
+        }
+
         PreviewFarmStatus(
             BlocksWorldInteractions(_activePanelMode)
                 ? StatusMessageBuilder.BuildBlockedWorldInteractionMessage(_activePanelMode, requestedMode)
@@ -336,6 +341,11 @@ public partial class GameBootstrap
 
     private void OnRequestBoardHovered()
     {
+        if (ShouldSilenceHoverPreview(_activePanelMode))
+        {
+            return;
+        }
+
         PreviewFarmStatus(
             BlocksWorldInteractions(_activePanelMode)
                 ? StatusMessageBuilder.BuildBlockedWorldInteractionMessage(_activePanelMode)
@@ -346,6 +356,11 @@ public partial class GameBootstrap
 
     private void OnWorldInteractionHoverEnded()
     {
+        if (ShouldSilenceHoverPreview(_activePanelMode))
+        {
+            return;
+        }
+
         RestoreFarmStatus();
     }
 

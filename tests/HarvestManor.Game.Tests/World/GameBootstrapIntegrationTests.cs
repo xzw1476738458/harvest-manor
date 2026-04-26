@@ -304,6 +304,18 @@ public sealed class GameBootstrapIntegrationTests
     }
 
     [Theory]
+    [InlineData(PanelMode.None, false)]
+    [InlineData(PanelMode.Shop, false)]
+    [InlineData(PanelMode.Storage, false)]
+    [InlineData(PanelMode.Inventory, true)]
+    public void ShouldSilenceHoverPreview_OnlyMutesHoverHintsWhileTheInventoryIsOpen(
+        PanelMode mode,
+        bool shouldSilence)
+    {
+        Assert.Equal(shouldSilence, GameBootstrap.ShouldSilenceHoverPreview(mode));
+    }
+
+    [Theory]
     [InlineData(PanelMode.None, Key.Escape, PanelMode.None)]
     [InlineData(PanelMode.Shop, Key.Escape, PanelMode.None)]
     [InlineData(PanelMode.Storage, Key.Escape, PanelMode.None)]
