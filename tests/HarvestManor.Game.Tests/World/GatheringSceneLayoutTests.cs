@@ -42,6 +42,37 @@ public sealed class GatheringSceneLayoutTests
     }
 
     [Fact]
+    public void GatheringScene_HasNorthGateDecorationWithLockedSign()
+    {
+        var contents = File.ReadAllText(FindScenePath("GatheringScene.tscn"));
+
+        Assert.Contains("[node name=\"NorthGate\" type=\"Node2D\" parent=\".\"]", contents);
+        Assert.Contains("Deeper Woods", contents);
+        Assert.Contains("path locked", contents);
+    }
+
+    [Fact]
+    public void GatheringScene_HasMultiLayerBackdrop()
+    {
+        var contents = File.ReadAllText(FindScenePath("GatheringScene.tscn"));
+
+        Assert.Contains("[node name=\"DistantHillsFar\"", contents);
+        Assert.Contains("[node name=\"DistantHillsMid\"", contents);
+        Assert.Contains("[node name=\"DistantHillsNear\"", contents);
+    }
+
+    [Fact]
+    public void GatheringScene_DropsObsoleteHotspotAndResourceLabels()
+    {
+        // The redesign moved per-node visuals into ResourceNode.cs runtime layers,
+        // so the old HotspotVisual + ResourceLabel nodes must no longer be in the scene.
+        var contents = File.ReadAllText(FindScenePath("GatheringScene.tscn"));
+
+        Assert.DoesNotContain("[node name=\"HotspotVisual\"", contents);
+        Assert.DoesNotContain("[node name=\"ResourceLabel\"", contents);
+    }
+
+    [Fact]
     public void TownScene_OpensGateNorthIntoGatheringArea()
     {
         var contents = File.ReadAllText(FindScenePath("TownScene.tscn"));

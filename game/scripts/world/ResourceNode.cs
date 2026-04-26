@@ -10,11 +10,8 @@ public partial class ResourceNode : HoverableInteractionArea
     [Export]
     public string ItemId { get; set; } = string.Empty;
 
-    [Export]
-    public Polygon2D? ResourceVisual { get; set; }
-
-    [Export]
-    public Label? ResourceLabel { get; set; }
+    private Node2D? _activeRoot;
+    private Node2D? _harvestedRoot;
 
     [Signal]
     public delegate void ResourceNodeInteractedEventHandler(string nodeId);
@@ -22,57 +19,81 @@ public partial class ResourceNode : HoverableInteractionArea
     public override void _Ready()
     {
         base._Ready();
-        ResourceVisual ??= GetNodeOrNull<Polygon2D>("ResourceVisual");
-        ResourceLabel ??= GetNodeOrNull<Label>("ResourceLabel");
-        ApplyResourceTheme();
+        BuildVisualLayers();
         InteractionTriggered += () => EmitSignal(SignalName.ResourceNodeInteracted, NodeId);
     }
 
-    private void ApplyResourceTheme()
+    private void BuildVisualLayers()
     {
-        if (ResourceVisual is null || string.IsNullOrWhiteSpace(ItemId))
+        if (string.IsNullOrWhiteSpace(ItemId))
         {
             return;
         }
 
         var theme = ResourceVisualTheme.Resolve(ItemId);
-        ResourceVisual.Polygon = theme.Polygon;
-        ResourceVisual.Color = theme.FillColor;
+        _activeRoot = CreateLayerRoot("ActiveLayers", theme.Active);
+        _harvestedRoot = CreateLayerRoot("HarvestedLayers", theme.Harvested);
+        AddChild(_activeRoot);
+        AddChild(_harvestedRoot);
+        _harvestedRoot.Visible = false;
+    }
+
+    private static Node2D CreateLayerRoot(string name, ResourceVisualTheme.VisualLayer[] layers)
+    {
+        var root = new Node2D { Name = name };
+        foreach (var layer in layers)
+        {
+            var poly = new Polygon2D
+            {
+                Polygon = layer.Polygon,
+                Color = layer.FillColor,
+                ZIndex = layer.ZOffset,
+                ZAsRelative = true,
+            };
+            root.AddChild(poly);
+        }
+        return root;
     }
 
     public void Render(bool isHarvested, string itemDisplayName)
     {
-        var visual = ResolveVisualState(isHarvested, itemDisplayName);
+        var state = ResolveVisualState(isHarvested, itemDisplayName, ItemId);
 
-        if (ResourceLabel is not null)
+        if (_activeRoot is not null)
         {
-            ResourceLabel.Text = visual.LabelText;
-            ResourceLabel.Modulate = visual.LabelColor;
+            _activeRoot.Visible = state.ActiveVisible;
         }
 
-        if (ResourceVisual is not null)
+        if (_harvestedRoot is not null)
         {
-            ResourceVisual.Modulate = visual.VisualModulate;
+            _harvestedRoot.Visible = state.HarvestedVisible;
+        }
+
+        PromptText = state.PromptText;
+        if (PromptLabel is not null)
+        {
+            PromptLabel.Text = state.PromptText;
         }
     }
 
-    public readonly record struct ResourceVisualState(string LabelText, Color LabelColor, Color VisualModulate);
+    public readonly record struct ResourceVisualState(string PromptText, bool ActiveVisible, bool HarvestedVisible);
 
-    public static ResourceVisualState ResolveVisualState(bool isHarvested, string itemDisplayName)
+    public static ResourceVisualState ResolveVisualState(bool isHarvested, string itemDisplayName, string itemId = "")
     {
         var name = string.IsNullOrWhiteSpace(itemDisplayName) ? "Resource" : itemDisplayName;
 
         if (isHarvested)
         {
-            return new ResourceVisualState(
-                $"{name}\nReturns tomorrow",
-                new Color(0.62f, 0.58f, 0.50f, 1f),
-                new Color(1f, 1f, 1f, 0.25f));
+            return new ResourceVisualState($"{name} returns tomorrow", false, true);
         }
 
-        return new ResourceVisualState(
-            $"{name}\nClick: gather",
-            Colors.WhiteSmoke,
-            Colors.White);
+        return new ResourceVisualState(ResolveActivePrompt(itemId), true, false);
     }
+
+    private static string ResolveActivePrompt(string itemId) => itemId switch
+    {
+        "wood" => "[E] chop",
+        "stone" => "[E] mine",
+        _ => "[E] gather",
+    };
 }
