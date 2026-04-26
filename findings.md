@@ -10,54 +10,50 @@
 
 ## Research Findings (Pre-Task Audit)
 
-- The design spec (`docs/superpowers/specs/2026-04-08-harvest-manor-design.md`) lists "land expansion" as the strongest growth signal of milestone 1
-- The current implementation only allows unlocking **one** plot (`2,0`) for **120g** via `DemoExpansionPlotKey` / `DemoExpansionCost` constants in `game/scripts/world/GameBootstrap.cs`
-- `FarmGrid` is sized 6x6 (36 plots) but only 4 are unlocked by default and only 1 is unlockable, leaving 31 plots permanently inaccessible
-- `FarmScene.tscn` contains only 5 `FarmPlotNode` instances, so even if expansion logic were richer, the scene would not render the new plots
-- `Player.tscn` has no `Camera2D` node, so the viewport is locked to the scene origin; an enlarged farm cannot be reached
-- The `FarmExpansionService` already enforces "spend gold and mark plot unlocked"; what's missing is the pricing layer and a visible field of plots
-- `StatusMessageBuilder.BuildFarmPlotHoverStatusMessage` already takes `expansionPlotKey` and `expansionCost` arguments, so the call sites can be retargeted at a service-driven cost lookup without rewriting the message format
-- `GameBootstrapIntegrationTests.cs` exercises the demo expansion path explicitly; those assertions will need to be retargeted at the new tier service rather than removed
-- No NPC, facility, dialogue, audio, or gathering systems exist in the code; those are out of scope for this task but tracked as the next backlog candidates
+- Design spec §8.4 lists a "Light Gathering Area" as one of milestone 1's four required world structures, but no scene, script, or service exists for it today
+- `data/items/items.json` already declares `wood` and `stone` as `Material`-category stackables (max 99) - they were placeholders waiting for a real source
+- No shop offer or request currently references `wood` or `stone`, so the materials are entirely unreachable in-game
+- Scene transitions go through `SceneGate` (`TargetScene` string + `GateEntered` signal) and `EnterBuildingInteraction`, both already wired into `GameBootstrap.OnGateEntered`
+- `GameBootstrap` resolves a scene type to a path via `ResolveScenePath` and computes spawn coordinates per `(target, source)` pair via `ResolveSpawnForTransition`; both will need a new `gathering` entry
+- Day-end runs through `EndDay` -> `OnDayEndRequested` and already mutates farm state via `DayEndService`; resetting harvested resource nodes will hook in here
+- `HoverableInteractionArea` is the shared base for all clickable world objects (`Bed`, `Shop`, `Storage`, `RequestBoard`, plot nodes); the gathering nodes should follow the same interaction pattern for input parity
+- `SaveState` already persists farm grid, inventory, wallet, completed requests, and unlocked plots; adding a `HarvestedGatheringNodeIds` set follows that pattern
+- `FarmPlotNode` builds its visuals at runtime via `Polygon2D` and `CropVisualTheme`; the same approach will keep gathering nodes art-asset-free for now
 
 ## Technical Decisions
 
 | Decision | Rationale |
 |----------|-----------|
-| Add a new `ExpansionTierService` in `game/scripts/core/Progression/` | Keeps pricing logic out of Godot scripts and out of the gold-spending service; makes pricing rules unit-testable in isolation |
-| Define tiers as plain code data inside `ExpansionTierService` rather than JSON for now | Tier shape is design-driven, not content-driven; a JSON file would be over-engineered for 4 tiers |
-| Default tier shape: ring 0 free (4), ring 1 @120g (8), ring 2 @350g (12), ring 3 @800g (12) | Ring 0 matches today's free defaults; ring 1 keeps today's demo price as the "first reinvestment" hook; rings 2 and 3 create late-day goldsinks |
-| Camera follow uses `position_smoothing_enabled = true` and scene limits | Cheapest fix that prevents motion sickness and prevents leaving the painted background |
-| Keep `FarmExpansionService` as the gold-spending gate | Single responsibility; pricing flows in via the service, enforcement stays unchanged |
-| Save format does not change | `UnlockState` is still a set of plot keys; no migration needed |
+| New core layer namespace `HarvestManor.Core.Gathering` | Mirrors `Farming` / `Progression` / `Inventory` package boundaries |
+| One `ResourceNode` Godot script with an exported `ItemId` | Matches the data-driven pattern used for plots and avoids per-resource subclasses for milestone 1 |
+| Day-end fully resets every resource node | Smallest reliable rule; staggered respawn would require day-counter metadata per node |
+| Mount the gathering gate on `TownScene` first | Town has more spatial breathing room than the now-packed farm; world layout becomes farm <-> town <-> gathering |
+| Sold prices: wood = 4g, stone = 6g (sell-only via shop offers, buy disabled) | Low enough to keep farming primary, high enough to make the side-trip feel rewarding |
+| Use existing `Polygon2D` + theme color approach for tree/rock visuals | Keeps the task art-asset-free and consistent with current crop sprite scheme |
+| Save format adds `HarvestedGatheringNodeIds: string[]` only | Backwards-compatible: missing field defaults to empty set |
 
 ## Resources
 
 - Long-term workflow rules: `D:\game project\harvest-manor\docs\project-workflow.md`
-- Archived previous task context: `D:\game project\harvest-manor\docs\archive\planning\2026-04-25-mainline-presentation-and-smoke-pass\`
-- Design spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md`
+- Design spec: `D:\game project\harvest-manor\docs\superpowers\specs\2026-04-08-harvest-manor-design.md` (§8.4 Light Gathering Area)
 - Milestone-1 plan: `D:\game project\harvest-manor\docs\superpowers\plans\2026-04-08-harvest-manor-milestone-1-foundation.md`
 - Smoke checklist: `D:\game project\harvest-manor\docs\testing\milestone-1-smoke-checklist.md`
+- Archived previous task context: `D:\game project\harvest-manor\docs\archive\planning\2026-04-25-real-farm-expansion\`
 
 ## Implementation Notes (post-pass)
 
-- `ExpansionTierService.CreateDefault()` ships with five rings using Chebyshev distance: free 2x2 corner, then four paid rings at 120 / 280 / 600 / 1200 gold (5 / 7 / 9 / 11 plots respectively, totaling 32 paid plots out of 36)
-- Ring 0 plots are produced by the same `EnumeratePlotKeysWithinDistanceBand` enumerator as paid rings, which means the default unlocked set is now fully driven by the tier configuration instead of a separate constant
-- `GameBootstrap.TryPurchaseCheapestLockedPlot()` walks `EnumerateLockedTiers()` in increasing cost order, so the F7 quick-unlock always grabs the cheapest reachable plot rather than the previous hard-coded `(2,0)` shortcut
-- `Player.tscn` now mounts a `Camera2D` with `position_smoothing_speed = 8.0`; no scene-bound limits were added yet, so the camera can pan slightly past the field edges - a small follow-up if it feels off in playtesting
-- The `FarmStatusPanel` is still parented under `FarmScene` (a `Node2D`), so it scrolls with the camera; converting it into a CanvasLayer is queued as a follow-up if the scrolling notice board feels disorienting
-- Save files remain forward-compatible: the `UnlockState` is still a flat set of plot keys, so existing saves restore correctly and new plot unlocks are appended without migration
+(filled in during Phases 3-5)
 
 ## Open Questions / Follow-Ups
 
-- Should the right-bottom collision wall and the cottage door (`Bed` at y=396) be moved to align with the grid extent, or left where they are as a stylistic asymmetric layout?
-- Should `FarmStatusPanel` be promoted into a CanvasLayer so it stays viewport-anchored as the camera moves?
-- Should the gate to town (`GateEast` at y=470) get an additional southern exit or path hint now that the field extends much further south?
+- Should gathering nodes have a per-node respawn delay (e.g., regrow over 2 days) once base loop ships?
+- Should rare materials (e.g., hardwood / iron ore) be added in a follow-up task, or wait for the facility system that consumes them?
+- Should we expose a "gathering tally" badge in the HUD similar to the gold counter?
 
 ## Current Context
 
 - Current branch: `main`
-- Current task: Real Farm Expansion System (first step of Manor Growth phase)
-- Latest verified commit: `caaa857 fix(scene): make moon and stars actually visible at night`
-- Verification snapshot: 246/246 tests passing, 0 build warnings, Godot headless smoke launch clean
-- Working directory before commit: planning files updated, `ExpansionTierService.cs` added, `Player.tscn` and `FarmScene.tscn` extended, smoke checklist refreshed
+- Current task: Light Gathering Area (milestone 1's last missing world zone)
+- Latest verified commit: `ad2bd31 fix(ui): silence world hover hints while the inventory panel is open`
+- Verification snapshot: 296/296 tests passing, 0 build warnings, Godot headless smoke launch clean
+- Working directory before commit: planning files refreshed for the gathering task; no source code touched yet

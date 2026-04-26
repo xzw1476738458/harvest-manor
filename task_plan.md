@@ -1,4 +1,4 @@
-# Task Plan: Real Farm Expansion System
+# Task Plan: Light Gathering Area
 
 ## Planning File Rules
 
@@ -9,89 +9,85 @@
 
 ## Goal
 
-Replace the current single-plot demo expansion with a real, data-driven farm expansion system so the "land expansion as the strongest visible growth signal" pillar from the design spec actually holds up over multiple in-game days. This is the first step of the **Manor Growth** phase that follows milestone 1.
+Deliver milestone 1's still-missing world structure: a **Light Gathering Area** (spec §8.4). Add a fourth scene where the player can pick up small amounts of `wood` and `stone`, with respawning resource nodes that reset on day end. This finishes milestone 1's "farm / home-storage / town / gathering" four-zone shape and gives later facility/processing tasks a real material source.
 
 ## Current Phase
 
-Phase 5 (in progress)
+Phase 1 (planning)
 
 ## Scope Guard
 
-This task is intentionally narrow. It only delivers the systems needed for real land expansion:
+This task delivers only the smallest viable gathering loop:
 
-- Camera follow on the player so a larger farm is reachable
-- Full 6x6 grid (36 plots) physically present in `FarmScene.tscn`
-- Tiered, data-driven expansion costs replacing the hard-coded `DemoExpansionPlotKey` / `DemoExpansionCost`
-- Test and integration coverage matching the new behavior
+- A new `GatheringScene.tscn` connected via a scene gate to one existing scene (likely `TownScene`)
+- A `ResourceNode` interaction (subclassed for tree / rock variants) that gives 1 item and turns "harvested"
+- Day-end reset: every resource node respawns when the day rolls over
+- `wood` / `stone` already live in `data/items/items.json`; this task wires them into real gameplay
+- Optional shop offers so the player can sell wood/stone for a small price (no buying)
+- Tests covering the resource node state machine and the day-end reset
+- Save/load round-trip for the harvested set
 
 This task explicitly does **not** include:
 
-- Facility / building system
-- Storage or inventory capacity upgrades
-- NPCs or dialogue
-- Gathering area / wood / stone production
-- Crop multi-stage visuals
-- Tool/equipment system
-- Audio
-- Main menu / multi-slot saves
-- Art assets
+- Tools (axes, picks, durability)
+- Stamina cost on gathering
+- Random drop tables / rarity tiers
+- Multiple gathering biomes
+- Facility / building system (next task)
+- NPCs in the gathering area
+- New crops or seasonal gathering content
 
-These are queued behind this task and will be picked up in their own focused passes after this lands.
+These are queued behind this task.
 
 ## Phases
 
 ### Phase 1: Planning Reset
-- [x] Archive previous mainline-presentation planning files
-- [x] Create new root planning files for the expansion task
+- [x] Archive previous expansion planning files into `docs/archive/planning/2026-04-25-real-farm-expansion/`
+- [x] Write new root planning files
 - **Status:** complete
 
 ### Phase 2: Failing Test Coverage First
-- [x] Add `PlayerSceneLayoutTests` asserting `Player.tscn` exposes a `Camera2D` child with smoothing
-- [x] Update `FarmSceneLayoutTests` to assert all 36 `FarmPlotNode` instances cover `(0..5, 0..5)`
-- [x] Add `FarmScene_BackdropExtendsToCoverTheFullSixRowGrid` asserting field reaches the deepest plot row
-- [x] Add `ExpansionTierServiceTests` describing the four-tier ring pricing (120 / 280 / 600 / 1200) plus the free 2x2 starter
-- [x] Update `GameBootstrapIntegrationTests` for tier-aware `GetLockedPlotHint`, `TryHandleLockedPlotInteraction`, and the new `lookupUnlockCost` callback in `BuildFarmPlotHoverStatusMessage`
-- [x] Confirm the new tests fail before implementation
-- **Status:** complete
+- [ ] Add `GatheringNodeStateTests` covering harvest -> harvested -> reset cycle and the produced item id
+- [ ] Add `GatheringServiceTests` covering "harvest one node", "cannot harvest twice", and "DayEndReset restores all nodes"
+- [ ] Add `GatheringSceneLayoutTests` asserting `GatheringScene.tscn` exposes the expected resource node count and an `ExitGate` to town/farm
+- [ ] Add `SaveStateTests` cases verifying the harvested set round-trips
+- [ ] Confirm new tests fail before implementation
 
-### Phase 3: Implement Tiered Expansion Logic
-- [x] Introduce `ExpansionTierService` (rule layer, no Godot deps) returning unlock cost by `(x, y)` and plot key with explicit `TierConfiguration` records
-- [x] Replace `DemoExpansionPlotKey` / `DemoExpansionCost` usage in `GameBootstrap.*.cs` with tier service calls; add a `TryPurchaseCheapestLockedPlot` shortcut for F7 quick-unlock
-- [x] Update `StatusMessageBuilder.BuildFarmPlotHoverStatusMessage` to take a `Func<int, int, int?> lookupUnlockCost` callback
-- [x] Rename `CanTriggerDemoExpansionShortcut` to `CanTriggerQuickExpansionShortcut`
-- **Status:** complete
+### Phase 3: Implement Core Gathering Logic
+- [ ] Add `GatheringNode` record (Id, ItemId, IsHarvested) and `GatheringService` (harvest + reset) under `game/scripts/core/Gathering/`
+- [ ] Extend `SaveState` with `HarvestedGatheringNodeIds`
+- [ ] Wire `GatheringService.ResetForNewDay` into the existing day-end pipeline
+- [ ] Surface "+1 wood" / "+1 stone" status messages in `StatusMessageBuilder`
 
 ### Phase 4: Wire Godot Presentation
-- [x] Add `Camera2D` to `Player.tscn` with `position_smoothing_enabled = true`
-- [x] Extend `FarmScene.tscn` field/frame/fence/walls vertically from y=696 to y=996 to fit the new grid
-- [x] Add the missing 31 `FarmPlotNode` instances at deterministic positions (`x = 280 + col*140`, `y = 470 + row*88`)
-- [x] Extend right-bottom collision wall so the field stays bounded after the grid drops below the original gate row
-- **Status:** complete
+- [ ] Author `scenes/world/GatheringScene.tscn` with backdrop, walls, and a handful of `ResourceNode` instances (Polygon2D-styled trees and rocks)
+- [ ] Add `ResourceNode.cs` (subclass of `HoverableInteractionArea`) that emits a typed signal when clicked
+- [ ] Add a new scene gate from `TownScene.tscn` (or `FarmScene.tscn`, TBD in Phase 4) to `GatheringScene`
+- [ ] Register `GatheringSceneType` in `GameBootstrap` scene-switch tables
+- [ ] Add a small wood/stone shop offer to `data/shop/shop_offers.json` (sell-only by default)
 
 ### Phase 5: Verification
-- [x] Run full `dotnet test` suite (246/246 passed)
-- [x] Run `dotnet build game/HarvestManor.csproj` (0 errors, 0 warnings)
-- [x] Run Godot headless smoke launch (loaded crops/items/offers/requests, no errors or warnings)
-- [ ] Update `findings.md` and `progress.md` with summary notes
-- [ ] Update `docs/testing/milestone-1-smoke-checklist.md` to describe the new multi-tier expansion behavior
-- **Status:** in_progress
+- [ ] Run full `dotnet test` suite
+- [ ] Run `dotnet build game/HarvestManor.csproj`
+- [ ] Run Godot headless smoke launch
+- [ ] Manual smoke pass: walk to gathering area, harvest, verify inventory + day reset + sell flow
+- [ ] Update smoke checklist with the new zone
 
 ## Key Questions
 
-1. What unlock tier shape best balances "fast first reinvestment" with "long-tail goldsink"?
-2. Should the camera follow be locked to scene bounds or free-roaming?
-3. Should the new plots use the same `Polygon2D` styling, or take this chance to differentiate ring boundaries visually?
-4. How do we keep existing save files compatible after the unlock system changes?
+1. Should the gate to gathering live on `TownScene` (compact world ring) or `FarmScene` (treats the farm as a hub)?
+2. Should resource nodes share a single `ResourceNode` script with an exported `ItemId`, or specialize into `TreeNode` / `RockNode`?
+3. Should the day reset mark every node "fresh" or stagger respawns over multiple days?
+4. Should sold prices for wood/stone be high enough to short-circuit early farming, or low enough that gathering is a side income?
 
 ## Decisions Made
 
 | Decision | Rationale |
 |----------|-----------|
-| Pick "real expansion" as the next milestone over polish/NPCs/facilities | The single-plot demo is the most broken design promise; expansion infrastructure is also a prerequisite for facilities and richer farm growth |
-| Add a dedicated `ExpansionTierService` instead of expanding `FarmExpansionService` | Keeps the existing service focused on enforcement (gold + state) and isolates pricing rules in a unit-testable place |
-| Keep camera follow simple (smoothing + scene-bound limits) | Smallest viable scope; we can revisit follow-cone, deadzone, or scripted shots later |
-| Default unlock tiers: 4 free / 8 @ 120g / 12 @ 350g / 12 @ 800g | Free ring matches today's defaults; tier 2 matches today's demo cost; later tiers create meaningful late-day goldsinks |
-| Existing saves stay compatible by treating unknown locked plots as ring-priced | No save migration needed; unlock state continues to be a set of plot keys |
+| Gathering area is the next task instead of facilities or NPCs | Spec §8.4 lists gathering as one of milestone 1's four required zones; facilities (Phase 2) usually consume gathered materials, so this is the dependency root |
+| Use a single generic `ResourceNode` driven by exported `ItemId` instead of separate scripts | Same Polygon2D pattern as `FarmPlotNode`; lets us add new resources by editing the scene only |
+| Day-end fully resets all harvested nodes | Simplest viable rule that always works; staggered respawn is an enrichment we can add once playtesting demands it |
+| `wood` / `stone` keep their existing item definitions | They are already in `items.json` from earlier milestones; reusing them keeps save format stable |
 
 ## Errors Encountered
 
@@ -101,7 +97,7 @@ These are queued behind this task and will be picked up in their own focused pas
 
 ## Notes
 
-- Archived prior planning context to `docs/archive/planning/2026-04-25-mainline-presentation-and-smoke-pass/`
-- Latest verified commit before this task: `caaa857 fix(scene): make moon and stars actually visible at night`
+- Archived prior planning context to `docs/archive/planning/2026-04-25-real-farm-expansion/`
+- Latest verified commit before this task: `ad2bd31 fix(ui): silence world hover hints while the inventory panel is open`
 - Working branch: `main`
 - Working directory: `D:\game project\harvest-manor`
