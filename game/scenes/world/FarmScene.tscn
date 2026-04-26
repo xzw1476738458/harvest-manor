@@ -1,8 +1,9 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/EnterBuildingInteraction.cs" id="2"]
 [ext_resource type="Script" path="res://scripts/world/FarmPlotNode.cs" id="3"]
 [ext_resource type="Script" path="res://scripts/world/SceneGate.cs" id="4"]
+[ext_resource type="Script" path="res://scripts/world/CameraBounds.cs" id="5"]
 
 [sub_resource type="RectangleShape2D" id="bed_shape"]
 size = Vector2(60, 60)
@@ -73,6 +74,13 @@ corner_radius_bottom_left = 14
 
 [node name="SceneOverlay" type="CanvasLayer" parent="."]
 layer = 4
+
+[node name="CameraBounds" type="Node" parent="."]
+script = ExtResource("5")
+Left = 24
+Top = 104
+Right = 1256
+Bottom = 996
 
 [node name="FarmShadow" type="Polygon2D" parent="."]
 z_index = -9

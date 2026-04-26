@@ -54,6 +54,39 @@ public partial class GameBootstrap
             _player.Position = spawnPosition;
             _player.Velocity = Vector2.Zero;
         }
+
+        ApplyCameraBoundsForScene(instance);
+    }
+
+    private void ApplyCameraBoundsForScene(Node sceneRoot)
+    {
+        if (_player is null)
+        {
+            return;
+        }
+
+        var camera = _player.GetNodeOrNull<Camera2D>("Camera");
+        if (camera is null)
+        {
+            return;
+        }
+
+        var bounds = sceneRoot.GetNodeOrNull<CameraBounds>("CameraBounds");
+        if (bounds is null)
+        {
+            camera.LimitLeft = int.MinValue;
+            camera.LimitTop = int.MinValue;
+            camera.LimitRight = int.MaxValue;
+            camera.LimitBottom = int.MaxValue;
+            camera.ResetSmoothing();
+            return;
+        }
+
+        camera.LimitLeft = bounds.Left;
+        camera.LimitTop = bounds.Top;
+        camera.LimitRight = bounds.Right;
+        camera.LimitBottom = bounds.Bottom;
+        camera.ResetSmoothing();
     }
 
     private static string ResolveScenePath(string sceneType) => sceneType switch
