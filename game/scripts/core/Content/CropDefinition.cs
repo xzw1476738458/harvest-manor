@@ -52,4 +52,32 @@ public sealed record CropDefinition(
             throw new InvalidDataException($"Crop '{Id}' has invalid growth stage totals.");
         }
     }
+
+    public int GetStageIndex(int daysGrown)
+    {
+        if (GrowthStageDays is null || GrowthStageDays.Count == 0)
+        {
+            return 0;
+        }
+
+        if (daysGrown <= 0)
+        {
+            return 0;
+        }
+
+        var lastIndex = GrowthStageDays.Count - 1;
+        var cumulative = 0;
+        for (var i = 0; i < GrowthStageDays.Count; i++)
+        {
+            cumulative += GrowthStageDays[i];
+            if (daysGrown < cumulative)
+            {
+                return i;
+            }
+        }
+
+        return lastIndex;
+    }
+
+    public int StageCount => GrowthStageDays?.Count ?? 0;
 }

@@ -795,11 +795,13 @@ public partial class GameBootstrap
             var plot = _farmGrid.GetPlot(plotNode.GridX, plotNode.GridY);
             var plotKey = BuildPlotKey(plot.X, plot.Y);
             var isInActiveTier = activeTierKeys is not null && activeTierKeys.Contains(plotKey);
+            var cropDefinition = ResolveCropDefinition(plot);
             plotNode.Render(
                 plot,
-                ResolveCropDisplayName(plot),
+                cropDefinition?.DisplayName,
                 isInActiveTier ? GetLockedPlotHint(plot.X, plot.Y, _expansionTiers) : null,
-                isInActiveTier);
+                isInActiveTier,
+                cropDefinition);
         }
     }
 
@@ -947,5 +949,15 @@ public partial class GameBootstrap
         }
 
         return _cropCatalog.TryGetValue(plot.Crop.CropId, out var crop) ? crop.DisplayName : plot.Crop.CropId;
+    }
+
+    private HarvestManor.Core.Content.CropDefinition? ResolveCropDefinition(PlotState plot)
+    {
+        if (plot.Crop is null)
+        {
+            return null;
+        }
+
+        return _cropCatalog.TryGetValue(plot.Crop.CropId, out var crop) ? crop : null;
     }
 }

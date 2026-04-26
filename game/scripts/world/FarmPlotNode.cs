@@ -1,10 +1,13 @@
 using Godot;
+using HarvestManor.Core.Content;
 
 namespace HarvestManor.World;
 
 public partial class FarmPlotNode : Area2D
 {
     public readonly record struct PlotVisualState(string LabelText, Color FillColor, Color LabelColor);
+
+    public readonly record struct CropSpriteVisual(bool Visible, CropVisualTheme.StageVisual StageVisual);
 
     [Export]
     public int GridX { get; set; }
@@ -21,6 +24,9 @@ public partial class FarmPlotNode : Area2D
     [Export]
     public Label? PromptLabel { get; set; }
 
+    [Export]
+    public Polygon2D? CropSprite { get; set; }
+
     [Signal]
     public delegate void PlotInteractedEventHandler(int gridX, int gridY);
 
@@ -34,10 +40,18 @@ public partial class FarmPlotNode : Area2D
         PlotLabel ??= GetNodeOrNull<Label>("PlotLabel");
         PlotVisual ??= GetNodeOrNull<Polygon2D>("PlotVisual");
         PromptLabel ??= GetNodeOrNull<Label>("PromptLabel");
+        CropSprite ??= GetNodeOrNull<Polygon2D>("CropSprite");
+
+        EnsureCropSprite();
 
         if (PromptLabel is not null)
         {
             PromptLabel.Visible = false;
+        }
+
+        if (CropSprite is not null)
+        {
+            CropSprite.Visible = false;
         }
 
         MouseEntered += OnMouseEntered;
@@ -45,6 +59,23 @@ public partial class FarmPlotNode : Area2D
         AreaEntered += OnAreaEntered;
         AreaExited += OnAreaExited;
         ApplyHoverState();
+    }
+
+    private void EnsureCropSprite()
+    {
+        if (CropSprite is not null)
+        {
+            return;
+        }
+
+        var sprite = new Polygon2D
+        {
+            Name = "CropSprite",
+            Visible = false,
+            ZIndex = 10,
+        };
+        AddChild(sprite);
+        CropSprite = sprite;
     }
 
     public void SetPlayerInRange(bool inRange)
@@ -88,7 +119,8 @@ public partial class FarmPlotNode : Area2D
         HarvestManor.Core.Farming.PlotState plot,
         string? cropDisplayName,
         string? lockedHint = null,
-        bool isInActiveTier = true)
+        bool isInActiveTier = true,
+        CropDefinition? cropDefinition = null)
     {
         ArgumentNullException.ThrowIfNull(plot);
 
@@ -105,7 +137,49 @@ public partial class FarmPlotNode : Area2D
             PlotVisual.Color = visualState.FillColor;
         }
 
+        ApplyCropSpriteVisual(plot, cropDefinition);
+
         Modulate = Colors.White;
+    }
+
+    private void ApplyCropSpriteVisual(HarvestManor.Core.Farming.PlotState plot, CropDefinition? cropDefinition)
+    {
+        if (CropSprite is null)
+        {
+            return;
+        }
+
+        var spriteVisual = ResolveCropSpriteVisual(plot, cropDefinition);
+        if (!spriteVisual.Visible)
+        {
+            CropSprite.Visible = false;
+            return;
+        }
+
+        CropSprite.Polygon = CropVisualTheme.BuildShape(spriteVisual.StageVisual.Sides, spriteVisual.StageVisual.Radius);
+        CropSprite.Color = spriteVisual.StageVisual.FillColor;
+        CropSprite.Visible = true;
+    }
+
+    public static CropSpriteVisual ResolveCropSpriteVisual(
+        HarvestManor.Core.Farming.PlotState plot,
+        CropDefinition? cropDefinition)
+    {
+        ArgumentNullException.ThrowIfNull(plot);
+
+        if (plot.IsLocked || !plot.IsTilled || plot.Crop is null || cropDefinition is null)
+        {
+            return new CropSpriteVisual(false, default);
+        }
+
+        var stageIndex = cropDefinition.GetStageIndex(plot.Crop.DaysGrown);
+        var stageVisual = CropVisualTheme.GetStageVisual(
+            plot.Crop.CropId,
+            stageIndex,
+            cropDefinition.StageCount,
+            plot.IsHarvestReady);
+
+        return new CropSpriteVisual(true, stageVisual);
     }
 
     public static PlotVisualState ResolveVisualState(
