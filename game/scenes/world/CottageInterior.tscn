@@ -53,6 +53,9 @@ corner_radius_bottom_left = 14
 
 [node name="CottageInterior" type="Node2D"]
 
+[node name="SceneOverlay" type="CanvasLayer" parent="."]
+layer = 4
+
 [node name="RoomShadow" type="Polygon2D" parent="."]
 z_index = -9
 color = Color(0.05, 0.03, 0.02, 0.6)
@@ -91,7 +94,12 @@ polygon = PackedVector2Array(40, 286, 1240, 286, 1240, 288, 40, 288)
 [node name="FloorBackdrop" type="Polygon2D" parent="."]
 z_index = -7
 color = Color(0.62, 0.44, 0.28, 1)
-polygon = PackedVector2Array(40, 320, 1240, 320, 1240, 596, 40, 596)
+polygon = PackedVector2Array(40, 320, 1240, 320, 1240, 696, 40, 696)
+
+[node name="FloorBackdropShade" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.40, 0.28, 0.18, 0.40)
+polygon = PackedVector2Array(40, 660, 1240, 660, 1240, 696, 40, 696)
 
 [node name="FloorPerspective" type="Polygon2D" parent="."]
 z_index = -7
@@ -112,6 +120,71 @@ polygon = PackedVector2Array(40, 470, 1240, 470, 1240, 472, 40, 472)
 z_index = -6
 color = Color(0.46, 0.32, 0.20, 0.45)
 polygon = PackedVector2Array(40, 540, 1240, 540, 1240, 542, 40, 542)
+
+[node name="FloorPlank4" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.46, 0.32, 0.20, 0.45)
+polygon = PackedVector2Array(40, 612, 1240, 612, 1240, 614, 40, 614)
+
+[node name="FloorPlank5" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.46, 0.32, 0.20, 0.45)
+polygon = PackedVector2Array(40, 670, 1240, 670, 1240, 672, 40, 672)
+
+[node name="FloorPatchA" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.50, 0.34, 0.22, 0.45)
+polygon = PackedVector2Array(180, 624, 320, 620, 326, 660, 188, 664)
+
+[node name="FloorPatchB" type="Polygon2D" parent="."]
+z_index = -6
+color = Color(0.50, 0.34, 0.22, 0.40)
+polygon = PackedVector2Array(880, 626, 1040, 622, 1046, 662, 888, 666)
+
+[node name="BasketWeaveBack" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.55, 0.38, 0.24, 1)
+polygon = PackedVector2Array(160, 622, 240, 622, 244, 666, 156, 666)
+
+[node name="BasketWeaveRim" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.42, 0.28, 0.18, 1)
+polygon = PackedVector2Array(154, 620, 246, 620, 246, 626, 154, 626)
+
+[node name="BasketYarn1" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.85, 0.42, 0.42, 1)
+polygon = PackedVector2Array(170, 626, 196, 626, 198, 642, 170, 642)
+
+[node name="BasketYarn2" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.42, 0.62, 0.78, 1)
+polygon = PackedVector2Array(204, 628, 232, 628, 234, 644, 204, 644)
+
+[node name="FloorCatBody" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.68, 0.52, 0.36, 1)
+polygon = PackedVector2Array(960, 638, 1020, 638, 1024, 666, 956, 666)
+
+[node name="FloorCatHead" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.74, 0.58, 0.42, 1)
+polygon = PackedVector2Array(1010, 626, 1036, 626, 1036, 644, 1010, 644)
+
+[node name="FloorCatEar1" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.74, 0.58, 0.42, 1)
+polygon = PackedVector2Array(1014, 624, 1018, 618, 1022, 624)
+
+[node name="FloorCatEar2" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.74, 0.58, 0.42, 1)
+polygon = PackedVector2Array(1026, 624, 1030, 618, 1034, 624)
+
+[node name="FloorCatTail" type="Polygon2D" parent="."]
+z_index = -2
+color = Color(0.68, 0.52, 0.36, 1)
+polygon = PackedVector2Array(950, 642, 956, 638, 960, 660, 952, 664)
 
 [node name="FireplaceBack" type="Polygon2D" parent="."]
 z_index = -5
@@ -578,24 +651,24 @@ TargetScene = "farm"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ExitGate"]
 shape = SubResource("gate_shape")
 
-[node name="TitleBadge" type="PanelContainer" parent="."]
-offset_left = 44.0
-offset_top = 128.0
-offset_right = 320.0
-offset_bottom = 194.0
+[node name="TitleBadge" type="PanelContainer" parent="SceneOverlay"]
+offset_left = 24.0
+offset_top = 58.0
+offset_right = 332.0
+offset_bottom = 124.0
 theme_override_styles/panel = SubResource("title_badge")
 
-[node name="Rows" type="VBoxContainer" parent="TitleBadge"]
+[node name="Rows" type="VBoxContainer" parent="SceneOverlay/TitleBadge"]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="Title" type="Label" parent="TitleBadge/Rows"]
+[node name="Title" type="Label" parent="SceneOverlay/TitleBadge/Rows"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.82, 0.50, 1)
 theme_override_font_sizes/font_size = 22
 text = "Cozy Cottage"
 
-[node name="Subtitle" type="Label" parent="TitleBadge/Rows"]
+[node name="Subtitle" type="Label" parent="SceneOverlay/TitleBadge/Rows"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.72, 0.60, 1)
 theme_override_font_sizes/font_size = 12
