@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/EnterBuildingInteraction.cs" id="1"]
 [ext_resource type="Script" path="res://scripts/world/EnterBuildingInteraction.cs" id="2"]
@@ -64,18 +64,6 @@ corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 shadow_color = Color(0, 0, 0, 0.35)
 shadow_size = 10
-
-[sub_resource type="StyleBoxFlat" id="frame_border"]
-bg_color = Color(0.14, 0.11, 0.08, 0)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.45, 0.35, 0.22, 1)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
 
 [node name="TownScene" type="Node2D"]
 
@@ -892,15 +880,6 @@ polygon = PackedVector2Array(1198, 416, 1226, 416, 1226, 432, 1198, 432)
 z_index = -2
 color = Color(0.50, 0.34, 0.20, 1)
 polygon = PackedVector2Array(1198, 422, 1226, 422, 1226, 424, 1198, 424)
-
-[node name="FrameBorder" type="Panel" parent="."]
-z_index = -1
-offset_left = 24.0
-offset_top = 104.0
-offset_right = 1256.0
-offset_bottom = 696.0
-theme_override_styles/panel = SubResource("frame_border")
-mouse_filter = 2
 
 [node name="WallTopLeft" type="StaticBody2D" parent="."]
 position = Vector2(340, 308)

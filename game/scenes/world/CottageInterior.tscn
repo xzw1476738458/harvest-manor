@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/BedInteraction.cs" id="1"]
 [ext_resource type="Script" path="res://scripts/world/SceneGate.cs" id="2"]
@@ -39,18 +39,6 @@ content_margin_left = 18.0
 content_margin_top = 12.0
 content_margin_right = 18.0
 content_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxFlat" id="frame_border"]
-bg_color = Color(0.14, 0.11, 0.08, 0)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.45, 0.35, 0.22, 1)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
 
 [node name="CottageInterior" type="Node2D"]
 
@@ -611,15 +599,6 @@ polygon = PackedVector2Array(584, 588, 696, 588, 696, 590, 584, 590)
 z_index = -3
 color = Color(0.94, 0.82, 0.50, 0.85)
 polygon = PackedVector2Array(636, 568, 644, 568, 644, 580, 654, 580, 640, 590, 626, 580, 636, 580)
-
-[node name="FrameBorder" type="Panel" parent="."]
-z_index = -1
-offset_left = 24.0
-offset_top = 104.0
-offset_right = 1256.0
-offset_bottom = 696.0
-theme_override_styles/panel = SubResource("frame_border")
-mouse_filter = 2
 
 [node name="WallTop" type="StaticBody2D" parent="."]
 position = Vector2(640, 320)
