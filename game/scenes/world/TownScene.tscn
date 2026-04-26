@@ -291,6 +291,31 @@ z_index = -5
 color = Color(0.86, 0.74, 0.54, 0.55)
 polygon = PackedVector2Array(440, 388, 540, 384, 552, 422, 452, 426)
 
+[node name="NorthRoad" type="Polygon2D" parent="."]
+z_index = -5
+color = Color(0.62, 0.50, 0.32, 1)
+polygon = PackedVector2Array(594, 260, 686, 260, 692, 320, 588, 320)
+
+[node name="NorthRoadHighlight" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.78, 0.66, 0.46, 1)
+polygon = PackedVector2Array(610, 264, 670, 264, 676, 316, 604, 316)
+
+[node name="NorthRoadStone1" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.50, 0.42, 0.28, 1)
+polygon = PackedVector2Array(618, 270, 632, 268, 638, 278, 624, 280)
+
+[node name="NorthRoadStone2" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.50, 0.42, 0.28, 1)
+polygon = PackedVector2Array(648, 296, 664, 294, 670, 304, 654, 306)
+
+[node name="NorthRoadStone3" type="Polygon2D" parent="."]
+z_index = -4
+color = Color(0.50, 0.42, 0.28, 1)
+polygon = PackedVector2Array(620, 308, 634, 306, 640, 314, 626, 316)
+
 [node name="DirtPebble1" type="Polygon2D" parent="."]
 z_index = -4
 color = Color(0.58, 0.46, 0.32, 1)
@@ -897,15 +922,73 @@ TargetScene = "gathering"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GateNorth"]
 shape = SubResource("gate_shape")
 
+[node name="GateArch" type="Node2D" parent="."]
+position = Vector2(640, 274)
+
+[node name="ArchLeftPost" type="Polygon2D" parent="GateArch"]
+z_index = -3
+color = Color(0.30, 0.18, 0.10, 1)
+polygon = PackedVector2Array(-50, -34, -38, -34, -38, 36, -50, 36)
+
+[node name="ArchLeftPostHighlight" type="Polygon2D" parent="GateArch"]
+z_index = -2
+color = Color(0.45, 0.30, 0.16, 1)
+polygon = PackedVector2Array(-46, -32, -42, -32, -42, 34, -46, 34)
+
+[node name="ArchRightPost" type="Polygon2D" parent="GateArch"]
+z_index = -3
+color = Color(0.30, 0.18, 0.10, 1)
+polygon = PackedVector2Array(38, -34, 50, -34, 50, 36, 38, 36)
+
+[node name="ArchRightPostHighlight" type="Polygon2D" parent="GateArch"]
+z_index = -2
+color = Color(0.45, 0.30, 0.16, 1)
+polygon = PackedVector2Array(42, -32, 46, -32, 46, 34, 42, 34)
+
+[node name="ArchTopBeam" type="Polygon2D" parent="GateArch"]
+z_index = -3
+color = Color(0.40, 0.26, 0.14, 1)
+polygon = PackedVector2Array(-58, -42, 58, -42, 58, -28, -58, -28)
+
+[node name="ArchTopBeamHighlight" type="Polygon2D" parent="GateArch"]
+z_index = -2
+color = Color(0.55, 0.36, 0.20, 1)
+polygon = PackedVector2Array(-56, -40, 56, -40, 56, -34, -56, -34)
+
+[node name="ArchBoard" type="Polygon2D" parent="GateArch"]
+z_index = -2
+color = Color(0.46, 0.30, 0.16, 1)
+polygon = PackedVector2Array(-30, -26, 30, -26, 30, -10, -30, -10)
+
+[node name="ArchBoardEdge" type="Polygon2D" parent="GateArch"]
+z_index = -1
+color = Color(0.30, 0.18, 0.08, 1)
+polygon = PackedVector2Array(-30, -26, 30, -26, 30, -24, -30, -24)
+
+[node name="ArchBoardArrow" type="Polygon2D" parent="GateArch"]
+z_index = -1
+color = Color(0.96, 0.92, 0.74, 1)
+polygon = PackedVector2Array(0, -22, 8, -16, 4, -16, 4, -12, -4, -12, -4, -16, -8, -16)
+
+[node name="ArchNailLeft" type="Polygon2D" parent="GateArch"]
+z_index = -1
+color = Color(0.20, 0.16, 0.12, 1)
+polygon = PackedVector2Array(-26, -22, -22, -22, -22, -18, -26, -18)
+
+[node name="ArchNailRight" type="Polygon2D" parent="GateArch"]
+z_index = -1
+color = Color(0.20, 0.16, 0.12, 1)
+polygon = PackedVector2Array(22, -22, 26, -22, 26, -18, 22, -18)
+
 [node name="GateNorthLabel" type="Label" parent="."]
-offset_left = 580.0
-offset_top = 268.0
-offset_right = 700.0
-offset_bottom = 288.0
-theme_override_colors/font_color = Color(0.96, 0.96, 0.62, 1)
+offset_left = 564.0
+offset_top = 220.0
+offset_right = 716.0
+offset_bottom = 240.0
+theme_override_colors/font_color = Color(0.98, 0.94, 0.66, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
 theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "↑ to the woods"

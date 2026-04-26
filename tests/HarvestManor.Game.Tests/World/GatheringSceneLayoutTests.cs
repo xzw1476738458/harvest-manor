@@ -81,6 +81,20 @@ public sealed class GatheringSceneLayoutTests
         Assert.Contains("TargetScene = \"gathering\"", contents);
     }
 
+    [Fact]
+    public void TownScene_HasNorthRoadAndArchTelegraphingTheGate()
+    {
+        // Players must see a road and a wooden arch on the town side that points
+        // them at the GateNorth, otherwise the gathering hand-off is invisible.
+        var contents = File.ReadAllText(FindScenePath("TownScene.tscn"));
+
+        Assert.Contains("[node name=\"NorthRoad\" type=\"Polygon2D\" parent=\".\"]", contents);
+        Assert.Contains("[node name=\"GateArch\" type=\"Node2D\" parent=\".\"]", contents);
+        Assert.Contains("[node name=\"ArchLeftPost\" type=\"Polygon2D\" parent=\"GateArch\"]", contents);
+        Assert.Contains("[node name=\"ArchRightPost\" type=\"Polygon2D\" parent=\"GateArch\"]", contents);
+        Assert.Contains("[node name=\"ArchTopBeam\" type=\"Polygon2D\" parent=\"GateArch\"]", contents);
+    }
+
     private static string FindScenePath(string fileName)
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
