@@ -80,17 +80,17 @@ Bottom = 696
 [node name="BackdropSky" type="Polygon2D" parent="."]
 z_index = -11
 color = Color(0.72, 0.86, 0.95, 1)
-polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 260, 0, 260)
+polygon = PackedVector2Array(-200, -200, 1480, -200, 1480, 260, -200, 260)
 
 [node name="BackdropDirt" type="Polygon2D" parent="."]
 z_index = -11
 color = Color(0.78, 0.66, 0.48, 1)
-polygon = PackedVector2Array(0, 260, 1280, 260, 1280, 510, 0, 510)
+polygon = PackedVector2Array(-200, 260, 1480, 260, 1480, 510, -200, 510)
 
 [node name="BackdropGrass" type="Polygon2D" parent="."]
 z_index = -11
 color = Color(0.46, 0.64, 0.36, 1)
-polygon = PackedVector2Array(0, 510, 1280, 510, 1280, 720, 0, 720)
+polygon = PackedVector2Array(-200, 510, 1480, 510, 1480, 920, -200, 920)
 
 [node name="SkyBackdrop" type="Polygon2D" parent="."]
 z_index = -7
@@ -207,7 +207,7 @@ polygon = PackedVector2Array(820, 152, 824, 146, 828, 152, 824, 158)
 [node name="NightOverlay" type="Polygon2D" parent="."]
 z_index = 10
 color = Color(0.04, 0.06, 0.18, 0)
-polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+polygon = PackedVector2Array(-200, -200, 1480, -200, 1480, 920, -200, 920)
 
 [node name="Cloud1" type="Polygon2D" parent="."]
 z_index = -6

@@ -55,12 +55,12 @@ Bottom = 696
 [node name="BackdropWall" type="Polygon2D" parent="."]
 z_index = -11
 color = Color(0.74, 0.56, 0.38, 1)
-polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 320, 0, 320)
+polygon = PackedVector2Array(-200, -200, 1480, -200, 1480, 320, -200, 320)
 
 [node name="BackdropFloor" type="Polygon2D" parent="."]
 z_index = -11
 color = Color(0.62, 0.44, 0.28, 1)
-polygon = PackedVector2Array(0, 320, 1280, 320, 1280, 720, 0, 720)
+polygon = PackedVector2Array(-200, 320, 1480, 320, 1480, 920, -200, 920)
 
 [node name="WallBackdrop" type="Polygon2D" parent="."]
 z_index = -7
