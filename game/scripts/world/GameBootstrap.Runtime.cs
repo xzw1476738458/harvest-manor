@@ -3,6 +3,7 @@ using System.Linq;
 using Godot;
 using HarvestManor.Core.Economy;
 using HarvestManor.Core.Farming;
+using HarvestManor.Core.Gathering;
 using HarvestManor.Core.Inventory;
 using HarvestManor.Core.Time;
 using HarvestManor.UI;
@@ -40,6 +41,10 @@ public partial class GameBootstrap
                 break;
             case BarnInteriorSceneType:
                 WireBarnInteriorScene(instance);
+                break;
+            case GatheringSceneType:
+                WireGatheringScene(instance);
+                RenderGatheringNodes();
                 break;
             default:
                 WireFarmScene(instance);
@@ -95,6 +100,7 @@ public partial class GameBootstrap
         CottageSceneType => "res://scenes/world/CottageInterior.tscn",
         ShopInteriorSceneType => "res://scenes/world/ShopInterior.tscn",
         BarnInteriorSceneType => "res://scenes/world/BarnInterior.tscn",
+        GatheringSceneType => "res://scenes/world/GatheringScene.tscn",
         _ => "res://scenes/world/FarmScene.tscn",
     };
 
@@ -144,6 +150,8 @@ public partial class GameBootstrap
             (TownSceneType, ShopInteriorSceneType) => TownFromShopSpawn,
             (TownSceneType, BarnInteriorSceneType) => TownFromBarnSpawn,
             (TownSceneType, FarmSceneType) => TownFromFarmSpawn,
+            (TownSceneType, GatheringSceneType) => TownFromGatheringSpawn,
+            (GatheringSceneType, TownSceneType) => GatheringFromTownSpawn,
             (CottageSceneType, _) => CottageEntrySpawn,
             (ShopInteriorSceneType, _) => ShopInteriorEntrySpawn,
             (BarnInteriorSceneType, _) => BarnInteriorEntrySpawn,
@@ -199,6 +207,80 @@ public partial class GameBootstrap
         }
 
         chest.StorageRequested += OnStorageRequested;
+    }
+
+    private void WireGatheringScene(Node gatheringScene)
+    {
+        _resourceNodes.Clear();
+        _resourceNodes.AddRange(gatheringScene.GetChildren().OfType<ResourceNode>());
+
+        if (_resourceNodes.Count == 0)
+        {
+            GD.PushWarning("Gathering scene is missing ResourceNode children.");
+            return;
+        }
+
+        foreach (var node in _resourceNodes)
+        {
+            var capturedNode = node;
+            capturedNode.ResourceNodeInteracted += OnResourceNodeInteracted;
+            capturedNode.MouseEntered += () => OnWorldInteractionHovered(
+                ResolveItemDisplayName(capturedNode.ItemId).ToLowerInvariant(),
+                "click to gather");
+            capturedNode.MouseExited += OnWorldInteractionHoverEnded;
+        }
+    }
+
+    private void RenderGatheringNodes()
+    {
+        if (_gatheringService is null)
+        {
+            return;
+        }
+
+        foreach (var node in _resourceNodes)
+        {
+            var harvested = _gatheringService.State.IsHarvested(node.NodeId);
+            node.Render(harvested, ResolveItemDisplayName(node.ItemId));
+        }
+    }
+
+    private string ResolveItemDisplayName(string itemId)
+    {
+        if (string.IsNullOrWhiteSpace(itemId))
+        {
+            return "Resource";
+        }
+
+        return _itemCatalog.TryGetValue(itemId, out var def) ? def.DisplayName : itemId;
+    }
+
+    private void OnResourceNodeInteracted(string nodeId)
+    {
+        if (BlocksWorldInteractions(_activePanelMode))
+        {
+            TryNotifyBlockedWorldInteraction();
+            return;
+        }
+
+        if (_gatheringService is null || _inventory is null)
+        {
+            return;
+        }
+
+        var result = _gatheringService.TryHarvest(nodeId, _inventory);
+        var message = StatusMessageBuilder.BuildGatheringStatusMessage(
+            result,
+            result.ItemId is null ? null : ResolveItemDisplayName(result.ItemId));
+        SetFarmStatus(message);
+
+        if (result.Outcome == GatheringHarvestOutcome.Success)
+        {
+            RefreshHud();
+            RenderPanels();
+            RenderGatheringNodes();
+            Autosave();
+        }
     }
 
     private void RefreshFarmStatusAfterSwitch()
@@ -721,13 +803,16 @@ public partial class GameBootstrap
 
         if (result.SeasonChanged)
         {
-            _shopOffers = BuildSeasonShopOffers(_allShopOffers, _cropCatalog, result.CurrentSeason);
+            _shopOffers = BuildSeasonShopOffers(_allShopOffers, _cropCatalog, result.CurrentSeason, _itemCatalog);
             _selectedShopOfferIndex = 0;
             RenderPanels();
         }
 
+        _gatheringService?.ResetForNewDay();
+
         RefreshHud();
         RenderFarmPlots();
+        RenderGatheringNodes();
         SetFarmStatus(StatusMessageBuilder.BuildDayStartFarmStatusMessage(
             _farmGrid, _requests, _completedRequestIds, _inventory, _itemCatalog,
             result.SeasonChanged ? result.CurrentSeason : null,

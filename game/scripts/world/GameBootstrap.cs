@@ -72,15 +72,31 @@ public partial class GameBootstrap : Node2D
     private const string CottageSceneType = "cottage";
     private const string ShopInteriorSceneType = "shop_interior";
     private const string BarnInteriorSceneType = "barn_interior";
+    private const string GatheringSceneType = "gathering";
     private static readonly Vector2 FarmDefaultSpawn = new(640, 470);
     private static readonly Vector2 FarmFromTownSpawn = new(1180, 470);
     private static readonly Vector2 FarmFromCottageSpawn = new(1080, 480);
     private static readonly Vector2 TownFromFarmSpawn = new(110, 470);
     private static readonly Vector2 TownFromShopSpawn = new(1000, 470);
     private static readonly Vector2 TownFromBarnSpawn = new(700, 510);
+    private static readonly Vector2 TownFromGatheringSpawn = new(640, 360);
+    private static readonly Vector2 GatheringFromTownSpawn = new(640, 640);
     private static readonly Vector2 CottageEntrySpawn = new(640, 540);
     private static readonly Vector2 ShopInteriorEntrySpawn = new(640, 540);
     private static readonly Vector2 BarnInteriorEntrySpawn = new(640, 540);
+
+    private static readonly IReadOnlyList<GatheringNodeDefinition> DefaultGatheringNodes = new[]
+    {
+        new GatheringNodeDefinition("forest_tree_1", "wood"),
+        new GatheringNodeDefinition("forest_tree_2", "wood"),
+        new GatheringNodeDefinition("forest_tree_3", "wood"),
+        new GatheringNodeDefinition("forest_tree_4", "wood"),
+        new GatheringNodeDefinition("quarry_rock_1", "stone"),
+        new GatheringNodeDefinition("quarry_rock_2", "stone"),
+        new GatheringNodeDefinition("quarry_rock_3", "stone"),
+    };
+
+    private readonly List<ResourceNode> _resourceNodes = new();
     private IReadOnlyList<ShopOffer> _allShopOffers = Array.Empty<ShopOffer>();
     private IReadOnlyList<ShopOffer> _shopOffers = Array.Empty<ShopOffer>();
     private IReadOnlyList<RequestDefinition> _requests = Array.Empty<RequestDefinition>();
@@ -162,6 +178,11 @@ public partial class GameBootstrap : Node2D
         _storage = state.Storage;
         _farmGrid = state.FarmGrid;
 
+        var gatheringSeed = loadedExistingSave && snapshot is not null
+            ? snapshot.HarvestedGatheringNodeIds
+            : Array.Empty<string>();
+        _gatheringService = new GatheringService(DefaultGatheringNodes, new GatheringState(gatheringSeed));
+
         _player = GD.Load<PackedScene>("res://scenes/world/Player.tscn").Instantiate<CharacterBody2D>();
         AddChild(_player);
         _player.Position = FarmDefaultSpawn;
@@ -191,7 +212,7 @@ public partial class GameBootstrap : Node2D
         RenderFarmPlots();
         RenderPanels();
 
-        _shopOffers = BuildSeasonShopOffers(_allShopOffers, _cropCatalog, _clock.Date.Season);
+        _shopOffers = BuildSeasonShopOffers(_allShopOffers, _cropCatalog, _clock.Date.Season, _itemCatalog);
         _selectedShopOfferIndex = 0;
 
         GD.Print($"Loaded {allCrops.Count} crops and {items.Count} items, {_shopOffers.Count} shop offers, and {_requests.Count} requests.");

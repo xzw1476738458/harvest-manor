@@ -1,6 +1,7 @@
 using HarvestManor.Core.Content;
 using HarvestManor.Core.Economy;
 using HarvestManor.Core.Farming;
+using HarvestManor.Core.Gathering;
 using HarvestManor.Core.Inventory;
 using HarvestManor.Core.Progression;
 using HarvestManor.Core.Saves;
@@ -1224,6 +1225,50 @@ public sealed class GameBootstrapIntegrationTests
         Assert.Contains(summerOffers, o => o.ItemId == "melon_seed");
         Assert.Contains(summerOffers, o => o.ItemId == "parsnip_crop");
         Assert.Contains(summerOffers, o => o.ItemId == "melon_crop");
+    }
+
+    [Theory]
+    [InlineData(GatheringHarvestOutcome.Success, "wood", "Wood", "Gathered +1 wood.")]
+    [InlineData(GatheringHarvestOutcome.AlreadyHarvested, "wood", "Wood", "Wood already gathered today.")]
+    [InlineData(GatheringHarvestOutcome.InventoryFull, "stone", "Stone", "Inventory full: cannot pick up stone.")]
+    [InlineData(GatheringHarvestOutcome.UnknownNode, null, null, "Unknown gathering spot.")]
+    public void BuildGatheringStatusMessage_FormatsEachOutcomeWithItemName(
+        GatheringHarvestOutcome outcome,
+        string? itemId,
+        string? displayName,
+        string expected)
+    {
+        var result = new GatheringHarvestResult(outcome, itemId);
+
+        Assert.Equal(expected, StatusMessageBuilder.BuildGatheringStatusMessage(result, displayName));
+    }
+
+    [Fact]
+    public void BuildSeasonShopOffers_KeepsMaterialItemsAvailableInEverySeason()
+    {
+        var springCrop = new CropDefinition("parsnip", "Parsnip", Season.Spring, "parsnip_seed", "parsnip_crop", 20, 35, 4, new[] { 1, 1, 2 });
+        var cropCatalog = new Dictionary<string, CropDefinition> { ["parsnip"] = springCrop };
+        var itemCatalog = new Dictionary<string, ItemDefinition>
+        {
+            ["wood"] = new("wood", "Wood", "Material", 99),
+            ["stone"] = new("stone", "Stone", "Material", 99),
+            ["parsnip_seed"] = new("parsnip_seed", "Parsnip Seeds", "Seed", 99),
+        };
+        var allOffers = new[]
+        {
+            new ShopOffer("parsnip_seed", BuyPrice: 20, SellPrice: 10),
+            new ShopOffer("wood", BuyPrice: 0, SellPrice: 4),
+            new ShopOffer("stone", BuyPrice: 0, SellPrice: 6),
+        };
+
+        var springOffers = GameBootstrap.BuildSeasonShopOffers(allOffers, cropCatalog, Season.Spring, itemCatalog);
+        var winterOffers = GameBootstrap.BuildSeasonShopOffers(allOffers, cropCatalog, Season.Winter, itemCatalog);
+
+        Assert.Contains(springOffers, o => o.ItemId == "wood");
+        Assert.Contains(springOffers, o => o.ItemId == "stone");
+        Assert.Contains(winterOffers, o => o.ItemId == "wood");
+        Assert.Contains(winterOffers, o => o.ItemId == "stone");
+        Assert.DoesNotContain(winterOffers, o => o.ItemId == "parsnip_seed");
     }
 
     [Fact]

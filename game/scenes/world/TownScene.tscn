@@ -18,6 +18,9 @@ size = Vector2(220, 80)
 [sub_resource type="RectangleShape2D" id="wall_h"]
 size = Vector2(1160, 16)
 
+[sub_resource type="RectangleShape2D" id="wall_h_half"]
+size = Vector2(504, 16)
+
 [sub_resource type="RectangleShape2D" id="wall_v_top"]
 size = Vector2(16, 90)
 
@@ -874,11 +877,38 @@ offset_bottom = 696.0
 theme_override_styles/panel = SubResource("frame_border")
 mouse_filter = 2
 
-[node name="WallTop" type="StaticBody2D" parent="."]
-position = Vector2(640, 308)
+[node name="WallTopLeft" type="StaticBody2D" parent="."]
+position = Vector2(340, 308)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="WallTop"]
-shape = SubResource("wall_h")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallTopLeft"]
+shape = SubResource("wall_h_half")
+
+[node name="WallTopRight" type="StaticBody2D" parent="."]
+position = Vector2(940, 308)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallTopRight"]
+shape = SubResource("wall_h_half")
+
+[node name="GateNorth" type="Area2D" parent="."]
+position = Vector2(640, 308)
+script = ExtResource("4")
+TargetScene = "gathering"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GateNorth"]
+shape = SubResource("gate_shape")
+
+[node name="GateNorthLabel" type="Label" parent="."]
+offset_left = 580.0
+offset_top = 268.0
+offset_right = 700.0
+offset_bottom = 288.0
+theme_override_colors/font_color = Color(0.96, 0.96, 0.62, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "↑ to the woods"
 
 [node name="WallBottom" type="StaticBody2D" parent="."]
 position = Vector2(640, 580)

@@ -61,7 +61,8 @@ public partial class GameBootstrap
     public static IReadOnlyList<ShopOffer> BuildSeasonShopOffers(
         IReadOnlyList<ShopOffer> allOffers,
         IReadOnlyDictionary<string, CropDefinition> cropCatalog,
-        Season currentSeason)
+        Season currentSeason,
+        IReadOnlyDictionary<string, ItemDefinition>? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(allOffers);
         ArgumentNullException.ThrowIfNull(cropCatalog);
@@ -77,10 +78,23 @@ public partial class GameBootstrap
                 .Select(c => c.HarvestItemId),
             StringComparer.Ordinal);
 
+        var alwaysAvailableIds = new HashSet<string>(StringComparer.Ordinal);
+        if (itemCatalog is not null)
+        {
+            foreach (var (id, def) in itemCatalog)
+            {
+                if (string.Equals(def.Category, "Material", StringComparison.OrdinalIgnoreCase))
+                {
+                    alwaysAvailableIds.Add(id);
+                }
+            }
+        }
+
         return allOffers
             .Where(offer =>
                 seasonSeedIds.Contains(offer.ItemId)
-                || seasonCropIds.Contains(offer.ItemId))
+                || seasonCropIds.Contains(offer.ItemId)
+                || alwaysAvailableIds.Contains(offer.ItemId))
             .ToList();
     }
 

@@ -1,6 +1,7 @@
 using HarvestManor.Core.Content;
 using HarvestManor.Core.Economy;
 using HarvestManor.Core.Farming;
+using HarvestManor.Core.Gathering;
 using HarvestManor.Core.Inventory;
 using HarvestManor.Core.Progression;
 using HarvestManor.Core.Time;
@@ -152,6 +153,23 @@ public static class StatusMessageBuilder
         }
 
         return "Panels closed. Interact with the world again.";
+    }
+
+    public static string BuildGatheringStatusMessage(GatheringHarvestResult result, string? itemDisplayName)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+
+        var name = string.IsNullOrWhiteSpace(itemDisplayName) ? "resource" : itemDisplayName!.ToLowerInvariant();
+        var titleCaseName = string.IsNullOrWhiteSpace(itemDisplayName) ? "Resource" : itemDisplayName!;
+
+        return result.Outcome switch
+        {
+            GatheringHarvestOutcome.Success => $"Gathered +1 {name}.",
+            GatheringHarvestOutcome.AlreadyHarvested => $"{titleCaseName} already gathered today.",
+            GatheringHarvestOutcome.InventoryFull => $"Inventory full: cannot pick up {name}.",
+            GatheringHarvestOutcome.UnknownNode => "Unknown gathering spot.",
+            _ => string.Empty,
+        };
     }
 
     public static string BuildFarmPlotHoverStatusMessage(
