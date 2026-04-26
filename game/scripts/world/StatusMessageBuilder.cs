@@ -104,6 +104,7 @@ public static class StatusMessageBuilder
             {
                 PanelMode.Shop => "Shop open. Click again or press Esc to close.",
                 PanelMode.Storage => "Storage open. Click again or press Esc to close.",
+                PanelMode.Inventory => "Inventory open. Press Tab or Esc to close.",
                 _ => null
             };
         }
@@ -122,6 +123,7 @@ public static class StatusMessageBuilder
         {
             PanelMode.Shop => "Close the shop panel before interacting with the world.",
             PanelMode.Storage => "Close the storage panel before interacting with the world.",
+            PanelMode.Inventory => "Close the inventory before interacting with the world.",
             _ => null
         };
     }
@@ -137,6 +139,7 @@ public static class StatusMessageBuilder
         {
             PanelMode.Shop => "Shop open. Use Buy/Sell or press Esc to close.",
             PanelMode.Storage => "Storage open. Move items or press Esc to close.",
+            PanelMode.Inventory => "Inventory open. Press Tab or Esc to close.",
             _ => null
         };
     }

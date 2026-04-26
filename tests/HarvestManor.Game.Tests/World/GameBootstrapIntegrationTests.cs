@@ -277,6 +277,7 @@ public sealed class GameBootstrapIntegrationTests
     [InlineData(PanelMode.None, false, false, false)]
     [InlineData(PanelMode.Shop, false, true, false)]
     [InlineData(PanelMode.Storage, true, false, true)]
+    [InlineData(PanelMode.Inventory, true, false, false)]
     public void ResolvePanelVisibility_ReturnsExclusivePanelModes(
         PanelMode mode,
         bool inventoryVisible,
@@ -294,6 +295,7 @@ public sealed class GameBootstrapIntegrationTests
     [InlineData(PanelMode.None, false)]
     [InlineData(PanelMode.Shop, true)]
     [InlineData(PanelMode.Storage, true)]
+    [InlineData(PanelMode.Inventory, true)]
     public void BlocksWorldInteractions_ReturnsTrueOnlyWhenAPanelIsOpen(
         PanelMode mode,
         bool blocksWorldInteraction)
@@ -305,7 +307,12 @@ public sealed class GameBootstrapIntegrationTests
     [InlineData(PanelMode.None, Key.Escape, PanelMode.None)]
     [InlineData(PanelMode.Shop, Key.Escape, PanelMode.None)]
     [InlineData(PanelMode.Storage, Key.Escape, PanelMode.None)]
+    [InlineData(PanelMode.Inventory, Key.Escape, PanelMode.None)]
     [InlineData(PanelMode.Shop, Key.F7, PanelMode.Shop)]
+    [InlineData(PanelMode.None, Key.Tab, PanelMode.Inventory)]
+    [InlineData(PanelMode.Inventory, Key.Tab, PanelMode.None)]
+    [InlineData(PanelMode.Shop, Key.Tab, PanelMode.Shop)]
+    [InlineData(PanelMode.Storage, Key.Tab, PanelMode.Storage)]
     public void ResolvePanelModeAfterUnhandledKey_ClosesPanelsOnlyOnEscape(
         PanelMode currentMode,
         Key keycode,
@@ -359,6 +366,7 @@ public sealed class GameBootstrapIntegrationTests
     [InlineData(PanelMode.None, null)]
     [InlineData(PanelMode.Shop, "Close the shop panel before interacting with the world.")]
     [InlineData(PanelMode.Storage, "Close the storage panel before interacting with the world.")]
+    [InlineData(PanelMode.Inventory, "Close the inventory before interacting with the world.")]
     public void BuildBlockedWorldInteractionMessage_ProvidesActionablePanelFeedback(
         PanelMode mode,
         string? expectedMessage)
@@ -373,6 +381,8 @@ public sealed class GameBootstrapIntegrationTests
     [InlineData(PanelMode.Storage, PanelMode.Shop, "Close the storage panel before opening shop.")]
     [InlineData(PanelMode.Shop, PanelMode.None, "Close the shop panel before interacting with the world.")]
     [InlineData(PanelMode.Storage, PanelMode.None, "Close the storage panel before interacting with the world.")]
+    [InlineData(PanelMode.Inventory, PanelMode.Inventory, "Inventory open. Press Tab or Esc to close.")]
+    [InlineData(PanelMode.Inventory, PanelMode.None, "Close the inventory before interacting with the world.")]
     public void BuildBlockedWorldInteractionMessage_UsesRequestedPanelContextWhenAvailable(
         PanelMode currentMode,
         PanelMode requestedMode,
@@ -385,8 +395,10 @@ public sealed class GameBootstrapIntegrationTests
     [InlineData(PanelMode.None, PanelMode.None, null)]
     [InlineData(PanelMode.None, PanelMode.Shop, "Shop open. Use Buy/Sell or press Esc to close.")]
     [InlineData(PanelMode.None, PanelMode.Storage, "Storage open. Move items or press Esc to close.")]
+    [InlineData(PanelMode.None, PanelMode.Inventory, "Inventory open. Press Tab or Esc to close.")]
     [InlineData(PanelMode.Shop, PanelMode.None, null)]
     [InlineData(PanelMode.Storage, PanelMode.None, null)]
+    [InlineData(PanelMode.Inventory, PanelMode.None, null)]
     public void BuildPanelModeStatusMessage_ExplainsPanelOpenAndCloseFlow(
         PanelMode previousMode,
         PanelMode nextMode,

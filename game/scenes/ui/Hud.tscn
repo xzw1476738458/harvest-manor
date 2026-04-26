@@ -100,4 +100,4 @@ alignment = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.62, 0.56, 0.46, 1)
 theme_override_font_sizes/font_size = 11
-text = "WASD move · E interact · Esc close"
+text = "WASD move · E interact · Tab inventory · Esc close"

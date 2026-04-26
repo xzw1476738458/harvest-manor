@@ -11,6 +11,7 @@ public partial class GameBootstrap
         {
             PanelMode.Shop => new PanelVisibility(false, true, false),
             PanelMode.Storage => new PanelVisibility(true, false, true),
+            PanelMode.Inventory => new PanelVisibility(true, false, false),
             _ => new PanelVisibility(false, false, false)
         };
     }
@@ -22,9 +23,22 @@ public partial class GameBootstrap
 
     public static PanelMode ResolvePanelModeAfterUnhandledKey(PanelMode currentMode, Key keycode)
     {
-        return keycode == Key.Escape && currentMode != PanelMode.None
-            ? PanelMode.None
-            : currentMode;
+        if (keycode == Key.Escape && currentMode != PanelMode.None)
+        {
+            return PanelMode.None;
+        }
+
+        if (keycode == Key.Tab)
+        {
+            return currentMode switch
+            {
+                PanelMode.None => PanelMode.Inventory,
+                PanelMode.Inventory => PanelMode.None,
+                _ => currentMode
+            };
+        }
+
+        return currentMode;
     }
 
     public static bool CanHandlePanelInteractionRequest(PanelMode currentMode, PanelMode requestedMode)
