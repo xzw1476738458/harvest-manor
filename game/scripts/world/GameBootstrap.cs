@@ -6,6 +6,7 @@ using HarvestManor.Core;
 using HarvestManor.Core.Content;
 using HarvestManor.Core.Economy;
 using HarvestManor.Core.Farming;
+using HarvestManor.Core.Gathering;
 using HarvestManor.Core.Inventory;
 using HarvestManor.Core.Progression;
 using HarvestManor.Core.Saves;
@@ -49,6 +50,7 @@ public partial class GameBootstrap : Node2D
     private InventoryState? _inventory;
     private InventoryState? _storage;
     private FarmGrid? _farmGrid;
+    private GatheringService? _gatheringService;
     private HudController? _hud;
     private InventoryPanelController? _inventoryPanel;
     private ShopPanelController? _shopPanel;

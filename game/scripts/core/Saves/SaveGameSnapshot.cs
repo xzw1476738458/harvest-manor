@@ -12,4 +12,5 @@ public sealed record SaveGameSnapshot(
     IReadOnlyList<ItemStack> Storage,
     IReadOnlyList<PlotSnapshot> Plots,
     IReadOnlyList<string> UnlockedPlotKeys,
-    IReadOnlyList<string> CompletedRequests);
+    IReadOnlyList<string> CompletedRequests,
+    IReadOnlyList<string> HarvestedGatheringNodeIds);

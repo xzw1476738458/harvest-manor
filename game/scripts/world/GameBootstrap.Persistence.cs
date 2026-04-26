@@ -193,7 +193,10 @@ public partial class GameBootstrap
             _storage.Slots.ToList(),
             CreatePlotSnapshots(_farmGrid, _unlockState),
             _unlockState.UnlockedPlotKeys.OrderBy(static key => key).ToList(),
-            _completedRequestIds.OrderBy(static id => id).ToList());
+            _completedRequestIds.OrderBy(static id => id).ToList(),
+            _gatheringService is null
+                ? Array.Empty<string>()
+                : _gatheringService.State.HarvestedNodeIds.OrderBy(static id => id).ToList());
 
         var savePath = GetSaveSlotPath();
         var saveDir = Path.GetDirectoryName(savePath);

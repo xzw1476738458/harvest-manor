@@ -25,6 +25,8 @@ public static class SaveGameStore
         public List<string>? UnlockedPlotKeys { get; init; }
 
         public List<string>? CompletedRequests { get; init; }
+
+        public List<string>? HarvestedGatheringNodeIds { get; init; }
     }
 
     private static readonly JsonSerializerOptions JsonOptions = JsonDefaults.WriteOptions;
@@ -66,7 +68,8 @@ public static class SaveGameStore
             payload.Storage ?? throw new InvalidDataException("Save payload is missing storage data."),
             payload.Plots ?? throw new InvalidDataException("Save payload is missing plot data."),
             payload.UnlockedPlotKeys ?? new List<string>(),
-            payload.CompletedRequests ?? new List<string>());
+            payload.CompletedRequests ?? new List<string>(),
+            payload.HarvestedGatheringNodeIds ?? new List<string>());
 
         ValidateSnapshot(snapshot);
         return snapshot;
@@ -98,7 +101,8 @@ public static class SaveGameStore
             snapshot.Storage.Any(stack => stack is null) ||
             snapshot.Plots.Any(plot => plot is null) ||
             snapshot.UnlockedPlotKeys.Any(key => key is null) ||
-            snapshot.CompletedRequests.Any(id => id is null))
+            snapshot.CompletedRequests.Any(id => id is null) ||
+            snapshot.HarvestedGatheringNodeIds.Any(id => id is null))
         {
             throw new InvalidDataException("Save payload contains null entries.");
         }

@@ -19,7 +19,8 @@ public sealed class SaveGameStoreTests
             Storage: new List<ItemStack> { new("wood", 12) },
             Plots: new List<PlotSnapshot> { new(0, 0, true, false, true, true, "parsnip", 2) },
             UnlockedPlotKeys: new List<string> { "0,0", "1,0" },
-            CompletedRequests: new List<string> { "ship_5_parsnips" }
+            CompletedRequests: new List<string> { "ship_5_parsnips" },
+            HarvestedGatheringNodeIds: new List<string> { "forest_tree_1", "quarry_rock_2" }
         );
 
         var json = SaveGameStore.Serialize(snapshot);
@@ -31,6 +32,9 @@ public sealed class SaveGameStoreTests
         var plot = Assert.Single(restored.Plots);
         Assert.True(plot.IsWateredToday);
         Assert.Single(restored.CompletedRequests);
+        Assert.Equal(2, restored.HarvestedGatheringNodeIds.Count);
+        Assert.Contains("forest_tree_1", restored.HarvestedGatheringNodeIds);
+        Assert.Contains("quarry_rock_2", restored.HarvestedGatheringNodeIds);
     }
 
     [Fact]
@@ -109,5 +113,6 @@ public sealed class SaveGameStoreTests
         Assert.False(plot.IsWateredToday);
         Assert.Empty(snapshot.UnlockedPlotKeys);
         Assert.Empty(snapshot.CompletedRequests);
+        Assert.Empty(snapshot.HarvestedGatheringNodeIds);
     }
 }

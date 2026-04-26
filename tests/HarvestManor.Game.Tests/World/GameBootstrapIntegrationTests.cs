@@ -26,7 +26,8 @@ public sealed class GameBootstrapIntegrationTests
             Storage: new List<ItemStack> { new("wood", 18) },
             Plots: new List<PlotSnapshot> { new(0, 0, true, false, false, true, "parsnip", 4) },
             UnlockedPlotKeys: new List<string> { "0,0", "1,0", "2,0" },
-            CompletedRequests: new List<string> { "ship_5_parsnips" });
+            CompletedRequests: new List<string> { "ship_5_parsnips" },
+            HarvestedGatheringNodeIds: new List<string>());
 
         var savePath = Path.GetTempFileName();
 
@@ -77,7 +78,8 @@ public sealed class GameBootstrapIntegrationTests
                 new(2, 0, false, false, false, false, null, 0)
             },
             UnlockedPlotKeys: new List<string>(),
-            CompletedRequests: new List<string>());
+            CompletedRequests: new List<string>(),
+            HarvestedGatheringNodeIds: new List<string>());
 
         var unlockState = new UnlockState(new HashSet<string>());
         var completedRequests = new HashSet<string>();
