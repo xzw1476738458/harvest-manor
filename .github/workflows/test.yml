@@ -1,0 +1,30 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj
+
+      - name: Build
+        run: dotnet build tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test tests/HarvestManor.Game.Tests/HarvestManor.Game.Tests.csproj --no-build --no-restore --configuration Release --verbosity normal

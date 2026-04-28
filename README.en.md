@@ -2,6 +2,9 @@
 
 [简体中文](README.md) | **English**
 
+[![Tests](https://github.com/xzw1476738458/harvest-manor/actions/workflows/test.yml/badge.svg)](https://github.com/xzw1476738458/harvest-manor/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A 2D farming / life-simulation game built with Godot 4.6 + C#.
 
 ## Overview

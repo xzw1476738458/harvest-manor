@@ -2,6 +2,9 @@
 
 **简体中文** | [English](README.en.md)
 
+[![Tests](https://github.com/xzw1476738458/harvest-manor/actions/workflows/test.yml/badge.svg)](https://github.com/xzw1476738458/harvest-manor/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 一款使用 Godot 4.6 + C# 开发的 2D 田园经营 / 生活模拟游戏。
 
 ## 项目简介
