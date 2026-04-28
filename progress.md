@@ -50,6 +50,18 @@
   - Godot headless launch -> 10 crops, 22 items, 15 shop offers (was 13), 8 requests, save restored without warnings
   - Refreshed `docs/testing/milestone-1-smoke-checklist.md` with the Tab inventory toggle, hover-silence guard, and the gathering loop steps (gate north, harvest, dim node, day reset, material shop offer)
 
+### Phase 6: Smoke Test Polish (this session)
+- **Status:** complete (awaiting user manual reverification of polished bits)
+- Actions taken:
+  - **F7 feedback:** Added `BuildQuickExpansionShortcutFailureMessage` helper and routed `TryPurchaseCheapestLockedPlot` failure path through `SetFarmStatus` so insufficient-gold (or no-locked-plot) attempts now print to the field-notes panel instead of staying silent.
+  - **Panel exclusivity:** `GameBootstrap.Status.cs` now keeps Storage and Inventory panels mutually exclusive to stop the overlapping-panel bug.
+  - **Gathering scene visuals:** Added the missing `NightOverlay`, `Stars`, `Sun*`/`Moon*`, and `FarmStatusPanel` nodes to `GatheringScene.tscn`; pruned the static `SkyGradient` strip that was creating a daytime seam at dusk; lowered the moon-glow polygon size + alpha in `FarmScene.tscn` and `TownScene.tscn` to match.
+  - **Resource hover text:** Hover on a harvested `ResourceNode` now reads `already gathered today` instead of `click to gather` (`GameBootstrap.Runtime.cs:233-239`).
+  - **Interior window day/night:** Refactored `UpdateCottageWindow` -> generic `UpdateInteriorWindow(scene, minute, InteriorWindowConfig)` driven by per-interior `Cottage/Shop/BarnWindowConfig`; added `WindowMoon` + `WindowStars(WStar1..WStar6)` to `ShopInterior.tscn` and `BarnInterior.tscn`; sun/cloud/sun-rays now fade with day strength while moon/stars fade in at night for all three interiors.
+  - **Shop opening hours:** Added `ShopOpenMinute` (09:00) / `ShopCloseMinute` (18:00) and helpers `IsShopOpen` / `FormatShopHours` to `TimeOfDayController`; `OnGateEntered` now blocks `ShopInteriorSceneType` outside hours and posts `BuildShopClosedAttemptStatusMessage`; the Shop hover label uses `BuildShopClosedHoverStatusMessage` whenever the store is closed.
+  - **Tests:** Added `Time/TimeOfDayControllerTests.cs` (9 cases for `IsShopOpen` / `FormatShopHours` / `FormatClock`), plus 2 `StatusMessageBuilder` cases for the closed-store strings, and the F7 / panel-mode regression cases noted in earlier phases.
+  - `dotnet test` -> **344 / 344 passing**.
+
 ## Test Results
 
 | Check | Result |
@@ -61,6 +73,7 @@
 | `dotnet test` after Phase 4 (scene + integration) | PASS (321/321) |
 | `dotnet build game/HarvestManor.csproj` | PASS (0 errors / 0 warnings) |
 | Godot headless smoke launch | PASS (15 shop offers, save restored, no warnings) |
+| `dotnet test` after Phase 6 (smoke polish + shop hours) | PASS (344/344) |
 
 ## Error Log
 

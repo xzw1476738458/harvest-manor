@@ -50,16 +50,30 @@
 - `ResourceVisualTheme` uses single-polygon silhouettes (a stylized pine and a chunky boulder) so we can postpone real art without leaving the gathering area looking like a placeholder; the theme is keyed by `ItemId`, so adding new resources only requires a new visual entry
 - Save migrations stay free: `SaveGameStore.Deserialize` defaults `HarvestedGatheringNodeIds` to an empty list, so legacy saves load identically to fresh starts
 
+## Phase 6 Decisions (Smoke Polish + Shop Hours)
+
+| Decision | Rationale |
+|----------|-----------|
+| `InteriorWindowConfig` struct + per-interior static instance | All three interiors share the same day/night curve; only node-name prefix and palette change. The struct keeps the per-scene differences declarative and makes adding a 4th interior a one-liner. |
+| Cottage keeps `WindowOutdoor*` prefix; Shop/Barn use `Window*` | Don't rename existing scene nodes (would dirty unrelated history and break save thumbnails); pass the prefix through the config instead. |
+| Shop / Barn extras (`WindowCloud`, `WindowSunRay1-2`) listed as `DayOnlyExtras` | These polygons read as daylight cues, so they should fade with day strength alongside the sun. Encoding them as a per-scene array avoids special-casing inside `UpdateInteriorWindow`. |
+| Shop hours = 09:00–18:00 (`ShopOpenMinute` / `ShopCloseMinute`) | Matches design pacing: morning farm work + woods run before the shop opens, afternoon trading window, evening leaves time for sleep before forced shutdown at 02:00. Storage stays 24h because the player needs to stash crops late at night. |
+| Gate the shop at `OnGateEntered`, not inside `WireShopInteriorScene` | Refusing entry at the door keeps the player in `TownScene` and avoids a flash-load of `ShopInterior`. Hover and click both consult the same `TimeOfDayController.IsShopOpen` so the message stays consistent. |
+| `BuildShopClosedHoverStatusMessage` / `BuildShopClosedAttemptStatusMessage` are parameterless | They read straight from `TimeOfDayController.FormatShopHours()`, so changing hours only requires editing the constants. |
+| Day-night for gathering scene re-uses `Sun` / `Moon` / `Stars` / `NightOverlay` polygon names | Keeps `UpdateOutdoorCelestials` generic across all outdoor scenes; the missing nodes were just a content gap, not a logic gap. |
+
 ## Open Questions / Follow-Ups
 
 - Should gathering nodes have a per-node respawn delay (e.g., regrow over 2 days) once base loop ships?
 - Should rare materials (e.g., hardwood / iron ore) be added in a follow-up task, or wait for the facility system that consumes them?
 - Should we expose a "gathering tally" badge in the HUD similar to the gold counter?
+- Should the storage barn also have opening hours, or stay 24h to keep nighttime crop deposits frictionless? (Current decision: 24h.)
+- Should there be a "Closing in 30 min" hover hint as 18:00 approaches?
 
 ## Current Context
 
 - Current branch: `main`
-- Current task: Light Gathering Area (milestone 1's last missing world zone)
+- Current task: Light Gathering Area (milestone 1's last missing world zone) - Phase 6 smoke polish in progress
 - Latest verified commit: `29341dc feat(gathering): wire the Whispering Woods scene into the world`
-- Verification snapshot: 321/321 tests passing, 0 build warnings, Godot headless smoke launch clean (15 shop offers including wood/stone)
-- Working directory before this update: gathering area shipped end-to-end; planning + smoke checklist refreshed; awaiting user playtest before archiving
+- Verification snapshot (after Phase 6): 344/344 tests passing, 0 build warnings, smoke checklist refreshed with day-night, interior-window, and shop-hours sections
+- Phase 6 changes still uncommitted at the time of this writing: F7 feedback, panel-exclusivity fix, `GatheringScene` celestial / status-panel nodes, smaller `MoonGlow`, harvested-node hover copy, generic `UpdateInteriorWindow` + Shop/Barn `WindowMoon`/`WindowStars`, shop hours gating + closed-shop status messages, plus 14 new tests

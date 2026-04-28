@@ -20,5 +20,24 @@
 - [ ] From town, walk through `GateNorth` and confirm `Whispering Woods` loads with four trees and three rocks visible.
 - [ ] Click a tree and confirm `Gathered +1 wood.` appears, the wood count rises in the inventory panel, and the tree visibly dims to `Returns tomorrow`.
 - [ ] Click an already-harvested tree and confirm `Wood already gathered today.` appears with no inventory change.
+- [ ] Hover an already-harvested tree (without clicking) and confirm the field-notes panel reads `Hover wood: already gathered today.` (matching `Hover stone: already gathered today.` for rocks).
 - [ ] Walk back to town through the gathering scene `ExitGate`, then sleep until morning and verify every harvested node respawns next day.
 - [ ] Open the shop with wood in your inventory and confirm `Wood` is listed for 4g and `Stone` for 6g across every season.
+
+## Day-Night Visual Polish
+
+- [ ] In the farm/town/gathering scenes around 18:00–22:00 confirm the moon rises (with a small halo, no longer covering the ground) and stars fade in as the night overlay deepens.
+- [ ] Around 06:00–07:00 confirm the sun rises and stars/night overlay clear; the gathering scene sky should not show a daytime gradient seam after dusk.
+
+## Interior Windows (Cottage / Shop / Barn)
+
+- [ ] Around 12:00 enter `CottageInterior`: the window should show daytime sky, hill, tree, and a sun (no moon, no stars).
+- [ ] Around 12:00 enter `ShopInterior`: the window should show daytime sky + hill + sun + cloud (no moon, no stars).
+- [ ] Around 12:00 enter `BarnInterior`: the window should show daytime sky + hill + sun and the two `WindowSunRay*` shafts should be visible (no moon, no stars).
+- [ ] Around 21:00 re-enter each interior and confirm: sun is hidden, moon is visible, six small stars (`WStar1..WStar6`) are visible inside the window, sky/hill darken to night colors. Cottage tree should also darken; shop cloud and barn sun-rays should be invisible.
+
+## Shop Opening Hours (09:00–18:00)
+
+- [ ] Before 09:00 (e.g. fresh morning) walk to the Shop door in town. Hover should read `Hover general store: closed (open 09:00-18:00).`. Click should be blocked and field-notes should read `The general store is closed. Come back between 09:00-18:00.`.
+- [ ] Between 09:00 and 18:00 hover should read `Hover general store: step inside to trade.` and clicking should load `ShopInterior` normally.
+- [ ] After 18:00 (and before sleep) hover should read closed again and the door should refuse entry, while the Storage/Barn door remains open at all hours.
