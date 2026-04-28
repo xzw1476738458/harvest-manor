@@ -104,13 +104,13 @@ polygon = PackedVector2Array(0, -28, 14, -24, 24, -14, 28, 0, 24, 14, 14, 24, 0,
 
 [node name="MoonGlow" type="Polygon2D" parent="."]
 position = Vector2(180, 180)
-z_index = 11
+z_index = -6
 color = Color(0.86, 0.92, 1, 0.4)
 polygon = PackedVector2Array(0, -36, 16, -32, 30, -21, 36, -6, 34, 11, 27, 24, 15, 35, 0, 37, -15, 35, -27, 24, -34, 11, -36, -6, -30, -21, -16, -32)
 
 [node name="Moon" type="Polygon2D" parent="."]
 position = Vector2(180, 180)
-z_index = 12
+z_index = -6
 color = Color(0.96, 0.96, 0.90, 1)
 polygon = PackedVector2Array(0, -26, 12, -22, 22, -12, 26, 0, 22, 12, 12, 22, 0, 26, -12, 22, -22, 12, -26, 0, -22, -12, -12, -22)
 
@@ -126,7 +126,7 @@ polygon = PackedVector2Array(8, 4, 14, 2, 16, 8, 12, 12, 6, 10)
 
 [node name="Stars" type="Node2D" parent="."]
 modulate = Color(1, 1, 1, 0)
-z_index = 11
+z_index = -6
 
 [node name="Star1" type="Polygon2D" parent="Stars"]
 color = Color(1, 1, 0.86, 1)
