@@ -387,7 +387,7 @@ public partial class GameBootstrap
         {
             requestBoard.RequestBoardRequested += OnRequestBoardRequested;
             requestBoard.MouseEntered += OnRequestBoardHovered;
-            requestBoard.MouseExited += OnWorldInteractionHoverEnded;
+            requestBoard.MouseExited += OnRequestBoardHoverEnded;
         }
     }
 
@@ -470,12 +470,23 @@ public partial class GameBootstrap
             return;
         }
 
-        PreviewFarmStatus(
-            BlocksWorldInteractions(_activePanelMode)
-                ? StatusMessageBuilder.BuildBlockedWorldInteractionMessage(_activePanelMode)
-                : _inventory is null
-                    ? StatusMessageBuilder.BuildInteractionHoverStatusMessage("request board", "turn in crops")
-                    : StatusMessageBuilder.BuildRequestBoardHoverStatusMessage(_requests, _completedRequestIds, _inventory, _itemCatalog));
+        var message = BlocksWorldInteractions(_activePanelMode)
+            ? StatusMessageBuilder.BuildBlockedWorldInteractionMessage(_activePanelMode)
+            : _inventory is null
+                ? StatusMessageBuilder.BuildInteractionHoverStatusMessage("request board", "turn in crops")
+                : StatusMessageBuilder.BuildRequestBoardHoverStatusMessage(_requests, _completedRequestIds, _inventory, _itemCatalog);
+
+        RefreshRequestBoardStatus(overrideMessage: message);
+    }
+
+    private void OnRequestBoardHoverEnded()
+    {
+        if (ShouldSilenceHoverPreview(_activePanelMode))
+        {
+            return;
+        }
+
+        RefreshRequestBoardStatus();
     }
 
     private void OnWorldInteractionHoverEnded()
