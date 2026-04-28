@@ -22,6 +22,8 @@ public static class TimeOfDayController
     public const int NightStartMinute = 20 * 60;  // 20:00
     public const int DayEndMinute = 26 * 60;      // 02:00 next day (forced sleep)
     public const int SunsetMinute = 19 * 60;      // 19:00 (sun fully below horizon)
+    public const int ShopOpenMinute = 9 * 60;     // 09:00 (general store opens)
+    public const int ShopCloseMinute = 18 * 60;   // 18:00 (general store closes)
 
     private static readonly Color SkyDawn = new(0.86f, 0.62f, 0.50f);
     private static readonly Color SkyMorning = new(0.66f, 0.84f, 0.96f);
@@ -45,6 +47,10 @@ public static class TimeOfDayController
     public static bool IsSleepAllowed(int minuteOfDay) => minuteOfDay >= EveningStartMinute;
 
     public static bool IsDayEnded(int minuteOfDay) => minuteOfDay >= DayEndMinute - 1;
+
+    public static bool IsShopOpen(int minuteOfDay) => minuteOfDay >= ShopOpenMinute && minuteOfDay < ShopCloseMinute;
+
+    public static string FormatShopHours() => $"{FormatClock(ShopOpenMinute)}-{FormatClock(ShopCloseMinute)}";
 
     public static string FormatClock(int minuteOfDay)
     {

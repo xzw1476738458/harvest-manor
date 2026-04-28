@@ -10,7 +10,7 @@ public partial class GameBootstrap
         return mode switch
         {
             PanelMode.Shop => new PanelVisibility(false, true, false),
-            PanelMode.Storage => new PanelVisibility(true, false, true),
+            PanelMode.Storage => new PanelVisibility(false, false, true),
             PanelMode.Inventory => new PanelVisibility(true, false, false),
             _ => new PanelVisibility(false, false, false)
         };

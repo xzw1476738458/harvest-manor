@@ -108,6 +108,28 @@ public partial class GameBootstrap
             : $"Click: unlock ({cost.Value}g)";
     }
 
+    public static string? BuildQuickExpansionShortcutFailureMessage(
+        ExpansionTierService tiers,
+        UnlockState unlockState,
+        int currentGold)
+    {
+        ArgumentNullException.ThrowIfNull(tiers);
+        ArgumentNullException.ThrowIfNull(unlockState);
+
+        var activeTier = tiers.GetActiveTier(unlockState);
+        if (activeTier is null)
+        {
+            return "All plots unlocked.";
+        }
+
+        if (activeTier.UnlockCost > currentGold)
+        {
+            return $"Need {activeTier.UnlockCost}g to unlock the next plot.";
+        }
+
+        return null;
+    }
+
     public static bool TryHandleLockedPlotInteraction(
         FarmExpansionService expansionService,
         ExpansionTierService tiers,

@@ -138,6 +138,14 @@ public partial class GameBootstrap
             return;
         }
 
+        if (string.Equals(targetScene, ShopInteriorSceneType, StringComparison.Ordinal)
+            && _clock is not null
+            && !TimeOfDayController.IsShopOpen(_clock.CurrentMinuteOfDay))
+        {
+            SetFarmStatus(StatusMessageBuilder.BuildShopClosedAttemptStatusMessage());
+            return;
+        }
+
         var spawn = ResolveSpawnForTransition(_activeSceneType, targetScene);
         CallDeferred(nameof(DeferredLoadScene), targetScene, spawn);
     }
@@ -169,6 +177,9 @@ public partial class GameBootstrap
                 break;
             case TownSceneType:
                 RefreshRequestBoardStatus();
+                break;
+            case GatheringSceneType:
+                RefreshFarmStatusAfterSwitch();
                 break;
         }
     }
@@ -211,6 +222,9 @@ public partial class GameBootstrap
 
     private void WireGatheringScene(Node gatheringScene)
     {
+        _farmStatusLabel = gatheringScene.GetNodeOrNull<Label>("SceneOverlay/FarmStatusPanel/Margin/Content/FarmStatusLabel");
+        _farmStatusPanel = gatheringScene.GetNodeOrNull<Control>("SceneOverlay/FarmStatusPanel");
+
         _resourceNodes.Clear();
         _resourceNodes.AddRange(gatheringScene.GetChildren().OfType<ResourceNode>());
 
@@ -224,9 +238,13 @@ public partial class GameBootstrap
         {
             var capturedNode = node;
             capturedNode.ResourceNodeInteracted += OnResourceNodeInteracted;
-            capturedNode.MouseEntered += () => OnWorldInteractionHovered(
-                ResolveItemDisplayName(capturedNode.ItemId).ToLowerInvariant(),
-                "click to gather");
+            capturedNode.MouseEntered += () =>
+            {
+                var harvested = _gatheringService?.State.IsHarvested(capturedNode.NodeId) ?? false;
+                OnWorldInteractionHovered(
+                    ResolveItemDisplayName(capturedNode.ItemId).ToLowerInvariant(),
+                    harvested ? "already gathered today" : "click to gather");
+            };
             capturedNode.MouseExited += OnWorldInteractionHoverEnded;
         }
     }
@@ -342,7 +360,7 @@ public partial class GameBootstrap
         else
         {
             shopDoor.EnterBuildingRequested += OnGateEntered;
-            shopDoor.MouseEntered += () => OnWorldInteractionHovered("general store", "step inside to trade");
+            shopDoor.MouseEntered += OnShopDoorHovered;
             shopDoor.MouseExited += OnWorldInteractionHoverEnded;
         }
 
@@ -419,6 +437,28 @@ public partial class GameBootstrap
             BlocksWorldInteractions(_activePanelMode)
                 ? StatusMessageBuilder.BuildBlockedWorldInteractionMessage(_activePanelMode, requestedMode)
                 : StatusMessageBuilder.BuildInteractionHoverStatusMessage(interactionName, actionDescription));
+    }
+
+    private void OnShopDoorHovered()
+    {
+        if (ShouldSilenceHoverPreview(_activePanelMode))
+        {
+            return;
+        }
+
+        if (BlocksWorldInteractions(_activePanelMode))
+        {
+            PreviewFarmStatus(StatusMessageBuilder.BuildBlockedWorldInteractionMessage(_activePanelMode));
+            return;
+        }
+
+        if (_clock is not null && !TimeOfDayController.IsShopOpen(_clock.CurrentMinuteOfDay))
+        {
+            PreviewFarmStatus(StatusMessageBuilder.BuildShopClosedHoverStatusMessage());
+            return;
+        }
+
+        PreviewFarmStatus(StatusMessageBuilder.BuildInteractionHoverStatusMessage("general store", "step inside to trade"));
     }
 
     private void OnRequestBoardHovered()
@@ -733,25 +773,30 @@ public partial class GameBootstrap
             return false;
         }
 
-        foreach (var tier in _expansionTiers.EnumerateLockedTiers())
+        var failureMessage = BuildQuickExpansionShortcutFailureMessage(_expansionTiers, _unlockState, _wallet.Gold);
+        if (failureMessage is not null)
         {
-            if (tier.UnlockCost > _wallet.Gold)
+            SetFarmStatus(failureMessage);
+            return false;
+        }
+
+        var activeTier = _expansionTiers.GetActiveTier(_unlockState);
+        if (activeTier is null)
+        {
+            return false;
+        }
+
+        foreach (var plotKey in activeTier.PlotKeys)
+        {
+            if (_unlockState.Contains(plotKey))
             {
-                return false;
+                continue;
             }
 
-            foreach (var plotKey in tier.PlotKeys)
+            if (TryPurchaseExpansion(plotKey, activeTier.UnlockCost))
             {
-                if (_unlockState.Contains(plotKey))
-                {
-                    continue;
-                }
-
-                if (TryPurchaseExpansion(plotKey, tier.UnlockCost))
-                {
-                    SetFarmStatus($"Unlocked plot {plotKey} for {tier.UnlockCost}g.");
-                    return true;
-                }
+                SetFarmStatus($"Unlocked plot {plotKey} for {activeTier.UnlockCost}g.");
+                return true;
             }
         }
 

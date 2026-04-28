@@ -708,6 +708,38 @@ z_index = -3
 color = Color(1, 1, 1, 0.92)
 polygon = PackedVector2Array(800, 160, 814, 154, 832, 154, 844, 160, 832, 168, 814, 168)
 
+[node name="WindowMoon" type="Polygon2D" parent="."]
+z_index = -3
+color = Color(0.94, 0.94, 0.88, 0)
+polygon = PackedVector2Array(852, 150, 872, 150, 878, 162, 872, 174, 852, 174, 846, 162)
+
+[node name="WindowStars" type="Node2D" parent="."]
+modulate = Color(1, 1, 1, 0)
+
+[node name="WStar1" type="Polygon2D" parent="WindowStars"]
+color = Color(1, 1, 0.86, 1)
+polygon = PackedVector2Array(800, 152, 802, 150, 804, 152, 802, 154)
+
+[node name="WStar2" type="Polygon2D" parent="WindowStars"]
+color = Color(1, 1, 0.86, 1)
+polygon = PackedVector2Array(818, 158, 820, 156, 822, 158, 820, 160)
+
+[node name="WStar3" type="Polygon2D" parent="WindowStars"]
+color = Color(1, 1, 0.86, 1)
+polygon = PackedVector2Array(836, 152, 838, 150, 840, 152, 838, 154)
+
+[node name="WStar4" type="Polygon2D" parent="WindowStars"]
+color = Color(1, 1, 0.86, 1)
+polygon = PackedVector2Array(890, 156, 892, 154, 894, 156, 892, 158)
+
+[node name="WStar5" type="Polygon2D" parent="WindowStars"]
+color = Color(1, 1, 0.86, 1)
+polygon = PackedVector2Array(910, 150, 912, 148, 914, 150, 912, 152)
+
+[node name="WStar6" type="Polygon2D" parent="WindowStars"]
+color = Color(1, 1, 0.86, 1)
+polygon = PackedVector2Array(924, 162, 926, 160, 928, 162, 926, 164)
+
 [node name="WindowHill" type="Polygon2D" parent="."]
 z_index = -4
 color = Color(0.46, 0.62, 0.36, 1)

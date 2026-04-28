@@ -260,6 +260,16 @@ public static class StatusMessageBuilder
         return $"Hover {interactionName}: {actionDescription}.";
     }
 
+    public static string BuildShopClosedHoverStatusMessage()
+    {
+        return $"Hover general store: closed (open {TimeOfDayController.FormatShopHours()}).";
+    }
+
+    public static string BuildShopClosedAttemptStatusMessage()
+    {
+        return $"The general store is closed. Come back between {TimeOfDayController.FormatShopHours()}.";
+    }
+
     public static string BuildRequestBoardHoverStatusMessage(
         IReadOnlyList<RequestDefinition> requests,
         ISet<string> completedRequestIds,

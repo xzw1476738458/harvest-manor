@@ -279,7 +279,7 @@ public sealed class GameBootstrapIntegrationTests
     [Theory]
     [InlineData(PanelMode.None, false, false, false)]
     [InlineData(PanelMode.Shop, false, true, false)]
-    [InlineData(PanelMode.Storage, true, false, true)]
+    [InlineData(PanelMode.Storage, false, false, true)]
     [InlineData(PanelMode.Inventory, true, false, false)]
     public void ResolvePanelVisibility_ReturnsExclusivePanelModes(
         PanelMode mode,
@@ -534,6 +534,18 @@ public sealed class GameBootstrapIntegrationTests
         string expectedMessage)
     {
         Assert.Equal(expectedMessage, StatusMessageBuilder.BuildInteractionHoverStatusMessage(interactionName, actionDescription));
+    }
+
+    [Fact]
+    public void BuildShopClosedHoverStatusMessage_ReportsShopHours()
+    {
+        Assert.Equal("Hover general store: closed (open 09:00-18:00).", StatusMessageBuilder.BuildShopClosedHoverStatusMessage());
+    }
+
+    [Fact]
+    public void BuildShopClosedAttemptStatusMessage_TellsPlayerToReturnDuringHours()
+    {
+        Assert.Equal("The general store is closed. Come back between 09:00-18:00.", StatusMessageBuilder.BuildShopClosedAttemptStatusMessage());
     }
 
     [Fact]
@@ -990,6 +1002,74 @@ public sealed class GameBootstrapIntegrationTests
         Assert.False(changed);
         Assert.Equal(2000, wallet.Gold);
         Assert.Equal("Plot is locked.", message);
+    }
+
+    [Fact]
+    public void BuildQuickExpansionShortcutFailureMessage_ReturnsNullWhenAffordableRingHasLockedPlots()
+    {
+        var tiers = ExpansionTierService.CreateDefault();
+        var unlockState = new UnlockState(new HashSet<string>(tiers.DefaultUnlockedPlotKeys));
+
+        var message = GameBootstrap.BuildQuickExpansionShortcutFailureMessage(tiers, unlockState, currentGold: 200);
+
+        Assert.Null(message);
+    }
+
+    [Fact]
+    public void BuildQuickExpansionShortcutFailureMessage_ReturnsNullAtExactlyEnoughGold()
+    {
+        var tiers = ExpansionTierService.CreateDefault();
+        var unlockState = new UnlockState(new HashSet<string>(tiers.DefaultUnlockedPlotKeys));
+
+        var message = GameBootstrap.BuildQuickExpansionShortcutFailureMessage(tiers, unlockState, currentGold: 120);
+
+        Assert.Null(message);
+    }
+
+    [Fact]
+    public void BuildQuickExpansionShortcutFailureMessage_NamesNextRingPriceWhenPlayerIsBroke()
+    {
+        var tiers = ExpansionTierService.CreateDefault();
+        var unlockState = new UnlockState(new HashSet<string>(tiers.DefaultUnlockedPlotKeys));
+
+        var message = GameBootstrap.BuildQuickExpansionShortcutFailureMessage(tiers, unlockState, currentGold: 80);
+
+        Assert.Equal("Need 120g to unlock the next plot.", message);
+    }
+
+    [Fact]
+    public void BuildQuickExpansionShortcutFailureMessage_ReportsRingTwoPriceOnceRingOneIsAllUnlocked()
+    {
+        var tiers = ExpansionTierService.CreateDefault();
+        var keys = new HashSet<string>(tiers.DefaultUnlockedPlotKeys);
+        foreach (var ringOneKey in tiers.EnumerateLockedTiers()[0].PlotKeys)
+        {
+            keys.Add(ringOneKey);
+        }
+        var unlockState = new UnlockState(keys);
+
+        var message = GameBootstrap.BuildQuickExpansionShortcutFailureMessage(tiers, unlockState, currentGold: 100);
+
+        Assert.Equal("Need 280g to unlock the next plot.", message);
+    }
+
+    [Fact]
+    public void BuildQuickExpansionShortcutFailureMessage_AnnouncesAllUnlockedWhenNoTiersRemain()
+    {
+        var tiers = ExpansionTierService.CreateDefault();
+        var keys = new HashSet<string>(tiers.DefaultUnlockedPlotKeys);
+        foreach (var tier in tiers.EnumerateLockedTiers())
+        {
+            foreach (var key in tier.PlotKeys)
+            {
+                keys.Add(key);
+            }
+        }
+        var unlockState = new UnlockState(keys);
+
+        var message = GameBootstrap.BuildQuickExpansionShortcutFailureMessage(tiers, unlockState, currentGold: 99999);
+
+        Assert.Equal("All plots unlocked.", message);
     }
 
     [Theory]

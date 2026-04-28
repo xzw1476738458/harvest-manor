@@ -6,9 +6,52 @@ namespace HarvestManor.World;
 
 public partial class GameBootstrap
 {
-    private static readonly Vector2 SunArcLeft = new(160, 280);
-    private static readonly Vector2 SunArcRight = new(1120, 280);
-    private const float SunArcHeight = 150f;
+    private static readonly Vector2 SunArcLeft = new(160, 200);
+    private static readonly Vector2 SunArcRight = new(1120, 200);
+    private const float SunArcHeight = 130f;
+
+    private readonly struct InteriorWindowConfig
+    {
+        public required string Prefix { get; init; }
+        public required Color DaySky { get; init; }
+        public required Color NightSky { get; init; }
+        public required Color DayHill { get; init; }
+        public required Color NightHill { get; init; }
+        public Color? DayTree { get; init; }
+        public Color? NightTree { get; init; }
+        public string[]? DayOnlyExtras { get; init; }
+    }
+
+    private static readonly InteriorWindowConfig CottageWindowConfig = new()
+    {
+        Prefix = "WindowOutdoor",
+        DaySky = new Color(0.55f, 0.78f, 0.94f, 0.95f),
+        NightSky = new Color(0.10f, 0.13f, 0.26f, 0.95f),
+        DayHill = new Color(0.42f, 0.62f, 0.40f, 0.92f),
+        NightHill = new Color(0.18f, 0.26f, 0.22f, 0.92f),
+        DayTree = new Color(0.32f, 0.52f, 0.30f),
+        NightTree = new Color(0.14f, 0.22f, 0.16f),
+    };
+
+    private static readonly InteriorWindowConfig ShopWindowConfig = new()
+    {
+        Prefix = "Window",
+        DaySky = new Color(0.78f, 0.88f, 0.96f, 0.95f),
+        NightSky = new Color(0.12f, 0.16f, 0.30f, 0.95f),
+        DayHill = new Color(0.46f, 0.62f, 0.36f, 1f),
+        NightHill = new Color(0.18f, 0.26f, 0.20f, 1f),
+        DayOnlyExtras = new[] { "WindowCloud" },
+    };
+
+    private static readonly InteriorWindowConfig BarnWindowConfig = new()
+    {
+        Prefix = "Window",
+        DaySky = new Color(0.78f, 0.88f, 0.96f, 0.95f),
+        NightSky = new Color(0.12f, 0.16f, 0.30f, 0.95f),
+        DayHill = new Color(0.46f, 0.62f, 0.36f, 1f),
+        NightHill = new Color(0.18f, 0.26f, 0.20f, 1f),
+        DayOnlyExtras = new[] { "WindowSunRay1", "WindowSunRay2" },
+    };
 
     public override void _Process(double delta)
     {
@@ -66,9 +109,17 @@ public partial class GameBootstrap
 
         UpdateOutdoorCelestials(_activeScene, minute);
 
-        if (_activeSceneType == CottageSceneType)
+        switch (_activeSceneType)
         {
-            UpdateCottageWindow(_activeScene, minute);
+            case CottageSceneType:
+                UpdateInteriorWindow(_activeScene, minute, CottageWindowConfig);
+                break;
+            case ShopInteriorSceneType:
+                UpdateInteriorWindow(_activeScene, minute, ShopWindowConfig);
+                break;
+            case BarnInteriorSceneType:
+                UpdateInteriorWindow(_activeScene, minute, BarnWindowConfig);
+                break;
         }
     }
 
@@ -137,14 +188,15 @@ public partial class GameBootstrap
         }
     }
 
-    private static void UpdateCottageWindow(Node2D scene, int minute)
+    private static void UpdateInteriorWindow(Node2D scene, int minute, InteriorWindowConfig config)
     {
-        var winSun = scene.GetNodeOrNull<Polygon2D>("WindowOutdoorSun");
-        var winMoon = scene.GetNodeOrNull<Polygon2D>("WindowOutdoorMoon");
-        var winStars = scene.GetNodeOrNull<Node2D>("WindowOutdoorStars");
-        var winSky = scene.GetNodeOrNull<Polygon2D>("WindowOutdoorSky");
-        var winHill = scene.GetNodeOrNull<Polygon2D>("WindowOutdoorHill");
-        var winTree = scene.GetNodeOrNull<Polygon2D>("WindowOutdoorTree");
+        var prefix = config.Prefix;
+        var winSun = scene.GetNodeOrNull<Polygon2D>($"{prefix}Sun");
+        var winMoon = scene.GetNodeOrNull<Polygon2D>($"{prefix}Moon");
+        var winStars = scene.GetNodeOrNull<Node2D>($"{prefix}Stars");
+        var winSky = scene.GetNodeOrNull<Polygon2D>($"{prefix}Sky");
+        var winHill = scene.GetNodeOrNull<Polygon2D>($"{prefix}Hill");
+        var winTree = scene.GetNodeOrNull<Polygon2D>($"{prefix}Tree");
 
         var nightStrength = Mathf.Clamp(TimeOfDayController.GetNightOverlayAlpha(minute) / 0.62f, 0f, 1f);
         var dayStrength = 1f - nightStrength;
@@ -167,21 +219,29 @@ public partial class GameBootstrap
         }
         if (winSky is not null)
         {
-            var daySky = new Color(0.55f, 0.78f, 0.94f, 0.95f);
-            var nightSky = new Color(0.10f, 0.13f, 0.26f, 0.95f);
-            winSky.Color = daySky.Lerp(nightSky, nightStrength);
+            winSky.Color = config.DaySky.Lerp(config.NightSky, nightStrength);
         }
         if (winHill is not null)
         {
-            var dayHill = new Color(0.42f, 0.62f, 0.40f, 0.92f);
-            var nightHill = new Color(0.18f, 0.26f, 0.22f, 0.92f);
-            winHill.Color = dayHill.Lerp(nightHill, nightStrength);
+            winHill.Color = config.DayHill.Lerp(config.NightHill, nightStrength);
         }
-        if (winTree is not null)
+        if (winTree is not null && config.DayTree is { } dayTree && config.NightTree is { } nightTree)
         {
-            var dayTree = new Color(0.32f, 0.52f, 0.30f);
-            var nightTree = new Color(0.14f, 0.22f, 0.16f);
             winTree.Color = dayTree.Lerp(nightTree, nightStrength);
+        }
+        if (config.DayOnlyExtras is { } extras)
+        {
+            foreach (var name in extras)
+            {
+                var extra = scene.GetNodeOrNull<Polygon2D>(name);
+                if (extra is null)
+                {
+                    continue;
+                }
+                var c = extra.Color;
+                c.A = dayStrength;
+                extra.Color = c;
+            }
         }
     }
 }
