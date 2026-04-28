@@ -39,6 +39,15 @@ public sealed class TownSceneLayoutTests
         Assert.True(maxY >= 700, $"Expected town scene framing to reach at least y=700, but max polygon y was {maxY}.");
     }
 
+    [Fact]
+    public void TownScene_DeclaresFarmStatusPanelForBuildingHoverHints()
+    {
+        var sceneContents = File.ReadAllText(FindTownScenePath());
+
+        Assert.Contains("[node name=\"FarmStatusPanel\" type=\"PanelContainer\" parent=\"SceneOverlay\"]", sceneContents);
+        Assert.Contains("[node name=\"FarmStatusLabel\" type=\"Label\" parent=\"SceneOverlay/FarmStatusPanel/Margin/Content\"]", sceneContents);
+    }
+
     private static string FindTownScenePath()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

@@ -1035,9 +1035,9 @@ text = "Walk west to return to Farm · Approach + E to interact"
 [node name="RequestStatusPanel" type="PanelContainer" parent="SceneOverlay"]
 visible = false
 offset_left = 24.0
-offset_top = 632.0
+offset_top = 552.0
 offset_right = 1256.0
-offset_bottom = 700.0
+offset_bottom = 620.0
 theme_override_styles/panel = SubResource("status_panel")
 
 [node name="Margin" type="MarginContainer" parent="SceneOverlay/RequestStatusPanel"]
@@ -1063,6 +1063,38 @@ autowrap_mode = 3
 theme_override_colors/font_color = Color(0.94, 0.90, 0.82, 1)
 theme_override_font_sizes/font_size = 13
 text = "Active request: walk to the board to turn in."
+
+[node name="FarmStatusPanel" type="PanelContainer" parent="SceneOverlay"]
+visible = false
+offset_left = 24.0
+offset_top = 632.0
+offset_right = 1256.0
+offset_bottom = 700.0
+theme_override_styles/panel = SubResource("status_panel")
+
+[node name="Margin" type="MarginContainer" parent="SceneOverlay/FarmStatusPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="SceneOverlay/FarmStatusPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="FarmStatusHeading" type="Label" parent="SceneOverlay/FarmStatusPanel/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.82, 0.50, 1)
+theme_override_font_sizes/font_size = 14
+text = "Field Notes"
+
+[node name="FarmStatusLabel" type="Label" parent="SceneOverlay/FarmStatusPanel/Margin/Content"]
+layout_mode = 2
+autowrap_mode = 3
+theme_override_colors/font_color = Color(0.94, 0.90, 0.82, 1)
+theme_override_font_sizes/font_size = 13
+text = "Hover a building to see its prompt."
 
 [node name="Shop" type="Area2D" parent="."]
 position = Vector2(1000, 380)

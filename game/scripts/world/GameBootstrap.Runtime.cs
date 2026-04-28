@@ -351,6 +351,8 @@ public partial class GameBootstrap
     {
         _requestStatusLabel = townScene.GetNodeOrNull<Label>("SceneOverlay/RequestStatusPanel/Margin/Content/RequestStatusLabel");
         _requestStatusPanel = townScene.GetNodeOrNull<Control>("SceneOverlay/RequestStatusPanel");
+        _farmStatusLabel = townScene.GetNodeOrNull<Label>("SceneOverlay/FarmStatusPanel/Margin/Content/FarmStatusLabel");
+        _farmStatusPanel = townScene.GetNodeOrNull<Control>("SceneOverlay/FarmStatusPanel");
 
         var shopDoor = townScene.GetNodeOrNull<EnterBuildingInteraction>("Shop");
         if (shopDoor is null)
