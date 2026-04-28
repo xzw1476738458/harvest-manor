@@ -1035,9 +1035,9 @@ text = "Walk west to return to Farm · Approach + E to interact"
 [node name="RequestStatusPanel" type="PanelContainer" parent="SceneOverlay"]
 visible = false
 offset_left = 24.0
-offset_top = 552.0
+offset_top = 632.0
 offset_right = 1256.0
-offset_bottom = 620.0
+offset_bottom = 700.0
 theme_override_styles/panel = SubResource("status_panel")
 
 [node name="Margin" type="MarginContainer" parent="SceneOverlay/RequestStatusPanel"]

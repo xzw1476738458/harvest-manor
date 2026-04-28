@@ -1018,13 +1018,20 @@ public partial class GameBootstrap
         }
         _farmStatusPanel.Visible = true;
         _farmStatusTimer?.Start();
+        SuppressRequestStatusPanel();
     }
 
     private void HideFarmStatusPanel()
     {
+        var wasVisible = _farmStatusPanel?.Visible ?? false;
         if (_farmStatusPanel is not null)
         {
             _farmStatusPanel.Visible = false;
+        }
+
+        if (wasVisible && _activeSceneType == TownSceneType && _requestStatusLabel is not null)
+        {
+            RefreshRequestBoardStatus();
         }
     }
 
@@ -1036,6 +1043,7 @@ public partial class GameBootstrap
         }
         _requestStatusPanel.Visible = true;
         _requestStatusTimer?.Start();
+        SuppressFarmStatusPanel();
     }
 
     private void HideRequestStatusPanel()
@@ -1044,6 +1052,28 @@ public partial class GameBootstrap
         {
             _requestStatusPanel.Visible = false;
         }
+    }
+
+    private void SuppressFarmStatusPanel()
+    {
+        if (_farmStatusPanel is null || ReferenceEquals(_farmStatusPanel, _requestStatusPanel))
+        {
+            return;
+        }
+
+        _farmStatusPanel.Visible = false;
+        _farmStatusTimer?.Stop();
+    }
+
+    private void SuppressRequestStatusPanel()
+    {
+        if (_requestStatusPanel is null || ReferenceEquals(_requestStatusPanel, _farmStatusPanel))
+        {
+            return;
+        }
+
+        _requestStatusPanel.Visible = false;
+        _requestStatusTimer?.Stop();
     }
 
     private void SetFarmStatus(string message)
