@@ -81,14 +81,7 @@ public sealed class ProjectConfigurationTests
     [Fact]
     public void BuiltGameAssembly_ContainsGameBootstrapType()
     {
-        var assemblyPath = FindFileInRepo(
-            "game",
-            ".godot",
-            "mono",
-            "temp",
-            "bin",
-            "Debug",
-            "HarvestManor.dll");
+        var assemblyPath = ResolveBuiltGameAssemblyPath();
 
         var loadContext = new ProjectAssemblyLoadContext(assemblyPath);
         try
@@ -105,14 +98,7 @@ public sealed class ProjectConfigurationTests
     [Fact]
     public void GameBootstrap_HasGodotScriptPathAttribute()
     {
-        var assemblyPath = FindFileInRepo(
-            "game",
-            ".godot",
-            "mono",
-            "temp",
-            "bin",
-            "Debug",
-            "HarvestManor.dll");
+        var assemblyPath = ResolveBuiltGameAssemblyPath();
 
         var loadContext = new ProjectAssemblyLoadContext(assemblyPath);
         try
@@ -137,14 +123,7 @@ public sealed class ProjectConfigurationTests
     [Fact]
     public void BuiltGameAssembly_AllTypesLoadSuccessfully()
     {
-        var assemblyPath = FindFileInRepo(
-            "game",
-            ".godot",
-            "mono",
-            "temp",
-            "bin",
-            "Debug",
-            "HarvestManor.dll");
+        var assemblyPath = ResolveBuiltGameAssemblyPath();
 
         var loadContext = new ProjectAssemblyLoadContext(assemblyPath);
         try
@@ -162,14 +141,7 @@ public sealed class ProjectConfigurationTests
     [Fact]
     public void GodotScriptPathAttributes_AreUnique()
     {
-        var assemblyPath = FindFileInRepo(
-            "game",
-            ".godot",
-            "mono",
-            "temp",
-            "bin",
-            "Debug",
-            "HarvestManor.dll");
+        var assemblyPath = ResolveBuiltGameAssemblyPath();
 
         var loadContext = new ProjectAssemblyLoadContext(assemblyPath);
         try
@@ -201,19 +173,59 @@ public sealed class ProjectConfigurationTests
 
     private static string FindFileInRepo(params string[] relativeSegments)
     {
+        if (TryFindFileInRepo(relativeSegments, out var path))
+        {
+            return path!;
+        }
+
+        throw new FileNotFoundException($"Could not locate '{Path.Combine(relativeSegments)}' from test output.");
+    }
+
+    private static bool TryFindFileInRepo(string[] relativeSegments, out string? path)
+    {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null)
         {
             var candidate = Path.Combine(new[] { directory.FullName }.Concat(relativeSegments).ToArray());
             if (File.Exists(candidate))
             {
-                return candidate;
+                path = candidate;
+                return true;
             }
 
             directory = directory.Parent;
         }
 
-        throw new FileNotFoundException($"Could not locate '{Path.Combine(relativeSegments)}' from test output.");
+        path = null;
+        return false;
+    }
+
+    private static string ResolveBuiltGameAssemblyPath()
+    {
+        // The game DLL lives in different folders depending on who built it:
+        //   - Godot editor build  -> game/.godot/mono/temp/bin/<Config>/HarvestManor.dll
+        //   - `dotnet build` (CI) -> game/bin/<Config>/net8.0/HarvestManor.dll
+        // Try every known location so these tests work both locally (after
+        // launching Godot once) and on CI (where Godot is unavailable).
+        string[][] candidates =
+        {
+            new[] { "game", ".godot", "mono", "temp", "bin", "Debug", "HarvestManor.dll" },
+            new[] { "game", ".godot", "mono", "temp", "bin", "Release", "HarvestManor.dll" },
+            new[] { "game", "bin", "Debug", "net8.0", "HarvestManor.dll" },
+            new[] { "game", "bin", "Release", "net8.0", "HarvestManor.dll" },
+        };
+
+        foreach (var segments in candidates)
+        {
+            if (TryFindFileInRepo(segments, out var path))
+            {
+                return path!;
+            }
+        }
+
+        throw new FileNotFoundException(
+            "Could not locate the built HarvestManor.dll in any expected location. " +
+            "Build the game project via the Godot editor or `dotnet build game/HarvestManor.csproj` before running these tests.");
     }
 
     private static string ExtractFirstMatch(string contents, string pattern, string groupName)
