@@ -125,4 +125,4 @@ dotnet build game/HarvestManor.csproj
 
 ## 许可证
 
-待定。
+本项目采用 [MIT 协议](LICENSE) 开源 — 你可以自由使用、修改、再分发，包括商用，唯一要求是保留版权声明。

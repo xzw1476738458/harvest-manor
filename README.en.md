@@ -125,4 +125,4 @@ See `docs/project-workflow.md`. In short:
 
 ## License
 
-TBD.
+Released under the [MIT License](LICENSE) — free to use, modify and redistribute, including commercially, as long as the copyright notice is preserved.
