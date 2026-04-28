@@ -22,8 +22,10 @@ In Harvest Manor you run your own farmstead: till the soil, plant and water crop
 - Multiple scenes: farm / town / cottage / barn / shop / gathering woods
 - Resource gathering (trees and rocks respawn daily)
 - Request board quests
+- Day/night visual cycle (sky, moon, stars, night veil, and interior windows all shift with the clock)
+- Shop opening hours (09:00 – 18:00; both hover and click on the door report the current state)
 - JSON save files (`user://saves/slot-1.json`)
-- 321 xUnit tests covering the core systems
+- 345 xUnit tests covering the core systems
 
 ## Tech Stack
 
