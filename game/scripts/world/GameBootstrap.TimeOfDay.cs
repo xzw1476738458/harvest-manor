@@ -175,6 +175,12 @@ public partial class GameBootstrap
             sky.Color = TimeOfDayController.GetSkyColor(minute);
         }
 
+        var backdropSky = scene.GetNodeOrNull<Polygon2D>("BackdropSky");
+        if (backdropSky is not null)
+        {
+            backdropSky.Color = TimeOfDayController.GetSkyColor(minute);
+        }
+
         var skyGradientTop = scene.GetNodeOrNull<Polygon2D>("SkyGradientTop");
         if (skyGradientTop is not null)
         {
