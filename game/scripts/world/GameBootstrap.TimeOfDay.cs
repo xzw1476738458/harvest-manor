@@ -19,7 +19,7 @@ public partial class GameBootstrap
         public required Color NightHill { get; init; }
         public Color? DayTree { get; init; }
         public Color? NightTree { get; init; }
-        public string[]? DayOnlyExtras { get; init; }
+        public (string Name, float MaxAlpha)[]? DayOnlyExtras { get; init; }
     }
 
     private static readonly InteriorWindowConfig CottageWindowConfig = new()
@@ -40,7 +40,7 @@ public partial class GameBootstrap
         NightSky = new Color(0.12f, 0.16f, 0.30f, 0.95f),
         DayHill = new Color(0.46f, 0.62f, 0.36f, 1f),
         NightHill = new Color(0.18f, 0.26f, 0.20f, 1f),
-        DayOnlyExtras = new[] { "WindowCloud" },
+        DayOnlyExtras = new[] { ("WindowCloud", 0.92f) },
     };
 
     private static readonly InteriorWindowConfig BarnWindowConfig = new()
@@ -50,7 +50,7 @@ public partial class GameBootstrap
         NightSky = new Color(0.12f, 0.16f, 0.30f, 0.95f),
         DayHill = new Color(0.46f, 0.62f, 0.36f, 1f),
         NightHill = new Color(0.18f, 0.26f, 0.20f, 1f),
-        DayOnlyExtras = new[] { "WindowSunRay1", "WindowSunRay2" },
+        DayOnlyExtras = new[] { ("WindowSunRay1", 0.18f), ("WindowSunRay2", 0.12f) },
     };
 
     public override void _Process(double delta)
@@ -237,7 +237,7 @@ public partial class GameBootstrap
         }
         if (config.DayOnlyExtras is { } extras)
         {
-            foreach (var name in extras)
+            foreach (var (name, maxAlpha) in extras)
             {
                 var extra = scene.GetNodeOrNull<Polygon2D>(name);
                 if (extra is null)
@@ -245,7 +245,7 @@ public partial class GameBootstrap
                     continue;
                 }
                 var c = extra.Color;
-                c.A = dayStrength;
+                c.A = maxAlpha * dayStrength;
                 extra.Color = c;
             }
         }
