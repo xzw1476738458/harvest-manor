@@ -41,3 +41,23 @@
 - [ ] Before 09:00 (e.g. fresh morning) walk to the Shop door in town. Hover should read `Hover general store: closed (open 09:00-18:00).`. Click should be blocked and field-notes should read `The general store is closed. Come back between 09:00-18:00.`.
 - [ ] Between 09:00 and 18:00 hover should read `Hover general store: step inside to trade.` and clicking should load `ShopInterior` normally.
 - [ ] After 18:00 (and before sleep) hover should read closed again and the door should refuse entry, while the Storage/Barn door remains open at all hours.
+
+## Town Hover Wiring + Panel Exclusivity
+
+- [ ] In town, hover the Storage Barn and confirm the bottom strip becomes `Field Notes` reading `Hover barn: step inside to manage chest.` (any prior `Guild Board` panel is hidden while the Field Notes is up).
+- [ ] In town, hover the Cottage door / Farmer / Shop door and confirm each switches the bottom strip to a Field Notes line (cottage rest, farmer turn-in, shop trade-or-closed).
+- [ ] Move the cursor off and wait ~5s; the Field Notes panel auto-hides and the persistent `Guild Board: Active request: ...` line returns in its place. Only one bottom panel is ever visible.
+- [ ] Hover the Request Board itself; the Guild Board panel (NOT a separate Field Notes) updates to `Hover request board: <progress text>.` and reverts on cursor-out without flashing a duplicate panel.
+
+## Outdoor Night-Sky Layering + Color
+
+- [ ] At deep night (e.g. 23:00–02:00) in Farm/Town/Gathering: the moon and stars are clearly **behind** mountains, distant buildings, distant hills, and clouds (i.e. silhouettes occlude them). The moon never floats on top of a mountain peak or cloud.
+- [ ] The moon reads as **pale yellow** with a warm halo, not off-white or cool blue.
+- [ ] No bright cyan band appears at the top of the sky in Town or Farm at night - the entire sky region above the horizon is uniformly dark blue, with only stars/moon/clouds breaking it up.
+- [ ] The ground (mountains, buildings, grass, player, trees) is still visibly dimmed by the night overlay below the horizon.
+
+## Interior Day-Lighting Subtlety
+
+- [ ] Around 12:00 enter `BarnInterior` and confirm the two `WindowSunRay*` shafts read as **soft, semi-transparent** beams falling onto the floor - NOT a solid saturated yellow band. They should still be visible but blend with the floor color.
+- [ ] Around 12:00 enter `ShopInterior` and confirm the `WindowCloud` reads as a soft pastel blob instead of an opaque white shape over the window glass.
+- [ ] At night both extras should be invisible, matching the existing day/night checklist row above.

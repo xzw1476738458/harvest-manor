@@ -50,7 +50,7 @@
   - Godot headless launch -> 10 crops, 22 items, 15 shop offers (was 13), 8 requests, save restored without warnings
   - Refreshed `docs/testing/milestone-1-smoke-checklist.md` with the Tab inventory toggle, hover-silence guard, and the gathering loop steps (gate north, harvest, dim node, day reset, material shop offer)
 
-### Phase 6: Smoke Test Polish (this session)
+### Phase 6: Smoke Test Polish (previous session)
 - **Status:** complete (awaiting user manual reverification of polished bits)
 - Actions taken:
   - **F7 feedback:** Added `BuildQuickExpansionShortcutFailureMessage` helper and routed `TryPurchaseCheapestLockedPlot` failure path through `SetFarmStatus` so insufficient-gold (or no-locked-plot) attempts now print to the field-notes panel instead of staying silent.
@@ -61,6 +61,18 @@
   - **Shop opening hours:** Added `ShopOpenMinute` (09:00) / `ShopCloseMinute` (18:00) and helpers `IsShopOpen` / `FormatShopHours` to `TimeOfDayController`; `OnGateEntered` now blocks `ShopInteriorSceneType` outside hours and posts `BuildShopClosedAttemptStatusMessage`; the Shop hover label uses `BuildShopClosedHoverStatusMessage` whenever the store is closed.
   - **Tests:** Added `Time/TimeOfDayControllerTests.cs` (9 cases for `IsShopOpen` / `FormatShopHours` / `FormatClock`), plus 2 `StatusMessageBuilder` cases for the closed-store strings, and the F7 / panel-mode regression cases noted in earlier phases.
   - `dotnet test` -> **344 / 344 passing**.
+
+### Phase 7: Town Hover Wiring + Outdoor/Interior Visual Polish (this session)
+- **Status:** complete (all changes verified by user during stepwise walkthrough)
+- Actions taken:
+  - **Town field-notes wiring:** `TownScene.tscn` was missing the `FarmStatusPanel` node entirely, so hover hints on the storage barn / shop door / etc. silently no-op'd. Added the `FarmStatusPanel` overlay (matching the farm/gathering layout), wired `OnWorldInteractionHovered` for the town interactables, and added a `TownSceneLayoutTests` regression case asserting the panel is part of the town tree.
+  - **Request board hover routes through Guild Board:** `OnRequestBoardHovered/Ended` now writes through `RefreshRequestBoardStatus(override?)` -> the persistent `RequestStatusPanel`, so the same panel that shows `Active request: ...` also shows the hover preview. Eliminates the brief panel duplication when the player swept the cursor across the board.
+  - **Field Notes + Guild Board are now mutually exclusive:** Both panels share the same y=632 footprint. `ShowFarmStatusPanel`/`ShowRequestStatusPanel` invoke `SuppressRequestStatusPanel`/`SuppressFarmStatusPanel` so only one is ever visible; when the transient `FarmStatusPanel` auto-hides in town, `HideFarmStatusPanel` calls `RefreshRequestBoardStatus()` so the persistent Guild Board returns instead of leaving the screen blank.
+  - **Moon and stars dropped into the sky layer:** `Moon`/`MoonGlow`/`Stars` had `z_index = 11/12` so they rendered above mountains, clouds, and buildings. Lowered to `z_index = -6` in Town/Farm (same plane as `Sun` and `Cloud*`; tree order keeps `Cloud*`/`DistantBuildings*`/`DistantHill*` on top) and `z_index = -11` in Gathering (between `SkyBackdrop -12` and the `DistantHillsFar/Mid/Near` -10/-9/-8 cascade). Stars and the moon now read as part of the sky, occluded by the silhouette as expected.
+  - **Pale-yellow moon, brighter than before:** Moon recolored from off-white `(0.96, 0.96, 0.90)` and cool-blue glow `(0.86, 0.92, 1)` to pale yellow `(1, 0.96, 0.74)` and warm yellow halo `(1, 0.94, 0.62)`. To stop `NightOverlay (z=10)` from dimming the moon back into a grey blob, trimmed all three outdoor `NightOverlay` polygons to start at `y=200` (horizon-ish) so the overlay only dims the ground; the sky already darkens via `GetSkyColor`/`SkyBackdrop`.
+  - **Backdrop sky also tints at night:** Town and Farm have a wide background `BackdropSky` polygon at `z=-11` plus a smaller `SkyBackdrop` strip at `z=-7`. Only the latter was being recolored, so the area above the strip kept the daytime light blue and produced a bright cyan band at night. `UpdateOutdoorCelestials` now also writes `GetSkyColor(minute)` into `BackdropSky` whenever it is present (Gathering already covers the full sky with `SkyBackdrop`, so it needed no change).
+  - **Interior `DayOnlyExtras` respect their authored alpha:** `UpdateInteriorWindow` was overwriting `WindowSunRay1/2.A` and `WindowCloud.A` with raw `dayStrength`, so the barn sun-ray polygons (authored at alpha 0.18 and 0.12) became fully opaque at noon and dominated the interior with a saturated yellow band. `DayOnlyExtras` is now a `(name, maxAlpha)` tuple array; the runtime alpha is `maxAlpha * dayStrength`, restoring the intended subtle daylight cue for both barn rays and the shop cloud.
+  - `dotnet test` -> **345 / 345 passing**; manual smoke walkthrough re-run for hovers (storage/shop/cottage/farmer/request board), panel exclusivity, night sky, interior day/night windows, and shop hours.
 
 ## Test Results
 
@@ -74,6 +86,8 @@
 | `dotnet build game/HarvestManor.csproj` | PASS (0 errors / 0 warnings) |
 | Godot headless smoke launch | PASS (15 shop offers, save restored, no warnings) |
 | `dotnet test` after Phase 6 (smoke polish + shop hours) | PASS (344/344) |
+| `dotnet test` after Phase 7 (town hover + visual polish) | PASS (345/345) |
+| Manual smoke pass (Phase 7 stepwise walkthrough) | PASS (all 6+ items confirmed by user) |
 
 ## Error Log
 
@@ -84,8 +98,8 @@
 
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 5 wrap-up of the Light Gathering Area task; all automated checks green, manual playtest pending |
-| Where am I going? | Wait for the user's manual smoke pass; next milestone candidate is the Facility System (which can now consume gathered wood/stone) |
-| What's the goal? | Ship milestone 1's last missing world zone: a small gathering area that produces wood and stone, resets daily, and integrates with inventory/save/shop |
-| What have I learned? | A pure-domain `GatheringState`/`Service` mirrors the farm/expansion split well; making `BuildSeasonShopOffers` aware of `Category="Material"` lets future tasks add new always-available materials without touching the scene; clearing Godot's default Tab binding was needed before `Tab` could reach our handler reliably |
-| What have I done? | Built the gathering core (4 files), the `ResourceNode`/`ResourceVisualTheme` Godot layer, `GatheringScene.tscn` with 7 resource nodes, town `GateNorth`, scene-switch + day-end + autosave wiring, wood/stone shop offers, and 25 new tests bringing the suite to 321/321 |
+| Where am I? | Phase 7 wrap-up: town hover wiring + outdoor/interior visual polish all merged into `main`; smoke walkthrough green; ready to retire the Light Gathering Area task and move on. |
+| Where am I going? | Archive the root `task_plan.md` / `findings.md` / `progress.md` triple under `docs/archive/planning/` once the next task starts. Next candidate is the Facility System (which can now consume the wood/stone the gathering area produces). |
+| What's the goal? | Ship milestone 1's last missing world zone (Light Gathering Area) with the polish pass that surfaces hover hints in town, lets day/night read correctly outdoors and through interior windows, and gates the shop to 09:00-18:00. |
+| What have I learned? | Godot 2D `z_index` overrides scene-tree order, so layered backdrops still need disciplined z values; the `SkyBackdrop` strip alone is not enough to dim the sky at night when a wider `BackdropSky` exists at `z=-11`; trimming `NightOverlay` to the horizon plus modulating `BackdropSky` is what produces a uniform night sky; per-extras alpha needs to multiply by the authored max alpha, otherwise `dayStrength=1.0` blows out subtle effects like sun rays. |
+| What have I done? | Phase 6 baseline (smoke polish + shop hours, 344/344) plus Phase 7 (Town field-notes wiring, request-board through Guild Board, panel exclusivity, moon/stars z-layering, pale-yellow moon, NightOverlay horizon trim, BackdropSky tint, `DayOnlyExtras` alpha scaling). Final state: 345/345 tests, smoke checklist refreshed, all changes committed on `main`. |
